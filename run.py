@@ -118,6 +118,11 @@ def _verifier() -> int:
 
 def _liste_console() -> int:
     """--verifier : bilan texte, sans rien modifier."""
+    for flux in (sys.stdout, sys.stderr):        # console Windows : pas de caractère illisible
+        try:
+            flux.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
     from martinet import orchestre, reglages
     from martinet.i18n import tr
     r = reglages.charger()

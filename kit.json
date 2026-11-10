@@ -1,0 +1,60 @@
+{
+  "nom_technique": "martinet",
+  "nom_fichier": "Martinet",
+  "nom_affiche": "Martinet",
+  "depot_distribution": "ARP273-ROSE/Martinet",
+  "point_entree": "run.py",
+  "fichier_version": "VERSION",
+  "icone": "logo.ico",
+  "appid": "{{D5E4F368-8675-5CF3-A38F-F21C4DE49EE9}",
+  "modules": [
+    "run.py",
+    "reporting.py",
+    "updater.py",
+    "interface_kit.py"
+  ],
+  "paquets": [
+    "martinet"
+  ],
+  "assets": [
+    "VERSION",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE",
+    "logo.svg",
+    "logo.ico",
+    "logo.png",
+    "logo_16.png",
+    "logo_32.png",
+    "logo_64.png",
+    "logo_128.png",
+    "logo_256.png",
+    "logo_512.png",
+    "docs"
+  ],
+  "requirements": "requirements.txt",
+  "pip": [],
+  "binaires": [],
+  "fichiers_proteges": [
+    "_rapports",
+    "reglages_rapports.json",
+    "_crash_natif.log",
+    "martinet-erreur.log",
+    "_donnees"
+  ],
+  "verification_import": [
+    "martinet",
+    "martinet.fenetre",
+    "martinet.orchestre",
+    "martinet.i18n",
+    "interface_kit"
+  ],
+  "icone_png": "logo_256.png",
+  "icone_grande": "logo_512.png",
+  "nom_affiche_fr": "Martinet",
+  "nom_affiche_en": "Martinet",
+  "description_fr": "Tenir Windows à jour : programmes, pilotes, raccourcis, ménage",
+  "description_en": "Keep Windows up to date: programs, drivers, shortcuts, clean-up",
+  "categories_linux": "System;Utility;",
+  "release_unique": true
+}

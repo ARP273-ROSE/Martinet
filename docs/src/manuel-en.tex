@@ -1,0 +1,247 @@
+\input{preambule}
+\usepackage[english]{babel}
+\usepackage[colorlinks=true,linkcolor=bordeaux,urlcolor=bordeaux]{hyperref}
+\hypersetup{pdftitle={Martinet — user guide},pdfauthor={},pdfcreator={Martinet}}
+\boite{astucebox}{orl}{or!85!black}{\faLightbulb}{Good to know}
+\boite{securitebox}{sapinl}{sapin}{\faShield*}{What Martinet never does}
+\boite{attentionbox}{alertl}{alert}{\faExclamationTriangle}{Caution}
+\newcommand{\astuce}[1]{\par\needspace{5\baselineskip}\begin{astucebox}#1\end{astucebox}}
+\newcommand{\attention}[1]{\par\needspace{5\baselineskip}\begin{attentionbox}#1\end{attentionbox}}
+\fancyhead[L]{\sffamily\small\color{bordeaux}\textbf{MARTINET — USER GUIDE}}
+\fancyhead[R]{\sffamily\small\color{summit}\leftmark}
+\input{version}
+
+\begin{document}
+
+\begin{titlepage}
+\centering
+\vspace*{2.2cm}
+\includegraphics[width=3.6cm]{../../logo_512.png}\par
+\vspace{8mm}
+{\sffamily\Huge\bfseries\color{bordeaux} MARTINET\par}
+\vspace{3mm}
+{\sffamily\LARGE\color{ink} Keep Windows up to date in one go\par}
+\vspace{2mm}
+{\sffamily\large\color{summit} User guide \textbullet{} version \versionmartinet\par}
+\vspace{12mm}
+\begin{tcolorbox}[enhanced,width=0.82\linewidth,colback=skyl,colframe=sky,arc=4pt,boxrule=1.2pt,left=5mm,right=5mm,top=3mm,bottom=3mm]
+\sffamily\centering
+The swift (\textit{martinet} in French) spends its life on the wing and hardly ever lands:\\
+Martinet does its rounds on its own.\\[2mm]
+\raggedright
+\textbf{Check everything} \quad → \quad \textbf{Update everything} \quad → \quad \textbf{Schedule}
+\end{tcolorbox}
+\vfill
+{\footnotesize\color{summit}\sffamily Windows 10 and 11\par}
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+\section{What Martinet is for}
+
+On Linux, one command (\texttt{apt}, \texttt{yay}…) updates everything. On Windows, each program has
+its own updater, drivers have another one, Windows yet another. Martinet brings all of it into one
+window:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}X >{\sffamily\bfseries\color{bordeaux}}l c}
+\toprule
+\textbf{I want to…} & \textbf{\color{ink}Page} & \textbf{Section} \\
+\midrule
+see at a glance what is out of date & Dashboard & \ref{sec:accueil} \\
+update my programs without opening them one by one & Programs (winget) & \ref{sec:programmes} \\
+also track programs winget does not know & Outside winget & \ref{sec:hors} \\
+install Windows Update, drivers, the graphics driver & Windows and drivers & \ref{sec:windows} \\
+find shortcuts that lead nowhere & Dead shortcuts & \ref{sec:raccourcis} \\
+free disk space & Clean-up & \ref{sec:menage} \\
+have all of this done without me & Schedule & \ref{sec:planif} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{securitebox}
+\begin{itemize}
+\item It does not “clean” the registry: no measurable gain, a real risk of breaking a program.
+\item It deletes no shortcut: they are \textbf{set aside} and restored in one click.
+\item It touches no personal file and no browser cache.
+\item It only downloads an installer from the vendor's \textbf{official} address, over HTTPS.
+\item It never queries a network drive: a sleeping NAS stays asleep.
+\end{itemize}
+\end{securitebox}
+
+\section{Installing and starting}
+
+Download \fichier{Martinet-Setup.exe} from the project's \textbf{Releases} page and run it. It
+installs into your account, without administrator rights. Martinet then updates itself: it offers to
+at start-up when a new version is published.
+
+At start-up, Windows asks \textbf{once} for administrator permission: Windows Update, part of the
+clean-up and scheduling need it. If you decline, Martinet still works; a yellow banner reminds you
+what is missing and offers to restart with the rights.
+
+On the very first start, Martinet offers to turn on the \textbf{scheduled run} every Sunday at noon
+(section~\ref{sec:planif}).
+
+\section{The dashboard}\label{sec:accueil}
+
+\capture{../capture_accueil-en.png}
+
+\begin{enumerate}
+\item \menu{Check everything} queries winget, vendors, Windows Update and NVIDIA, looks for dead
+shortcuts and measures the clean-up. \textbf{Nothing is changed} while checking, which takes one to
+three minutes (Windows Update is the slowest).
+\item Each card sums up a page; click it to open the page.
+\item \menu{Update everything} applies, after confirmation, everything that can be done without you:
+winget programs, Windows updates (optional ones included if you chose so), the NVIDIA driver and dead
+shortcuts according to the Schedule page, the default clean-up.
+\end{enumerate}
+
+\astuce{\menu{Show details}, bottom right, unfolds the live log: every line written by winget,
+Windows Update or DISM. \menu{Cancel} stops the current operation and the waiting ones.}
+
+\section{Programs (winget)}\label{sec:programmes}
+
+\textbf{winget} is the package manager built into Windows 10 and 11: the equivalent of \texttt{yay}.
+It knows thousands of programs and the Microsoft Store apps, and updates them silently.
+
+\capture{../capture_programmes-en.png}
+
+\begin{itemize}
+\item Checked rows go with \menu{Update selected}, one by one: one failure does not stop the others,
+and the summary says which ones failed.
+\item \menu{Ignore / stop ignoring} removes a program from updates, manual and scheduled alike (a
+program you deliberately keep at an older version, for instance).
+\item \menu{Show ignored} brings them back, greyed out.
+\end{itemize}
+
+\attention{If winget is missing (older Windows 10), install “App Installer” from the Microsoft Store.}
+
+\section{Outside winget}\label{sec:hors}
+
+Some programs are not tracked by winget: installed by hand from the vendor's site, or unknown to its
+catalogue. Martinet sorts them into two lists.
+
+\capture{../capture_hors-en.png}
+
+\subsection{Programs with a known source}
+
+Martinet reads the latest version where the vendor publishes it:
+\begin{itemize}
+\item the project's \textbf{GitHub releases} (“dev”, “rc”, “beta” pre-releases are skipped);
+\item the vendor's \textbf{download page}, read with a pattern.
+\end{itemize}
+\menu{Download and install} fetches the official installer when its address is known and runs it:
+you follow the installation on screen. Otherwise \menu{Open the page} opens the download page.
+
+The shipped catalogue covers PHD2, ASCOM Platform, N.I.N.A., ASTAP and SharpCap.
+
+\subsection{Programs without a known source}
+
+For each one, three options:
+\begin{enumerate}
+\item \menu{Hand over to winget…} looks for the program in the winget catalogue; if found, winget
+reinstalls it over the existing one (settings are usually kept) and tracks it from then on.
+\item \menu{Add a source…} tells Martinet where to find its latest version:
+\capture[0.62]{../capture_source-en.png}
+For a GitHub project, “owner/repository” is enough (the full address is accepted). For a web page,
+the version pattern is a regular expression whose first group in brackets is the version; the highest
+one found on the page is kept. \menu{Test} shows what Martinet finds before saving.
+\item \menu{Ignore} removes it from the list (drivers, tools without updates…).
+\end{enumerate}
+
+\astuce{\menu{Sources…} lists the catalogue and your sources. Editing a catalogue source creates your
+own version, which replaces it.}
+
+\section{Windows and drivers}\label{sec:windows}
+
+\capture{../capture_windows-en.png}
+
+\subsection{Graphics card}
+
+For an \textbf{NVIDIA} card, Martinet queries NVIDIA's official service (the one the NVIDIA app uses)
+with the card's identifier and compares with the installed driver. \menu{Download and install the
+driver} fetches the official installer and runs it. For an AMD or Intel card, \menu{Open the page}
+leads to the vendor's detection tool.
+
+\subsection{Windows Update}
+
+The list is the one in \textit{Settings > Windows Update}, vendor drivers included (chipset, Wi-Fi,
+audio…). \textbf{Optional} updates (optional drivers, Windows previews) are included as long as
+\menu{Include optional updates} is checked; this choice also applies to “Update everything” and to
+scheduled runs. \menu{Update Defender} refreshes the antivirus signatures.
+
+\attention{After installing, Windows often asks for a restart: Martinet offers it (in one minute, time
+to save your work).}
+
+\section{Dead shortcuts}\label{sec:raccourcis}
+
+\capture{../capture_raccourcis-en.png}
+
+Martinet reads the Desktop, Start menu and taskbar shortcuts and keeps those whose target has
+disappeared. To be safe, it \textbf{does not count}:
+\begin{itemize}
+\item special shortcuts (Control Panel, Store apps, installer shortcuts);
+\item targets on the network or on a missing drive (USB stick, unplugged disk).
+\end{itemize}
+\menu{Set selected aside} moves them into Martinet's data, with their original location. The lower
+list lets you \menu{Restore} them at any time.
+
+\section{Clean-up}\label{sec:menage}
+
+\capture{../capture_menage-en.png}
+
+Only what Windows can recreate: temporary files older than 7 days, error reports, the Windows Update
+download cache, installers already used, superseded Windows components (DISM, several minutes). The
+\textbf{recycle bin} is never checked by default and asks for confirmation. A file in use is left in
+place.
+
+\section{Schedule: the automatic mode}\label{sec:planif}
+
+\capture{../capture_planif-en.png}
+
+Check \menu{Scheduled run}, choose the day and time, then \menu{Save}. Martinet creates a Windows
+scheduled task that:
+\begin{itemize}
+\item runs with your highest rights, only while your session is open;
+\item catches up on a missed run at the next start-up (computer switched off);
+\item does what is checked under “What is done without you”: programs, Windows Update and drivers,
+the NVIDIA driver (installed without a window), dead shortcuts set aside, clean-up;
+\item shows a \textbf{notification} summing up the run at the end; click it to open Martinet.
+\end{itemize}
+
+Programs outside winget are only \textbf{reported}: not all of their installers can run without you.
+\menu{Run it now} does the same work straight away.
+
+\section{History}
+
+\capture{../capture_historique-en.png}
+
+Every run, manual or scheduled, with line-by-line details. \menu{File > Open the data folder} leads to
+the folder where Martinet keeps its settings, sources, history and the shortcuts set aside
+(\fichier{\%LOCALAPPDATA\%\textbackslash Martinet}).
+
+\section{Command line}
+
+\begin{center}
+\begin{tabular}{>{\ttfamily}l l}
+\toprule
+run.py --verifier & lists what needs updating, without changing anything \\
+run.py --auto & full run, like the scheduled task \\
+run.py --lang fr & French interface \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{If something goes wrong}
+
+\begin{itemize}
+\item \menu{Help > Report a problem…} sends your description with the Martinet and system versions,
+nothing else.
+\item A failing step (no network, Windows Update service stopped…) does not stop the others: Martinet
+says which one, and why.
+\item A program that refuses to update through winget is often open: close it and try again.
+\end{itemize}
+
+\end{document}

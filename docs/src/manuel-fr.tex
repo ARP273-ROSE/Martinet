@@ -1,0 +1,253 @@
+\input{preambule}
+\usepackage[french]{babel}
+\usepackage[colorlinks=true,linkcolor=bordeaux,urlcolor=bordeaux]{hyperref}
+\hypersetup{pdftitle={Martinet — manuel d'utilisation},pdfauthor={},pdfcreator={Martinet}}
+\boite{astucebox}{orl}{or!85!black}{\faLightbulb}{Bon à savoir}
+\boite{securitebox}{sapinl}{sapin}{\faShield*}{Ce que Martinet ne fait jamais}
+\boite{attentionbox}{alertl}{alert}{\faExclamationTriangle}{Attention}
+\newcommand{\astuce}[1]{\par\needspace{5\baselineskip}\begin{astucebox}#1\end{astucebox}}
+\newcommand{\attention}[1]{\par\needspace{5\baselineskip}\begin{attentionbox}#1\end{attentionbox}}
+\fancyhead[L]{\sffamily\small\color{bordeaux}\textbf{MARTINET — MANUEL}}
+\fancyhead[R]{\sffamily\small\color{summit}\leftmark}
+\input{version}
+
+\begin{document}
+
+\begin{titlepage}
+\centering
+\vspace*{2.2cm}
+\includegraphics[width=3.6cm]{../../logo_512.png}\par
+\vspace{8mm}
+{\sffamily\Huge\bfseries\color{bordeaux} MARTINET\par}
+\vspace{3mm}
+{\sffamily\LARGE\color{ink} Tenir Windows à jour d'un seul geste\par}
+\vspace{2mm}
+{\sffamily\large\color{summit} Manuel d'utilisation \textbullet{} version \versionmartinet\par}
+\vspace{12mm}
+\begin{tcolorbox}[enhanced,width=0.82\linewidth,colback=skyl,colframe=sky,arc=4pt,boxrule=1.2pt,left=5mm,right=5mm,top=3mm,bottom=3mm]
+\sffamily\centering
+Le martinet passe sa vie en vol et ne se pose presque jamais :\\
+Martinet fait sa tournée tout seul.\\[2mm]
+\raggedright
+\textbf{Tout vérifier} \quad → \quad \textbf{Tout mettre à jour} \quad → \quad \textbf{Planification}
+\end{tcolorbox}
+\vfill
+{\footnotesize\color{summit}\sffamily Windows 10 et 11\par}
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+\section{À quoi sert Martinet}
+
+Sous Linux, une seule commande (\texttt{apt}, \texttt{yay}…) met tout à jour. Sous Windows, chaque
+programme a sa propre mise à jour, les pilotes en ont une autre, Windows encore une autre. Martinet
+réunit tout cela dans une fenêtre :
+
+\begin{center}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}X >{\sffamily\bfseries\color{bordeaux}}l c}
+\toprule
+\textbf{Je veux…} & \textbf{\color{ink}Page} & \textbf{Section} \\
+\midrule
+savoir en un coup d'œil ce qui est en retard & Tableau de bord & \ref{sec:accueil} \\
+mettre à jour mes logiciels sans les ouvrir un par un & Programmes (winget) & \ref{sec:programmes} \\
+suivre aussi les logiciels que winget ne connaît pas & Hors winget & \ref{sec:hors} \\
+installer Windows Update, les pilotes, le pilote de la carte graphique & Windows et pilotes & \ref{sec:windows} \\
+retrouver les raccourcis qui ne mènent plus nulle part & Raccourcis morts & \ref{sec:raccourcis} \\
+récupérer de la place sur le disque & Ménage & \ref{sec:menage} \\
+que tout cela se fasse sans moi & Planification & \ref{sec:planif} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{securitebox}
+\begin{itemize}
+\item Il ne « nettoie » pas le registre : aucun gain mesurable, un vrai risque de casser un logiciel.
+\item Il n'efface aucun raccourci : ils sont \textbf{mis de côté} et se restaurent d'un clic.
+\item Il ne touche à aucun fichier personnel, ni aux caches des navigateurs.
+\item Il ne télécharge un installeur que depuis l'adresse \textbf{officielle} de l'éditeur, en HTTPS.
+\item Il n'interroge jamais un lecteur réseau : un NAS en veille reste en veille.
+\end{itemize}
+\end{securitebox}
+
+\section{Installer et lancer}
+
+Téléchargez \fichier{Martinet-Setup.exe} sur la page \textbf{Releases} du projet et lancez-le.
+L'installation se fait dans votre compte, sans droits administrateur. Martinet se met ensuite
+lui-même à jour : il le propose au démarrage quand une nouvelle version est publiée.
+
+Au lancement, Windows demande \textbf{une seule fois} l'autorisation administrateur : Windows Update,
+une partie du ménage et la planification en ont besoin. Si vous refusez, Martinet fonctionne quand
+même ; un bandeau jaune rappelle ce qui manque et propose de relancer avec les droits.
+
+Au tout premier lancement, Martinet propose d'activer le \textbf{passage automatique} chaque dimanche
+à 12 h (section~\ref{sec:planif}).
+
+\section{Le tableau de bord}\label{sec:accueil}
+
+\capture{../capture_accueil-fr.png}
+
+\begin{enumerate}
+\item \menu{Tout vérifier} interroge winget, les éditeurs, Windows Update et NVIDIA, cherche les
+raccourcis morts et mesure le ménage. \textbf{Rien n'est modifié} pendant la vérification, qui prend
+une à trois minutes (Windows Update est le plus lent).
+\item Chaque carte résume une page ; un clic sur la carte l'ouvre.
+\item \menu{Tout mettre à jour} applique, après confirmation, tout ce qui peut se faire sans vous :
+programmes winget, mises à jour Windows (facultatives comprises si vous l'avez choisi), pilote NVIDIA et raccourcis morts selon les
+choix de la page Planification, ménage coché d'office.
+\end{enumerate}
+
+\astuce{Le bouton \menu{Afficher le détail}, en bas à droite, déroule le journal en direct :
+chaque ligne écrite par winget, Windows Update ou DISM. Le bouton \menu{Annuler} arrête l'opération
+en cours et celles qui attendaient.}
+
+\section{Programmes (winget)}\label{sec:programmes}
+
+\textbf{winget} est le gestionnaire de paquets intégré à Windows 10 et 11 : c'est l'équivalent de
+\texttt{yay}. Il connaît plusieurs milliers de logiciels et les applis du Microsoft Store, et sait les
+mettre à jour sans fenêtre.
+
+\capture{../capture_programmes-fr.png}
+
+\begin{itemize}
+\item Les lignes cochées partent avec \menu{Mettre à jour la sélection}, une par une : l'échec de
+l'une n'empêche pas les autres, et le résumé dit lesquelles ont échoué.
+\item \menu{Ignorer / ne plus ignorer} retire un logiciel des mises à jour, à la main comme en
+automatique (un logiciel dont vous gardez volontairement une ancienne version, par exemple).
+\item \menu{Afficher les ignorés} les fait réapparaître, grisés.
+\end{itemize}
+
+\attention{Si winget est absent (Windows 10 ancien), installez « Programme d'installation
+d'application » depuis le Microsoft Store.}
+
+\section{Hors winget}\label{sec:hors}
+
+Certains logiciels ne sont pas suivis par winget : installés à la main depuis le site de l'éditeur,
+ou inconnus de son catalogue. Martinet les répartit en deux listes.
+
+\capture{../capture_hors-fr.png}
+
+\subsection{Logiciels avec une source connue}
+
+Martinet lit la dernière version publiée là où l'éditeur la publie :
+\begin{itemize}
+\item les \textbf{Releases GitHub} du projet (les préversions « dev », « rc », « beta » sont écartées) ;
+\item la \textbf{page de téléchargement} de l'éditeur, lue avec un motif.
+\end{itemize}
+\menu{Télécharger et installer} récupère l'installeur officiel quand son adresse est connue, puis le
+lance : vous suivez l'installation à l'écran. Sinon, \menu{Ouvrir la page} ouvre la page de
+téléchargement.
+
+Le catalogue fourni couvre PHD2, ASCOM Platform, N.I.N.A., ASTAP et SharpCap.
+
+\subsection{Logiciels sans source connue}
+
+Pour chacun, trois possibilités :
+\begin{enumerate}
+\item \menu{Confier à winget…} cherche le logiciel dans le catalogue winget ; s'il y est, winget le
+réinstalle par-dessus (les réglages sont en général conservés) et le suit désormais.
+\item \menu{Ajouter une source…} indique à Martinet où trouver sa dernière version :
+\capture[0.62]{../capture_source-fr.png}
+Pour un projet GitHub, il suffit de « propriétaire/dépôt » (l'adresse complète est acceptée). Pour une
+page web, le motif de version est une expression régulière dont le premier groupe entre parenthèses
+est la version ; la plus haute trouvée sur la page est retenue. \menu{Tester} affiche ce que Martinet
+trouve, avant d'enregistrer.
+\item \menu{Ignorer} le retire de la liste (pilotes, outils sans mises à jour…).
+\end{enumerate}
+
+\astuce{\menu{Sources…} liste le catalogue et vos sources. Modifier une source du catalogue crée
+votre propre version, qui la remplace.}
+
+\section{Windows et pilotes}\label{sec:windows}
+
+\capture{../capture_windows-fr.png}
+
+\subsection{Carte graphique}
+
+Pour une carte \textbf{NVIDIA}, Martinet interroge le service officiel de NVIDIA (celui de
+l'application NVIDIA) avec l'identifiant de la carte, et compare au pilote installé.
+\menu{Télécharger et installer le pilote} récupère l'installeur officiel et le lance. Pour une carte
+AMD ou Intel, \menu{Ouvrir la page} mène à l'outil de détection du fabricant.
+
+\subsection{Windows Update}
+
+La liste est celle de \textit{Paramètres > Windows Update}, pilotes des fabricants compris (chipset,
+Wi-Fi, audio…). Les mises à jour \textbf{facultatives} (pilotes facultatifs, avant-premières de
+Windows) sont incluses tant que la case \menu{Inclure les mises à jour facultatives} est cochée ; ce
+choix vaut aussi pour « Tout mettre à jour » et pour le passage automatique.
+\menu{Mettre à jour Defender} rafraîchit les signatures de l'antivirus.
+
+\attention{Après l'installation, Windows demande souvent un redémarrage : Martinet le propose (dans une
+minute, le temps d'enregistrer votre travail).}
+
+\section{Raccourcis morts}\label{sec:raccourcis}
+
+\capture{../capture_raccourcis-fr.png}
+
+Martinet lit les raccourcis du Bureau, du menu Démarrer et de la barre des tâches et garde ceux dont la
+cible a disparu. Par prudence, il \textbf{ne compte pas} :
+\begin{itemize}
+\item les raccourcis spéciaux (Panneau de configuration, applis du Store, raccourcis d'installation) ;
+\item les cibles sur le réseau ou sur un lecteur absent (clé USB, disque débranché).
+\end{itemize}
+\menu{Mettre de côté la sélection} les déplace dans les données de Martinet, avec leur emplacement
+d'origine. La liste du bas permet de les \menu{Restaurer} à tout moment.
+
+\section{Ménage}\label{sec:menage}
+
+\capture{../capture_menage-fr.png}
+
+Seulement ce que Windows sait recréer : fichiers temporaires de plus de 7 jours, rapports d'erreurs,
+cache de téléchargement de Windows Update, installeurs déjà utilisés, anciennes versions des
+composants Windows (DISM, plusieurs minutes). La \textbf{corbeille} n'est jamais cochée d'office et
+demande confirmation. Un fichier en cours d'utilisation est laissé en place.
+
+\section{Planification : le mode automatique}\label{sec:planif}
+
+\capture{../capture_planif-fr.png}
+
+Cochez \menu{Passage automatique}, choisissez le jour et l'heure, puis \menu{Enregistrer}. Martinet
+crée une tâche planifiée Windows qui :
+\begin{itemize}
+\item tourne avec vos droits les plus élevés, seulement quand votre session est ouverte ;
+\item rattrape au démarrage suivant un passage manqué (ordinateur éteint) ;
+\item fait ce qui est coché dans « Ce qui est fait sans vous » : programmes, Windows Update et pilotes,
+pilote NVIDIA (installé sans fenêtre), raccourcis morts mis de côté, ménage ;
+\item affiche à la fin une \textbf{notification} qui résume le passage ; un clic l'ouvre dans Martinet.
+\end{itemize}
+
+Les logiciels hors winget sont seulement \textbf{signalés} : leurs installeurs ne savent pas tous
+s'installer sans vous. \menu{Lancer ce passage maintenant} fait le même travail tout de suite.
+
+\section{Historique}
+
+\capture{../capture_historique-fr.png}
+
+Chaque passage, à la main ou automatique, avec le détail ligne par ligne. Le menu
+\menu{Fichier > Ouvrir le dossier des données} mène au dossier où Martinet range ses réglages, ses
+sources, l'historique et les raccourcis mis de côté (\fichier{\%LOCALAPPDATA\%\textbackslash Martinet}).
+
+\section{Ligne de commande}
+
+\begin{center}
+\begin{tabular}{>{\ttfamily}l l}
+\toprule
+run.py --verifier & liste ce qui est à mettre à jour, sans rien changer \\
+run.py --auto & passage complet, comme la tâche planifiée \\
+run.py --lang en & interface en anglais \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{En cas de problème}
+
+\begin{itemize}
+\item \menu{Aide > Signaler un problème…} envoie votre description avec la version de Martinet et du
+système, rien d'autre.
+\item Une étape qui échoue (pas de réseau, service Windows Update arrêté…) n'empêche pas les autres :
+Martinet dit laquelle, et pourquoi.
+\item Un logiciel qui refuse de se mettre à jour par winget est souvent ouvert : fermez-le et relancez.
+\end{itemize}
+
+\end{document}

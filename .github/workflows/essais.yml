@@ -1,0 +1,40 @@
+name: essais
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: sudo apt-get update && sudo apt-get install -y libegl1 libxkbcommon0 poppler-utils
+      - run: pip install -r requirements.txt pytest
+      - run: python -m pytest -q tests
+        env:
+          QT_QPA_PLATFORM: offscreen
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements.txt pytest
+      - name: Essais sur le vrai système
+        run: python -m pytest -q -rs tests/test_windows.py tests/test_moteur.py tests/test_fenetre.py
+        env:
+          QT_QPA_PLATFORM: offscreen
+      - name: Bilan en ligne de commande
+        run: python run.py --verifier --lang fr
+        env:
+          MARTINET_DEMO: '0'

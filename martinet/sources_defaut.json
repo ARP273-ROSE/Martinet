@@ -1,0 +1,18 @@
+[
+  {"id": "phd2", "nom": "PHD2", "motif": "^PHD2\\b", "type": "github",
+   "depot": "OpenPHDGuiding/phd2", "exclure_tag": "dev|rc|beta",
+   "page": "https://openphdguiding.org/downloads/"},
+  {"id": "ascom", "nom": "ASCOM Platform", "motif": "^ASCOM Platform", "type": "github",
+   "depot": "ASCOMInitiative/ASCOMPlatform", "exclure_tag": "rc|beta|preview",
+   "fichier": "^ASCOMPlatform.*\\.exe$", "page": "https://ascom-standards.org/Downloads/Index.htm"},
+  {"id": "nina", "nom": "N.I.N.A.", "motif": "N\\.I\\.N\\.A|Nighttime Imaging", "type": "page",
+   "url": "https://nighttime-imaging.eu/download/", "regex": "Version (\\d+(?:\\.\\d+)+)",
+   "exclure_apres": "^\\s*(HF\\d+\\s*)?(RC|NIGHTLY|BETA)", "page": "https://nighttime-imaging.eu/download/"},
+  {"id": "astap", "nom": "ASTAP", "motif": "^ASTAP", "type": "page",
+   "url": "https://www.hnsky.org/astap.htm", "regex": "[Vv]ersion (\\d{4}\\.\\d{2}\\.\\d{2})",
+   "page": "https://www.hnsky.org/astap.htm"},
+  {"id": "sharpcap", "nom": "SharpCap", "motif": "^SharpCap", "type": "page",
+   "url": "https://www.sharpcap.co.uk/sharpcap/downloads",
+   "regex": "Version (\\d+\\.\\d+\\.\\d+\\.\\d+) \\(64-bit\\)",
+   "page": "https://www.sharpcap.co.uk/sharpcap/downloads"}
+]

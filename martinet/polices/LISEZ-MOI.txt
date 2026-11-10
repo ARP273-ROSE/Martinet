@@ -1,0 +1,12 @@
+Polices embarquées dans Martinet
+================================
+
+Elles sont fournies avec le programme pour que l'interface garde le même
+aspect sur tous les ordinateurs, quels que soient le thème ou la police
+choisis dans Windows.
+
+Source Sans 3 (Regular, Semibold, Bold)
+  © 2023 Adobe (http://www.adobe.com/), with Reserved Font Name 'Source'.
+
+Distribuée sous la SIL Open Font License, version 1.1 :
+https://openfontlicense.org

@@ -186,6 +186,9 @@ def test_reponse_nvidia():
     assert infos["fichier"].startswith("https://us.download.nvidia.com/")
     with pytest.raises(LookupError):
         sources.lire_reponse_nvidia({"DriverAttributes": {}})
+    studio = {"DriverAttributes": dict(rep["DriverAttributes"], Name="NVIDIA Studio Driver", IsCRD=1)}
+    with pytest.raises(LookupError):                     # mode jeu seulement
+        sources.lire_reponse_nvidia(studio)
     assert "2786_10DE" in sources.url_nvidia("2786")
 
 

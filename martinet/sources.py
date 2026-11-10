@@ -213,6 +213,9 @@ def lire_reponse_nvidia(donnees: dict) -> dict:
     attr = donnees.get("DriverAttributes") or {}
     if not attr.get("Version"):
         raise LookupError("carte inconnue du service NVIDIA")
+    if str(attr.get("IsCRD", 0)) == "1" or str(attr.get("IsBeta", 0)) == "1":
+        # on veut le pilote « Game Ready » (mode jeu), jamais Studio ni bêta
+        raise LookupError("le service NVIDIA n'a pas renvoyé de pilote Game Ready")
     return {"version": attr["Version"], "date": (attr.get("ReleaseDateTime") or "")[:10],
             "nom": attr.get("Name") or "", "fichier": attr.get("DownloadURLAdmin") or attr.get("DownloadURL") or "",
             "page": attr.get("DetailsURL") or "https://www.nvidia.com/drivers/"}

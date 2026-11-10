@@ -313,7 +313,7 @@ TEXTES: dict[str, dict[str, str]] = {
     "win.carte": {"fr": "Carte graphique", "en": "Graphics card"},
     "win.pilote_installer": {"fr": "Télécharger et installer le pilote", "en": "Download and install the driver"},
     "win.pilote_installe": {"fr": "pilote installé : {version}", "en": "installed driver: {version}"},
-    "win.pilote_maj": {"fr": "Nouveau pilote : {version} du {date}", "en": "New driver: {version} from {date}"},
+    "win.pilote_maj": {"fr": "Nouveau pilote : {nom} {version} du {date}", "en": "New driver: {nom} {version} from {date}"},
     "win.pilote_a_jour": {"fr": "Pilote à jour", "en": "Driver up to date"},
     "win.pilote_inconnu": {"fr": "Vérification automatique impossible pour ce fabricant : voir sa page.",
                            "en": "Automatic check not possible for this vendor: see its page."},

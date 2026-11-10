@@ -181,7 +181,9 @@ def tout_mettre_a_jour(reglages: Reglages, journal=None, annulation=None,
     return resume
 
 
-#: options de l'installeur NVIDIA : silencieux, sans redémarrage forcé
+#: options de l'installeur NVIDIA : installation EXPRESS (réglages par défaut,
+#: composants par défaut, réglages existants conservés — pas de « -clean »),
+#: sans fenêtre et sans redémarrage forcé
 NVIDIA_SILENCIEUX = ["-s", "-noreboot"]
 
 

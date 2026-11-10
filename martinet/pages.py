@@ -362,7 +362,8 @@ class PageWindows(Page):
             textes = []
             for r in cartes:
                 if r.etat == "maj":
-                    etat = tr("win.pilote_maj", version=r.derniere, date=_jour(r.details.get("date")))
+                    etat = tr("win.pilote_maj", version=r.derniere, date=_jour(r.details.get("date")),
+                              nom=r.details.get("nom") or "")
                 elif r.etat == "a_jour":
                     etat = tr("win.pilote_a_jour")
                 elif r.etat == "erreur":

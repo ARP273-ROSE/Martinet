@@ -1,5 +1,12 @@
 # Journal des versions / Changelog
 
+### 0.2.1
+
+- Pilote NVIDIA : seulement le pilote Game Ready (jamais Studio ni bêta), nom du pilote affiché ;
+  installation express avec les réglages par défaut.
+- NVIDIA driver: Game Ready only (never Studio or beta), driver name shown; express install with default
+  settings.
+
 ### 0.2.0
 
 - Lecture du tableau winget corrigée : un identifiant peut contenir des espaces (jeux Steam), un fichier

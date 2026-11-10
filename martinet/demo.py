@@ -63,6 +63,12 @@ MENAGE = {
     "rapports_erreurs": (95_000_000, 37),
     "optimisation_distribution": (2_300_000_000, 88),
     "telechargements_martinet": (0, 0),
+    "vidages_memoire": (1_200_000_000, 3),
+    "journaux_windows": (310_000_000, 46),
+    "restes_nvidia": (850_000_000, 412),
+    "miniatures": (240_000_000, 9),
+    "caches_navigateurs": (1_600_000_000, 9800),
+    "caches_shaders": (720_000_000, 1300),
     "composants": (None, None),
     "corbeille": (3_100_000_000, 152),
 }

@@ -40,6 +40,9 @@ QGroupBox {{ font-weight: 600; border: 1px solid #D5DDE6; border-radius: 8px; ma
 QGroupBox::title {{ subcontrol-origin: margin; left: 10px; padding: 0 4px; color: {CIEL_FONCE}; }}
 QTableWidget {{ gridline-color: #E3E8EE; border: 1px solid #D5DDE6; }}
 QHeaderView::section {{ background: #EEF2F7; padding: 5px; border: none; border-bottom: 1px solid #D5DDE6; font-weight: 600; }}
+QProgressBar#progres {{ min-height: 20px; max-height: 20px; border-radius: 6px; text-align: center; font-weight: 600; }}
+QLabel#etat {{ font-weight: 600; }}
+QLabel#etape {{ color: #4A5D72; }}
 QPlainTextEdit#console {{ background: #10263D; color: #DDE7F2; font-family: Consolas, "DejaVu Sans Mono", monospace; font-size: 9pt; border-radius: 6px; }}
 QProgressBar {{ border: 1px solid #C2CCD7; border-radius: 4px; text-align: center; height: 14px; background: white; }}
 QProgressBar::chunk {{ background: {CIEL}; }}

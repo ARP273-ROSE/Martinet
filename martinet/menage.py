@@ -1,13 +1,16 @@
 """Ménage sûr : ce que Windows sait recréer, rien d'autre.
 
-Pas de « nettoyage du registre » (aucun gain mesurable, risque réel), pas
-de cache de navigateur (il se reremplit aussitôt, et l'on perd du temps de
-chargement). Chaque élément se mesure avant d'être nettoyé ; un fichier en
+Pas de « nettoyage du registre » (aucun gain mesurable, risque réel). Les
+caches de navigateur et de shaders sont proposés mais jamais cochés d'office :
+ils se reremplissent aussitôt (pages plus lentes, saccades en jeu le temps de
+recompiler). Chaque élément se mesure avant d'être nettoyé ; un fichier en
 cours d'utilisation est simplement laissé en place.
 """
 from __future__ import annotations
 
 import ctypes
+import fnmatch
+import glob
 import os
 
 import time
@@ -34,13 +37,31 @@ ELEMENTS = [
     Element("rapports_erreurs", True, False),
     Element("optimisation_distribution", True, True),
     Element("telechargements_martinet", True, False),
+    Element("vidages_memoire", True, True),
+    Element("journaux_windows", True, True),
+    Element("restes_nvidia", True, True),
+    Element("miniatures", False, False),
+    Element("caches_navigateurs", False, False),
+    Element("caches_shaders", False, False),
     Element("composants", False, True),
     Element("corbeille", False, False),
 ]
 
 
+#: éléments où seuls les fichiers de plus de AGE_MINI_JOURS sont pris
+AVEC_AGE = {"temp_utilisateur", "temp_windows", "journaux_windows"}
+#: éléments limités à certains noms de fichiers (le dossier contient autre chose)
+FILTRES = {"miniatures": ("thumbcache_*.db",)}
+#: navigateurs dont on ne touche pas le cache tant qu'ils sont ouverts
+PROCESSUS_NAVIGATEURS = ("chrome.exe", "msedge.exe", "firefox.exe", "brave.exe", "opera.exe", "vivaldi.exe")
+
+
 def _env(nom: str, defaut: str) -> Path:
     return Path(os.environ.get(nom, defaut))
+
+
+def _globs(*motifs: Path) -> list[Path]:
+    return [Path(p) for m in motifs for p in sorted(glob.glob(str(m)))]
 
 
 def dossiers(cle: str) -> list[Path]:
@@ -58,19 +79,52 @@ def dossiers(cle: str) -> list[Path]:
                 / "Windows" / "DeliveryOptimization" / "Cache"]
     if cle == "telechargements_martinet":
         return [systeme.dossier_donnees() / "telechargements"]
+    local = _env("LOCALAPPDATA", str(Path.home() / "AppData" / "Local"))
+    if cle == "vidages_memoire":
+        return [racine / "MEMORY.DMP", racine / "Minidump", racine / "LiveKernelReports", local / "CrashDumps"]
+    if cle == "journaux_windows":
+        return [racine / "Logs" / "CBS", racine / "Logs" / "DISM", racine / "Logs" / "WindowsUpdate",
+                racine / "Panther"]
+    if cle == "restes_nvidia":
+        pd = _env("ProgramData", r"C:\ProgramData")
+        lecteur = Path(os.environ.get("SystemDrive", "C:") + "\\")
+        return [lecteur / "NVIDIA", lecteur / "AMD", pd / "NVIDIA Corporation" / "Downloader"]
+    if cle == "miniatures":
+        return [local / "Microsoft" / "Windows" / "Explorer"]
+    if cle == "caches_navigateurs":
+        chromium = [local / "Google" / "Chrome" / "User Data", local / "Microsoft" / "Edge" / "User Data",
+                    local / "BraveSoftware" / "Brave-Browser" / "User Data"]
+        caches = []
+        for ud in chromium:
+            for sous in ("Cache", "Code Cache", "GPUCache"):
+                caches += _globs(ud / "*" / sous)
+        return caches + _globs(local / "Mozilla" / "Firefox" / "Profiles" / "*" / "cache2")
+    if cle == "caches_shaders":
+        return [local / "D3DSCache", local / "NVIDIA" / "DXCache", local / "NVIDIA" / "GLCache",
+                local / "AMD" / "DxCache", local / "AMD" / "DxcCache"]
     return []
 
 
 def _fichiers(cle: str):
-    limite = time.time() - AGE_MINI_JOURS * 86400 if cle.startswith("temp_") else None
+    limite = time.time() - AGE_MINI_JOURS * 86400 if cle in AVEC_AGE else None
+    filtres = FILTRES.get(cle)
     for d in dossiers(cle):
         try:
+            if d.is_file():                  # fichier isolé (MEMORY.DMP)
+                st = d.stat()
+                if limite is None or st.st_mtime <= limite:
+                    yield d, st.st_size
+                continue
             if not d.is_dir():
                 continue
         except OSError:                      # dossier d'un compte système, sans droit de lecture
             continue
-        for racine, _sous, noms in os.walk(d, onerror=lambda e: None):
+        for racine, sous, noms in os.walk(d, onerror=lambda e: None):
+            if filtres:
+                sous[:] = []                 # pas de descente : seuls les fichiers visés
             for n in noms:
+                if filtres and not any(fnmatch.fnmatch(n.lower(), m) for m in filtres):
+                    continue
                 f = Path(racine) / n
                 try:
                     st = f.stat()
@@ -131,6 +185,10 @@ def nettoyer(cle: str, journal=None) -> int:
         avant = mesurer(cle)[0] or 0
         systeme.powershell("Delete-DeliveryOptimizationCache -Force", timeout=600)
         return max(0, avant - (mesurer(cle)[0] or 0))
+    if cle == "caches_navigateurs" and (ouverts := navigateurs_ouverts()):
+        if journal:
+            journal(f"{', '.join(ouverts)} : ouvert(s), cache laissé en place")
+        return 0
     libere = 0
     for f, t in list(_fichiers(cle)):
         try:
@@ -139,6 +197,8 @@ def nettoyer(cle: str, journal=None) -> int:
         except OSError:
             continue                          # en cours d'utilisation
     # dossiers vidés (jamais la racine)
+    if cle in FILTRES:
+        return libere
     for d in dossiers(cle):
         if d.is_dir():
             for racine, sous, _ in os.walk(d, topdown=False):
@@ -148,6 +208,14 @@ def nettoyer(cle: str, journal=None) -> int:
                     except OSError:
                         pass
     return libere
+
+
+def navigateurs_ouverts() -> list[str]:
+    code, sortie = systeme.executer(["tasklist", "/fo", "csv", "/nh"], timeout=30)
+    if code != 0:
+        return list(PROCESSUS_NAVIGATEURS)          # dans le doute, on ne touche à rien
+    vus = {l.split(",")[0].strip('"').lower() for l in sortie.splitlines() if l.strip()}
+    return [p for p in PROCESSUS_NAVIGATEURS if p in vus]
 
 
 def taille_lisible(octets: int | None, unites=("o", "Ko", "Mo", "Go", "To")) -> str:

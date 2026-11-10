@@ -14,7 +14,7 @@
 | Hors winget | logiciels que winget ne suit pas : dernière version lue chez l'éditeur (Releases GitHub ou page de téléchargement), installeur officiel en un clic ; « confier à winget » quand il connaît le logiciel ; vos propres sources |
 | Windows et pilotes | Windows Update (système, pilotes des fabricants et mises à jour facultatives au choix), Defender, pilote NVIDIA comparé au service officiel de NVIDIA |
 | Raccourcis morts | Bureau, menu Démarrer, barre des tâches ; mis de côté et restaurables, jamais effacés ; cibles réseau ou sur lecteur absent jamais comptées |
-| Ménage | temporaires de plus de 7 jours, rapports d'erreurs, cache de Windows Update, anciens composants (DISM), corbeille sur demande. Pas de « nettoyage du registre » |
+| Ménage | temporaires de plus de 7 jours, rapports d'erreurs, cache de Windows Update, vidages mémoire, journaux, restes d'installation des pilotes ; sur demande : miniatures, caches des navigateurs et des shaders, anciens composants (DISM), corbeille. Pas de « nettoyage du registre » |
 | Planification | passage automatique quotidien ou hebdomadaire, notification à la fin |
 | Historique | chaque passage et son détail |
 
@@ -32,7 +32,7 @@ Installation : télécharger `Martinet-Setup.exe` depuis les [Releases](https://
 - **Outside winget**: programs winget does not track, checked against the vendor (GitHub releases or download page); official installer in one click; hand a program over to winget when it knows it; add your own sources.
 - **Windows and drivers**: Windows Update (system, vendor drivers and optional updates if you wish), Defender, NVIDIA driver checked against NVIDIA's own service.
 - **Dead shortcuts**: set aside and restorable, never deleted; network targets and missing drives are never counted.
-- **Clean-up**: temporary files older than 7 days, error reports, Windows Update cache, superseded components (DISM), recycle bin on request. No “registry cleaning”.
+- **Clean-up**: temporary files older than 7 days, error reports, Windows Update cache, crash dumps, logs, driver setup leftovers; on request: thumbnails, browser and shader caches, superseded components (DISM), recycle bin. No “registry cleaning”.
 - **Schedule**: daily or weekly unattended run with a notification; **History** of every run.
 
 Command line: `run.py --verifier` (list only), `run.py --auto` (full run).

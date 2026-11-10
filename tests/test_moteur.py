@@ -327,3 +327,50 @@ def test_echec_windows_update_n_arrete_pas_la_suite(monkeypatch):
     texte = "\n".join(resume)
     assert "Windows Update" in texte and "code 0" in texte
     assert any("Ménage" in l or "Clean" in l or "libéré" in l for l in resume), resume
+
+
+class _JournalEssai(list):
+    def __init__(self):
+        super().__init__()
+        self.avances = []
+
+    def __call__(self, t):
+        self.append(t)
+
+    def progres(self, f, libelle=""):
+        self.avances.append((f, libelle))
+
+
+def test_progression_monte_jusqu_au_bout():
+    from martinet import orchestre
+    from martinet.reglages import Reglages
+    j = _JournalEssai()
+    b = orchestre.verifier_tout(Reglages(), j)
+    fr = [f for f, _ in j.avances]
+    assert fr == sorted(fr) and fr[-1] == 1.0 and len(fr) > 5
+    assert any(l for _, l in j.avances)
+    j2 = _JournalEssai()
+    orchestre.tout_mettre_a_jour(Reglages(), j2, bilan=b, admin=True)
+    fr = [f for f, _ in j2.avances]
+    assert fr == sorted(fr) and fr[-1] == 1.0
+
+
+def test_menage_nouveaux_elements_demo():
+    from martinet import menage
+    for e in menage.ELEMENTS:
+        t, _n = menage.mesurer(e.cle)
+        assert t is None or t >= 0
+
+
+def test_menage_miniatures_filtre(tmp_path, monkeypatch):
+    from martinet import menage
+    monkeypatch.delenv("MARTINET_DEMO", raising=False)
+    monkeypatch.setattr(menage.demo, "actif", lambda: False)
+    ex = tmp_path / "Microsoft" / "Windows" / "Explorer"
+    ex.mkdir(parents=True)
+    (ex / "thumbcache_256.db").write_bytes(b"x" * 10)
+    (ex / "autre.dat").write_bytes(b"y" * 5)
+    monkeypatch.setenv("LOCALAPPDATA", str(tmp_path))
+    assert menage.mesurer("miniatures") == (10, 1)
+    menage.nettoyer("miniatures")
+    assert not (ex / "thumbcache_256.db").exists() and (ex / "autre.dat").exists()

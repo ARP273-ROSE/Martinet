@@ -14,8 +14,23 @@ from PyQt6 import QtCore
 from . import systeme
 
 
+class Journal:
+    """Le « journal » passé aux travaux : on l'appelle avec une ligne ;
+    journal.progres(fraction, libellé) fait avancer la barre."""
+
+    def __init__(self, ligne, avance):
+        self._ligne, self._avance = ligne, avance
+
+    def __call__(self, texte: str) -> None:
+        self._ligne(texte)
+
+    def progres(self, fraction: float, libelle: str = "") -> None:
+        self._avance(int(fraction * 1000), libelle)
+
+
 class Ouvrier(QtCore.QThread):
     ligne = QtCore.pyqtSignal(str)
+    avance = QtCore.pyqtSignal(int, str)              # millièmes, libellé de l'étape
     termine = QtCore.pyqtSignal(object, object)      # résultat, erreur (str) ou None
 
     def __init__(self, fonction, parent=None):
@@ -25,7 +40,7 @@ class Ouvrier(QtCore.QThread):
 
     def run(self):
         try:
-            resultat = self.fonction(self.ligne.emit, self.annulation)
+            resultat = self.fonction(Journal(self.ligne.emit, self.avance.emit), self.annulation)
             self.termine.emit(resultat, None)
         except systeme.Annule:
             self.termine.emit(None, "annule")
@@ -39,6 +54,7 @@ class FileTaches(QtCore.QObject):
     debut = QtCore.pyqtSignal(str)                    # titre
     fin = QtCore.pyqtSignal()                         # file vide
     ligne = QtCore.pyqtSignal(str)
+    avance = QtCore.pyqtSignal(int, str)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -74,6 +90,7 @@ class FileTaches(QtCore.QObject):
         self.titre_courant = titre
         ouvrier = Ouvrier(fonction, self)
         ouvrier.ligne.connect(self.ligne)
+        ouvrier.avance.connect(self.avance)
         ouvrier.termine.connect(lambda r, e, rp=rappel, o=ouvrier: self._fini(o, rp, r, e))
         self._courant = ouvrier
         self.debut.emit(titre)

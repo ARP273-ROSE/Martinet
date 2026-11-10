@@ -75,21 +75,30 @@ class FenetrePrincipale(QtWidgets.QMainWindow):
         vb.setContentsMargins(12, 4, 12, 8)
         ligne = QtWidgets.QHBoxLayout()
         self.etat = QtWidgets.QLabel(tr("etat.pret"))
-        self.progres = QtWidgets.QProgressBar()
-        self.progres.setRange(0, 0)
-        self.progres.setVisible(False)
-        self.progres.setMaximumWidth(220)
+        self.etat.setObjectName("etat")
+        self.etape = QtWidgets.QLabel("")              # étape et dernière ligne, console cachée ou non
+        self.etape.setObjectName("etape")
+        self.etape.setMinimumWidth(50)
+        self.etape.setSizePolicy(QtWidgets.QSizePolicy.Policy.Ignored, QtWidgets.QSizePolicy.Policy.Preferred)
         self.b_annuler = bouton(tr("action.annuler"), self.file.annuler)
         self.b_annuler.setVisible(False)
         self.b_console = QtWidgets.QToolButton()
         self.b_console.setText(tr("console.afficher"))
         self.b_console.setCheckable(True)
         self.b_console.toggled.connect(self._basculer_console)
-        ligne.addWidget(self.etat, 1)
-        ligne.addWidget(self.progres)
+        ligne.addWidget(self.etat)
+        ligne.addWidget(self.etape, 1)
         ligne.addWidget(self.b_annuler)
         ligne.addWidget(self.b_console)
         vb.addLayout(ligne)
+        self.progres = QtWidgets.QProgressBar()
+        self.progres.setObjectName("progres")
+        self.progres.setRange(0, 0)
+        self.progres.setTextVisible(True)
+        self.progres.setFormat("%p %")
+        self.progres.setVisible(False)
+        vb.addWidget(self.progres)
+        self.file.avance.connect(self._avance)
         self.console = QtWidgets.QPlainTextEdit()
         self.console.setObjectName("console")
         self.console.setReadOnly(True)
@@ -163,17 +172,45 @@ class FenetrePrincipale(QtWidgets.QMainWindow):
     def _debut_tache(self, titre):
         attente = len(self.file) - 1
         self.etat.setText(titre + (f"  (+{attente})" if attente > 0 else ""))
+        self._libelle_etape = ""
+        self._afficher_etape("")
+        self.progres.setRange(0, 0)               # « occupé » tant que le travail n'a rien dit
         self.progres.setVisible(True)
         self.b_annuler.setVisible(True)
 
     def _fin_file(self):
         self.etat.setText(tr("etat.pret"))
+        self.etape.setText("")
         self.progres.setVisible(False)
         self.b_annuler.setVisible(False)
 
+    def _avance(self, milliemes: int, libelle: str):
+        if self.progres.maximum() != 1000:
+            self.progres.setRange(0, 1000)
+        self.progres.setValue(milliemes)
+        if libelle:
+            self._libelle_etape = libelle
+            self._afficher_etape("")
+
+    def _afficher_etape(self, derniere: str):
+        """« Étape — dernière ligne du journal », coupée à la largeur disponible."""
+        morceaux = [m for m in (getattr(self, "_libelle_etape", ""), derniere.strip()) if m]
+        texte = "  ·  ".join(dict.fromkeys(morceaux))
+        if texte:
+            texte = "— " + texte
+        largeur = max(50, self.etape.width())
+        self.etape.setText(self.etape.fontMetrics().elidedText(texte, QtCore.Qt.TextElideMode.ElideRight, largeur))
+        self.etape.setToolTip(texte)
+
     def _ligne(self, texte: str):
+        barre = self.console.verticalScrollBar()
         self.console.appendPlainText(texte)
         self._journal_courant.append(texte)
+        # la console suit toujours la dernière ligne (même après une sélection)
+        self.console.moveCursor(QtGui.QTextCursor.MoveOperation.End)
+        barre.setValue(barre.maximum())
+        if self.file.occupee and not texte.startswith("— "):
+            self._afficher_etape(texte.splitlines()[-1] if texte.strip() else "")
 
     def _basculer_console(self, oui: bool):
         self.console.setVisible(oui)
@@ -268,6 +305,8 @@ class FenetrePrincipale(QtWidgets.QMainWindow):
             dernier = [0]
 
             def prog(lu, total):
+                if total:
+                    orchestre.avancer(journal, lu / total, nom_fichier)
                 if total and lu * 10 // total != dernier[0]:
                     dernier[0] = lu * 10 // total
                     journal(f"{nom_fichier} : {lu * 100 // total} %")

@@ -43,7 +43,14 @@ BRUIT = ("security update", "update for", "mise à jour", "package de pilotes wi
          "microsoft windows application compatibility", "windows sdk", "vs_", "microsoft visual studio installer")
 
 
-def hors_winget(inv: winget.Inventaire, reglages: Reglages, journal=None):
+def avancer(journal, fraction: float, libelle: str = "") -> None:
+    """Fait avancer la barre de la fenêtre (sans effet en ligne de commande)."""
+    f = getattr(journal, "progres", None)
+    if f is not None:
+        f(max(0.0, min(1.0, fraction)), libelle)
+
+
+def hors_winget(inv: winget.Inventaire, reglages: Reglages, journal=None, sur_avance=None):
     """(résultats des logiciels qui ont une source, logiciels sans source)."""
     catalogue = sources.charger()
     candidats = [p for p in inv.non_suivis if not _est_bruit(p)]
@@ -52,7 +59,10 @@ def hors_winget(inv: winget.Inventaire, reglages: Reglages, journal=None):
     suivis = [p.nom for p in inv.paquets if p.suivi]
     ignores = {n.lower() for n in reglages.ignores_hors_winget}
     resultats, sans_source = [], []
-    for p in sorted(candidats, key=lambda x: x.nom.lower()):
+    tries = sorted(candidats, key=lambda x: x.nom.lower())
+    for i, p in enumerate(tries):
+        if sur_avance is not None:
+            sur_avance(i / max(1, len(tries)), p.nom)
         if p.nom.lower() in ignores:
             continue
         source = next((s for s in catalogue if s.correspond(p.nom)), None)
@@ -70,10 +80,27 @@ def hors_winget(inv: winget.Inventaire, reglages: Reglages, journal=None):
 def verifier_tout(reglages: Reglages, journal=None, annulation=None, etapes=None) -> Bilan:
     etapes = etapes or {"programmes", "windows", "raccourcis", "menage"}
     b = Bilan()
+    # parts de la barre : (étape, poids) dans l'ordre où elles s'enchaînent
+    parts = [(n, w) for n, w in (("programmes", 1), ("hors", 2), ("cartes", 0.3), ("windows", 2),
+                                  ("raccourcis", 0.3), ("menage", 0.5))
+             if n in etapes or (n == "hors" and "programmes" in etapes)
+             or (n == "cartes" and "windows" in etapes)]
+    total = sum(w for _, w in parts) or 1
+    debuts, cumul = {}, 0.0
+    for n, w in parts:
+        debuts[n] = (cumul / total, w / total)
+        cumul += w
+
+    def part(nom, dedans=0.0, detail=""):
+        debut, poids = debuts[nom]
+        avancer(journal, debut + poids * dedans,
+                tr("etape." + nom) + (f" — {detail}" if detail else ""))
 
     def etape(nom, fn):
         if annulation is not None and annulation.is_set():
             raise systeme.Annule()
+        if nom in debuts:
+            part(nom)
         try:
             fn()
         except systeme.Annule:
@@ -86,7 +113,9 @@ def verifier_tout(reglages: Reglages, journal=None, annulation=None, etapes=None
     if "programmes" in etapes:
         def _prog():
             b.inventaire = winget.inventaire(journal)
-            b.hors, b.sans_source = hors_winget(b.inventaire, reglages, journal)
+            part("hors")
+            b.hors, b.sans_source = hors_winget(b.inventaire, reglages, journal,
+                                                lambda f, nom: part("hors", f, nom))
         etape("programmes", _prog)
     if "windows" in etapes:
         etape("cartes", lambda: setattr(b, "cartes", [sources.verifier_carte(c)
@@ -95,7 +124,12 @@ def verifier_tout(reglages: Reglages, journal=None, annulation=None, etapes=None
     if "raccourcis" in etapes:
         etape("raccourcis", lambda: setattr(b, "morts", raccourcis.chercher_morts(journal)))
     if "menage" in etapes:
-        etape("menage", lambda: b.menage.update({e.cle: menage.mesurer(e.cle) for e in menage.ELEMENTS}))
+        def _menage():
+            for i, e in enumerate(menage.ELEMENTS):
+                part("menage", i / len(menage.ELEMENTS), tr("menage." + e.cle))
+                b.menage[e.cle] = menage.mesurer(e.cle)
+        etape("menage", _menage)
+    avancer(journal, 1.0)
     return b
 
 
@@ -122,12 +156,24 @@ def tout_mettre_a_jour(reglages: Reglages, journal=None, annulation=None,
         if annulation is not None and annulation.is_set():
             raise systeme.Annule()
 
+    liste = a_mettre_a_jour(b, reglages) if programmes and b.inventaire is not None else []
+    a_nettoyer = [e for e in menage.ELEMENTS if e.coche and (admin or not e.admin)] if nettoyer else []
+    pilotes = [r for r in b.cartes if r.etat == "maj" and r.source == "nvidia" and r.fichier] \
+        if pilote and admin else []
+    unites = (len(liste) + (2 if windows and b.windows is not None else 0) + len(a_nettoyer)
+              + len(pilotes) + 1) or 1
+    fait = [0]
+
+    def pas(libelle: str):
+        avancer(journal, fait[0] / unites, libelle)
+        fait[0] += 1
+
     if programmes and b.inventaire is not None:
-        liste = a_mettre_a_jour(b, reglages)
         ok = 0
         echecs = []
         for p in liste:
             stop()
+            pas(f"{p.nom} {p.installee} → {p.disponible}")
             if journal:
                 journal(tr("journal.maj_paquet", nom=p.nom, avant=p.installee, apres=p.disponible))
             reussi, code = winget.mettre_a_jour(p.id, journal, annulation)
@@ -140,6 +186,7 @@ def tout_mettre_a_jour(reglages: Reglages, journal=None, annulation=None,
             resume.append(tr("resume.echecs", liste=", ".join(echecs)))
     if windows and b.windows is not None:
         voulues = [m for m in b.windows if reglages.facultatives or not m.facultatif]
+        pas("Windows Update")
         if voulues and admin:
             stop()
             try:
@@ -154,6 +201,7 @@ def tout_mettre_a_jour(reglages: Reglages, journal=None, annulation=None,
             resume.append(tr("resume.windows_admin", n=len(voulues)))
         else:
             resume.append(tr("resume.windows_rien"))
+        pas("Microsoft Defender")
         try:
             windows_update.mettre_a_jour_defender(journal)
         except Exception as exc:              # noqa: BLE001
@@ -161,29 +209,29 @@ def tout_mettre_a_jour(reglages: Reglages, journal=None, annulation=None,
                 journal(str(exc)[:200])
     if nettoyer:
         libere = 0
-        for e in menage.ELEMENTS:
+        for e in a_nettoyer:
             stop()
-            if e.coche and (admin or not e.admin):
-                try:
-                    libere += menage.nettoyer(e.cle, journal)
-                except OSError as exc:
-                    if journal:
-                        journal(f"{e.cle} : {exc}")
+            pas(tr("menage." + e.cle))
+            try:
+                libere += menage.nettoyer(e.cle, journal)
+            except OSError as exc:
+                if journal:
+                    journal(f"{e.cle} : {exc}")
         resume.append(tr("resume.menage", taille=menage.taille_lisible(libere)))
     poses = set()
-    if pilote and admin:
-        for r in b.cartes:
-            if r.etat == "maj" and r.source == "nvidia" and r.fichier:
-                stop()
-                ok, detail = installer_pilote_silencieux(r, journal, annulation)
-                resume.append(tr("resume.pilote_ok", version=r.derniere) if ok
-                              else tr("resume.pilote_ko", detail=detail))
-                if ok:
-                    poses.add(id(r))
+    for r in pilotes:
+        stop()
+        pas(f"{r.nom} {r.derniere}")
+        ok, detail = installer_pilote_silencieux(r, journal, annulation)
+        resume.append(tr("resume.pilote_ok", version=r.derniere) if ok
+                      else tr("resume.pilote_ko", detail=detail))
+        if ok:
+            poses.add(id(r))
     # ce qui demande l'utilisateur : signalé seulement
     a_faire = [r for r in b.hors + b.cartes if r.etat == "maj" and id(r) not in poses]
     for r in a_faire:
         resume.append(tr("resume.a_faire", nom=r.nom, avant=r.installee, apres=r.derniere))
+    pas(tr("etape.raccourcis"))
     if b.morts and ranger_raccourcis:
         try:
             n, _erreurs = raccourcis.mettre_de_cote(b.morts)
@@ -192,6 +240,7 @@ def tout_mettre_a_jour(reglages: Reglages, journal=None, annulation=None,
             resume.append(tr("resume.etape_ko", etape="raccourcis", detail=str(exc)[:200]))
     elif b.morts:
         resume.append(tr("resume.raccourcis", n=len(b.morts)))
+    avancer(journal, 1.0)
     if systeme.redemarrage_en_attente():
         resume.append(tr("resume.redemarrer"))
     return resume

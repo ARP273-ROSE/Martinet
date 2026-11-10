@@ -1,5 +1,19 @@
 # Journal des versions / Changelog
 
+### 0.3.0
+
+- Vraie barre de progression, sur toute la largeur, avec le pourcentage ; l'étape en cours et la dernière
+  ligne du journal s'affichent à côté de la tâche, console cachée ou non.
+- La console suit toujours la dernière ligne.
+- Ménage : vidages mémoire après plantage, journaux de Windows, restes d'installation des pilotes
+  (C:\NVIDIA, C:\AMD) ; proposés sans être cochés : cache des miniatures, caches des navigateurs
+  (navigateurs fermés seulement), caches de shaders.
+- Real progress bar, full width, with the percentage; the current step and the last log line are shown
+  next to the task, console hidden or not.
+- The console always follows the last line.
+- Clean-up: crash memory dumps, Windows logs, driver setup leftovers (C:\NVIDIA, C:\AMD); offered but
+  unchecked: thumbnail cache, browser caches (browsers closed only), shader caches.
+
 ### 0.2.2
 
 - Windows Update : l'installation réussie était lue comme un échec (« code 0 ») à cause des fins de ligne

@@ -65,7 +65,7 @@ have all of this done without me & Schedule & \ref{sec:planif} \\
 \begin{itemize}
 \item It does not “clean” the registry: no measurable gain, a real risk of breaking a program.
 \item It deletes no shortcut: they are \textbf{set aside} and restored in one click.
-\item It touches no personal file and no browser cache.
+\item It touches no personal file; browser caches are emptied only if you check them.
 \item It only downloads an installer from the vendor's \textbf{official} address, over HTTPS.
 \item It never queries a network drive: a sleeping NAS stays asleep.
 \end{itemize}
@@ -194,9 +194,11 @@ list lets you \menu{Restore} them at any time.
 \capture{../capture_menage-en.png}
 
 Only what Windows can recreate: temporary files older than 7 days, error reports, the Windows Update
-download cache, installers already used, superseded Windows components (DISM, several minutes). The
-\textbf{recycle bin} is never checked by default and asks for confirmation. A file in use is left in
-place.
+download cache, installers already used, crash memory dumps, Windows logs older than 7 days, driver setup
+leftovers (\texttt{C:\textbackslash NVIDIA}, \texttt{C:\textbackslash AMD}). Never checked by default: the
+thumbnail cache, browser caches (emptied only with the browsers closed; no history, cookies or passwords),
+shader caches (stutter in games while they rebuild), superseded Windows components (DISM, several
+minutes) and the \textbf{recycle bin}, which asks for confirmation. A file in use is left in place.
 
 \section{Schedule: the automatic mode}\label{sec:planif}
 

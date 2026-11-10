@@ -65,7 +65,7 @@ que tout cela se fasse sans moi & Planification & \ref{sec:planif} \\
 \begin{itemize}
 \item Il ne « nettoie » pas le registre : aucun gain mesurable, un vrai risque de casser un logiciel.
 \item Il n'efface aucun raccourci : ils sont \textbf{mis de côté} et se restaurent d'un clic.
-\item Il ne touche à aucun fichier personnel, ni aux caches des navigateurs.
+\item Il ne touche à aucun fichier personnel ; les caches des navigateurs ne sont vidés que si vous les cochez.
 \item Il ne télécharge un installeur que depuis l'adresse \textbf{officielle} de l'éditeur, en HTTPS.
 \item Il n'interroge jamais un lecteur réseau : un NAS en veille reste en veille.
 \end{itemize}
@@ -201,9 +201,13 @@ d'origine. La liste du bas permet de les \menu{Restaurer} à tout moment.
 \capture{../capture_menage-fr.png}
 
 Seulement ce que Windows sait recréer : fichiers temporaires de plus de 7 jours, rapports d'erreurs,
-cache de téléchargement de Windows Update, installeurs déjà utilisés, anciennes versions des
-composants Windows (DISM, plusieurs minutes). La \textbf{corbeille} n'est jamais cochée d'office et
-demande confirmation. Un fichier en cours d'utilisation est laissé en place.
+cache de téléchargement de Windows Update, installeurs déjà utilisés, vidages mémoire après plantage,
+journaux de Windows de plus de 7 jours, restes d'installation des pilotes (\texttt{C:\textbackslash NVIDIA},
+\texttt{C:\textbackslash AMD}). Ne sont jamais cochés d'office : le cache des miniatures, les caches des
+navigateurs (vidés seulement navigateurs fermés ; ni historique, ni cookies, ni mots de passe), les caches
+de shaders (saccades en jeu le temps qu'ils se refassent), les anciennes versions des composants Windows
+(DISM, plusieurs minutes) et la \textbf{corbeille}, qui demande confirmation. Un fichier en cours
+d'utilisation est laissé en place.
 
 \section{Planification : le mode automatique}\label{sec:planif}
 

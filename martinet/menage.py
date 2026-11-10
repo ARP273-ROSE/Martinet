@@ -64,7 +64,10 @@ def dossiers(cle: str) -> list[Path]:
 def _fichiers(cle: str):
     limite = time.time() - AGE_MINI_JOURS * 86400 if cle.startswith("temp_") else None
     for d in dossiers(cle):
-        if not d.is_dir():
+        try:
+            if not d.is_dir():
+                continue
+        except OSError:                      # dossier d'un compte système, sans droit de lecture
             continue
         for racine, _sous, noms in os.walk(d, onerror=lambda e: None):
             for n in noms:

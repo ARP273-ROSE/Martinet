@@ -6,8 +6,10 @@ reste testable ailleurs (mode démonstration, voir demo.py).
 from __future__ import annotations
 
 import base64
+import html
 import json
 import os
+import re
 import subprocess
 import sys
 import threading
@@ -94,6 +96,27 @@ def _decoder(octets: bytes) -> str:
     return octets.decode("utf-8", errors="replace")
 
 
+_CLIXML_S = re.compile(r'<S S="(?:Error|Warning)">(.*?)</S>', re.S)
+
+
+def _dechiffrer_xml(t: str) -> str:
+    t = re.sub(r"_x([0-9A-Fa-f]{4})_", lambda m: chr(int(m.group(1), 16)), t)
+    return html.unescape(t)
+
+
+def clixml_lisible(texte: str) -> str:
+    """Remplace les erreurs PowerShell sérialisées (« #< CLIXML ») par leur texte."""
+    if "CLIXML" not in texte and "<Objs" not in texte:
+        return texte
+
+    def bloc(m: re.Match) -> str:
+        morceaux = [_dechiffrer_xml(x) for x in _CLIXML_S.findall(m.group(0))]
+        return " ".join(" ".join(morceaux).split())
+
+    texte = re.sub(r"<Objs\b.*?(?:</Objs>|$)", bloc, texte, flags=re.S)
+    return "\n".join(l for l in texte.splitlines() if l.strip() != "#< CLIXML")
+
+
 def executer(cmd: list[str], timeout: float | None = 600) -> tuple[int, str]:
     """Lance une commande sans fenêtre et renvoie (code, sortie + erreurs)."""
     try:
@@ -103,12 +126,15 @@ def executer(cmd: list[str], timeout: float | None = 600) -> tuple[int, str]:
         return 127, f"introuvable : {cmd[0]}"
     except subprocess.TimeoutExpired:
         return 124, "délai dépassé"
-    return r.returncode, _decoder(r.stdout) + _decoder(r.stderr)
+    return r.returncode, _decoder(r.stdout) + clixml_lisible(_decoder(r.stderr))
 
 
 def nettoyer_ligne(ligne: str) -> str:
-    """Retire les animations de progression (winget redessine sa ligne avec \\r)."""
-    morceau = ligne.split("\r")[-1].rstrip()
+    """Retire les animations de progression (winget redessine sa ligne avec \\r).
+
+    Le \\r final d'une fin de ligne CRLF (PowerShell) n'est pas une animation :
+    il est retiré avant de garder le dernier morceau redessiné."""
+    morceau = ligne.rstrip("\r").split("\r")[-1].rstrip()
     if morceau.strip() in {"-", "\\", "|", "/"}:
         return ""
     # barres de progression faites de blocs
@@ -138,13 +164,13 @@ def executer_flux(cmd: list[str], ligne_cb=None, annulation: threading.Event | N
         tampon += bloc
         while b"\n" in tampon:
             brut, tampon = tampon.split(b"\n", 1)
-            ligne = nettoyer_ligne(_decoder(brut))
+            ligne = clixml_lisible(nettoyer_ligne(_decoder(brut)))
             if ligne:
                 lignes.append(ligne)
                 if ligne_cb:
                     ligne_cb(ligne)
     if tampon:
-        ligne = nettoyer_ligne(_decoder(tampon))
+        ligne = clixml_lisible(nettoyer_ligne(_decoder(tampon)))
         if ligne:
             lignes.append(ligne)
             if ligne_cb:

@@ -300,3 +300,30 @@ def test_import_de_sources(tmp_path):
     f.write_text(json.dumps([{"id": "x", "nom": "X", "motif": "(", "type": "github"}]), encoding="utf-8")
     with pytest.raises(Exception):
         sources.importer(f)
+
+
+def test_ligne_crlf_conservee():
+    from martinet import systeme
+    assert systeme.nettoyer_ligne("###JSON###\r") == "###JSON###"
+    assert systeme.nettoyer_ligne("10%\r50%\r100%\r") == "100%"
+
+
+def test_clixml_lisible():
+    from martinet import systeme
+    brut = ('#< CLIXML\n<Objs Version="1.1.0.1" xmlns="x"><S S="Error">Acc&#232;s refus&#233;_x000D__x000A_</S>'
+            '<S S="Error">HRESULT 0x800106ba_x000D__x000A_</S></Objs>')
+    assert systeme.clixml_lisible(brut) == "Accès refusé HRESULT 0x800106ba"
+
+
+def test_echec_windows_update_n_arrete_pas_la_suite(monkeypatch):
+    from martinet import orchestre, windows_update
+    from martinet.reglages import Reglages
+
+    def casse(*a, **k):
+        raise RuntimeError("code 0")
+    monkeypatch.setattr(windows_update, "installer", casse)
+    b = orchestre.verifier_tout(Reglages())
+    resume = orchestre.tout_mettre_a_jour(Reglages(), bilan=b, admin=True, programmes=False)
+    texte = "\n".join(resume)
+    assert "Windows Update" in texte and "code 0" in texte
+    assert any("Ménage" in l or "Clean" in l or "libéré" in l for l in resume), resume

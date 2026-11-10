@@ -142,20 +142,33 @@ def tout_mettre_a_jour(reglages: Reglages, journal=None, annulation=None,
         voulues = [m for m in b.windows if reglages.facultatives or not m.facultatif]
         if voulues and admin:
             stop()
-            r = windows_update.installer([m.id for m in voulues], journal, annulation)
-            resume.append(tr("resume.windows", n=len(voulues),
-                             etat=tr("wu.code." + windows_update.decrire(r))))
+            try:
+                r = windows_update.installer([m.id for m in voulues], journal, annulation)
+                resume.append(tr("resume.windows", n=len(voulues),
+                                 etat=tr("wu.code." + windows_update.decrire(r))))
+            except systeme.Annule:
+                raise
+            except Exception as exc:          # noqa: BLE001 — la suite (pilote, ménage…) continue
+                resume.append(tr("resume.etape_ko", etape="Windows Update", detail=str(exc)[:200]))
         elif voulues:
             resume.append(tr("resume.windows_admin", n=len(voulues)))
         else:
             resume.append(tr("resume.windows_rien"))
-        windows_update.mettre_a_jour_defender(journal)
+        try:
+            windows_update.mettre_a_jour_defender(journal)
+        except Exception as exc:              # noqa: BLE001
+            if journal:
+                journal(str(exc)[:200])
     if nettoyer:
         libere = 0
         for e in menage.ELEMENTS:
             stop()
             if e.coche and (admin or not e.admin):
-                libere += menage.nettoyer(e.cle, journal)
+                try:
+                    libere += menage.nettoyer(e.cle, journal)
+                except OSError as exc:
+                    if journal:
+                        journal(f"{e.cle} : {exc}")
         resume.append(tr("resume.menage", taille=menage.taille_lisible(libere)))
     poses = set()
     if pilote and admin:
@@ -172,8 +185,11 @@ def tout_mettre_a_jour(reglages: Reglages, journal=None, annulation=None,
     for r in a_faire:
         resume.append(tr("resume.a_faire", nom=r.nom, avant=r.installee, apres=r.derniere))
     if b.morts and ranger_raccourcis:
-        n, _erreurs = raccourcis.mettre_de_cote(b.morts)
-        resume.append(tr("racc.deplaces", n=n))
+        try:
+            n, _erreurs = raccourcis.mettre_de_cote(b.morts)
+            resume.append(tr("racc.deplaces", n=n))
+        except OSError as exc:
+            resume.append(tr("resume.etape_ko", etape="raccourcis", detail=str(exc)[:200]))
     elif b.morts:
         resume.append(tr("resume.raccourcis", n=len(b.morts)))
     if systeme.redemarrage_en_attente():

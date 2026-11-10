@@ -1,5 +1,18 @@
 # Journal des versions / Changelog
 
+### 0.2.2
+
+- Windows Update : l'installation réussie était lue comme un échec (« code 0 ») à cause des fins de ligne
+  CRLF de PowerShell ; corrigé.
+- Une étape en échec (Windows Update, Defender, ménage, raccourcis) n'arrête plus les suivantes (pilote…).
+- Vérification sans droits administrateur : un dossier système illisible n'est plus une erreur.
+- Erreurs PowerShell affichées en texte clair au lieu du format CLIXML.
+- Windows Update: a successful install was read as a failure ("code 0") because of PowerShell CRLF line
+  endings; fixed.
+- A failed step (Windows Update, Defender, clean-up, shortcuts) no longer stops the next ones (driver…).
+- Check without administrator rights: an unreadable system folder is no longer an error.
+- PowerShell errors shown as plain text instead of CLIXML.
+
 ### 0.2.1
 
 - Pilote NVIDIA : seulement le pilote Game Ready (jamais Studio ni bêta), nom du pilote affiché ;

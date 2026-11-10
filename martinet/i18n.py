@@ -465,6 +465,7 @@ TEXTES: dict[str, dict[str, str]] = {
     # ---- résumés
     "resume.programmes": {"fr": "Programmes : {ok} sur {n} mis à jour.", "en": "Programs: {ok} of {n} updated."},
     "resume.echecs": {"fr": "Échecs : {liste}", "en": "Failures: {liste}"},
+    "resume.etape_ko": {"fr": "{etape} : échec ({detail}), la suite a continué.", "en": "{etape}: failed ({detail}), the rest went on."},
     "resume.windows": {"fr": "Windows Update : {n} mise(s) à jour, {etat}.", "en": "Windows Update: {n} update(s), {etat}."},
     "resume.windows_admin": {"fr": "Windows Update : {n} en attente (droits administrateur nécessaires).",
                              "en": "Windows Update: {n} pending (administrator rights needed)."},

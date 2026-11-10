@@ -48,6 +48,7 @@ LISTE_FR = ("Nom                        ID                                  Vers
             "-------------------------------------------------------------------------------------------\n"
             "Mozilla Firefox (x64 fr)   Mozilla.Firefox                     144.0.1    145.0      winget\n"
             "PHD2                       ARP\\Machine\\X86\\PHD2                 2.6.13\n"
+            "Un jeu                     ARP\\Machine\\X64\\Steam App 3768760    Unknown\n"
             "Notepad++ (64-bit x64)     Notepad++.Notepad++                 8.8.6                 winget\n"
             "Xbox                       MSIX\\Microsoft.XboxApp_48.104.4001  48.104.4001\n")
 
@@ -59,9 +60,10 @@ def test_tableau_upgrade_anglais():
 
 
 def test_tableau_liste_francais():
-    p = {x.id: x for x in winget._texte_vers_paquets(LISTE_FR, avec_dispo=False)}
+    p = {x.id: x for x in winget._texte_vers_paquets("\ufeff" + LISTE_FR, avec_dispo=False)}
     assert p["Mozilla.Firefox"].suivi and p["Mozilla.Firefox"].a_mettre_a_jour
     assert not p["ARP\\Machine\\X86\\PHD2"].suivi
+    assert p["ARP\\Machine\\X64\\Steam App 3768760"].installee == "Unknown"     # espace dans l'identifiant
     assert p["Notepad++.Notepad++"].suivi and not p["Notepad++.Notepad++"].a_mettre_a_jour
 
 
@@ -157,7 +159,7 @@ def test_catalogue_par_defaut_valide():
         assert s.type in sources.TYPES
         if s.type == "page":
             assert s.url.startswith("https://") and re.compile(s.regex).groups == 1
-        else:
+        elif s.type == "github":
             assert re.fullmatch(r"[\w.-]+/[\w.-]+", s.depot)
     noms = {"PHD2", "ASCOM Platform 7", "N.I.N.A. - Nighttime Imaging 'N' Astronomy", "ASTAP, Astrometric STAcking Program"}
     for nom in noms:
@@ -251,3 +253,47 @@ def test_reglages_et_historique():
     assert reglages.charger().ignores_winget == ["A.B"]
     historique.ajouter("auto", ["ligne"], "résumé")
     assert historique.lire()[0]["resume"] == "résumé"
+
+
+def test_rapprochements_d_un_vrai_poste():
+    """Noms relevés sur un vrai poste : pas de faux rapprochement."""
+    cat = sources.charger()
+
+    def source(nom):
+        return next((s.id for s in cat if s.correspond(nom)), None)
+    assert source("PHD2") == "phd2" and source("PHD2 Log Viewer version 0.6.4") is None
+    assert source("ASTAP") == "astap" and source("ASTAP D80 star database. v2022-03-17") is None
+    assert source("ASTAP, Astrometric STAcking Program") == "astap"
+    assert source("GraXpert") == "graxpert"
+    assert source("Google Chrome") == "chrome" and source("NVIDIA Pilote graphique 621.01") == "nvidia-app"
+    assert source("Adobe Photoshop 2026") == "adobe"
+
+
+def test_version_inconnue_lue_dans_le_nom():
+    s = next(s for s in sources.charger() if s.id == "astap")
+    assert sources.version_installee("Cartes du Ciel V4.3", "Unknown") == "4.3"
+    assert sources.version_installee("ASTAP", "Unknown") == ""
+    r = sources.verifier(s, "ASTAP", "Unknown")
+    assert r.etat == "inconnu" and r.installee == "?"
+    chrome = next(s for s in sources.charger() if s.id == "chrome")
+    assert sources.verifier(chrome, "Google Chrome", "157.0").etat == "seul"
+
+
+def test_bruit_d_un_vrai_poste():
+    bruit = [("ARP\\Machine\\X64\\Steam App 223750", "Un simulateur"),
+             ("ARP\\Machine\\X64\\F9D2", "Package de pilotes Windows - Garmin (grmnusb)"),
+             ("ARP\\Machine\\X64\\{ad8a}", "Microsoft Visual C++ 2005 Redistributable (x64)")]
+    for ident, nom in bruit:
+        assert orchestre._est_bruit(winget.Paquet(ident, nom, "1")), nom
+    assert not orchestre._est_bruit(winget.Paquet("ARP\\Machine\\X86\\PixInsight 1.9.6", "PixInsight", "1.9.6"))
+
+
+def test_import_de_sources(tmp_path):
+    f = tmp_path / "sources.json"
+    f.write_text(json.dumps([{"id": "outil", "nom": "Outil", "motif": "^Outil$", "type": "github",
+                              "depot": "editeur/outil", "fichier": "Setup\\.exe$"}]), encoding="utf-8")
+    assert sources.importer(f) == 1
+    assert any(s.id == "outil" and s.perso for s in sources.charger())
+    f.write_text(json.dumps([{"id": "x", "nom": "X", "motif": "(", "type": "github"}]), encoding="utf-8")
+    with pytest.raises(Exception):
+        sources.importer(f)

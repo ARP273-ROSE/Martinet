@@ -20,7 +20,7 @@
 
 En ligne de commande : `run.py --verifier` (liste sans rien changer), `run.py --auto` (passage complet).
 
-Catalogue de sources fourni : PHD2, ASCOM Platform, N.I.N.A., ASTAP, SharpCap ; le reste s'ajoute depuis l'interface.
+Catalogue de sources fourni : PHD2, ASCOM Platform, N.I.N.A., ASTAP, GraXpert, SharpCap, et les logiciels qui se mettent à jour seuls ; le reste s'ajoute ou s'importe depuis l'interface.
 
 Installation : télécharger `Martinet-Setup.exe` depuis les [Releases](https://github.com/ARP273-ROSE/Martinet/releases/latest). Martinet se met lui-même à jour.
 

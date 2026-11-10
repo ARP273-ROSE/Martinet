@@ -110,6 +110,7 @@ def lire_tableau(texte: str) -> list[list[str]]:
     Renvoie une liste de cellules par ligne ; le premier tableau seulement
     (le second, « nécessite un ciblage explicite », est lu à part).
     """
+    texte = texte.lstrip("\ufeff")
     lignes = [systeme.nettoyer_ligne(l) for l in texte.replace("\r\n", "\n").split("\n")]
     for i in range(1, len(lignes)):
         if _TIRETS.match(lignes[i]):
@@ -123,8 +124,10 @@ def lire_tableau(texte: str) -> list[list[str]]:
                     break
                 bornes = debuts + [None]
                 cellules = [ligne[bornes[k]:bornes[k + 1]].strip() for k in range(len(debuts))]
-                ident = cellules[1]
-                if not ident or " " in ident:
+                # fin du tableau : identifiant vide, ou ligne qui n'est pas alignée en
+                # colonnes (« 3 mises à niveau disponibles. »). Un identifiant peut
+                # contenir des espaces (« ARP\Machine\X64\Steam App 3768760 »).
+                if not cellules[1] or len(re.findall(r"\S {2,}\S", ligne)) < 1:
                     break
                 resultat.append(cellules)
             return resultat

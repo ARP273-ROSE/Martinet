@@ -241,7 +241,7 @@ class PageHors(Page):
     def rafraichir(self):
         lignes = []
         for r in self.bilan.hors:
-            etat = {"maj": tr("etat.maj"), "a_jour": tr("etat.a_jour"),
+            etat = {"maj": tr("etat.maj"), "a_jour": tr("etat.a_jour"), "seul": tr("etat.seul"),
                     "erreur": tr("etat.erreur", detail=r.erreur)}.get(r.etat, tr("etat.inconnu"))
             lignes.append(([r.nom, r.installee, r.derniere or "—", etat], r, False, COULEUR_ETAT.get(r.etat)))
         self.t_sources.remplir(lignes)

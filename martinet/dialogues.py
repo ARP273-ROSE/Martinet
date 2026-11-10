@@ -27,6 +27,7 @@ class DialogueSource(QtWidgets.QDialog):
         self.type = QtWidgets.QComboBox()
         self.type.addItem(tr("src.type_github"), "github")
         self.type.addItem(tr("src.type_page"), "page")
+        self.type.addItem(tr("src.type_seul"), "seul")
         self.depot = QtWidgets.QLineEdit(source.depot if source else "")
         self.depot.setPlaceholderText(tr("src.depot.exemple"))
         self.url = QtWidgets.QLineEdit(source.url if source else "")
@@ -51,15 +52,15 @@ class DialogueSource(QtWidgets.QDialog):
         boutons.rejected.connect(self.reject)
         f.addRow(boutons)
         if source:
-            self.type.setCurrentIndex(0 if source.type == "github" else 1)
+            self.type.setCurrentIndex(max(0, self.type.findData(source.type)))
         self.type.currentIndexChanged.connect(self._type)
         self._type()
 
     def _type(self):
-        github = self.type.currentData() == "github"
-        self.depot.setEnabled(github)
-        self.url.setEnabled(not github)
-        self.regex.setEnabled(not github)
+        genre = self.type.currentData()
+        self.depot.setEnabled(genre == "github")
+        self.url.setEnabled(genre == "page")
+        self.regex.setEnabled(genre == "page")
 
     def source(self, existants: set[str] | None = None) -> sources.Source:
         o = self._origine
@@ -83,6 +84,8 @@ class DialogueSource(QtWidgets.QDialog):
                 re.compile(s.regex)
         except re.error as exc:
             return tr("src.err_regex", detail=str(exc))
+        if s.type == "seul":
+            return ""
         if s.type == "github" and not re.fullmatch(r"[\w.-]+/[\w.-]+", s.depot):
             return tr("src.err_depot")
         if s.type == "page" and not s.url.startswith("https://"):
@@ -91,8 +94,8 @@ class DialogueSource(QtWidgets.QDialog):
 
     def tester(self):
         err = self._erreurs()
-        if err:
-            self.resultat.setText(err)
+        if err or self.type.currentData() == "seul":
+            self.resultat.setText(err or tr("src.type_seul"))
             return
         self.resultat.setText(tr("src.test_en_cours"))
         QtWidgets.QApplication.processEvents()
@@ -131,7 +134,7 @@ class GestionSources(QtWidgets.QDialog):
                              cochable=False)
         v.addWidget(self.table, 1)
         v.addLayout(rangee(bouton(tr("src.ajouter"), self.ajouter), bouton(tr("src.modifier"), self.modifier),
-                           bouton(tr("src.supprimer"), self.supprimer)))
+                           bouton(tr("src.supprimer"), self.supprimer), bouton(tr("src.importer"), self.importer)))
         fermer = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.StandardButton.Close)
         fermer.rejected.connect(self.reject)
         v.addWidget(fermer)
@@ -160,6 +163,18 @@ class GestionSources(QtWidgets.QDialog):
             self.liste = [neuve if s.id == neuve.id else s for s in self.liste]
             sources.enregistrer_perso(self.liste)
             self._charger()
+
+    def importer(self):
+        chemin, _ = QtWidgets.QFileDialog.getOpenFileName(self, tr("src.importer"), "", "JSON (*.json)")
+        if not chemin:
+            return
+        try:
+            n = sources.importer(chemin)
+        except Exception as exc:                       # noqa: BLE001 — affiché tel quel
+            QtWidgets.QMessageBox.warning(self, tr("src.gestion"), tr("src.import_ko", detail=str(exc)[:200]))
+            return
+        self._charger()
+        QtWidgets.QMessageBox.information(self, tr("src.gestion"), tr("src.import_ok", n=n))
 
     def supprimer(self):
         choix = [s for s in self.table.selection() if s.perso]

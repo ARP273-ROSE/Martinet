@@ -121,5 +121,5 @@ def etiquette(texte: str = "", couleur: str | None = None, gras: bool = False) -
     return lbl
 
 
-COULEUR_ETAT = {"maj": style.ORANGE, "a_jour": style.VERT, "erreur": style.ALERTE,
+COULEUR_ETAT = {"maj": style.ORANGE, "a_jour": style.VERT, "seul": style.VERT, "erreur": style.ALERTE,
                 "inconnu": style.GRIS}

@@ -31,8 +31,16 @@ def _est_bruit(p: winget.Paquet) -> bool:
     ident = p.id.upper()
     if ident.startswith("MSIX\\"):          # applis du Store / de Windows, suivies par le Store
         return True
+    if "STEAM APP " in ident:                # jeux : Steam les met à jour
+        return True
     nom = p.nom.lower()
-    return nom.startswith(("security update", "update for", "mise à jour")) or "(kb" in nom
+    return (nom.startswith(BRUIT) or "(kb" in nom)
+
+
+#: composants de Windows et pilotes déjà livrés par Windows Update
+BRUIT = ("security update", "update for", "mise à jour", "package de pilotes windows", "windows driver package",
+         "microsoft visual c++", "microsoft windows desktop runtime", "microsoft .net", "microsoft update health",
+         "microsoft windows application compatibility", "windows sdk", "vs_", "microsoft visual studio installer")
 
 
 def hors_winget(inv: winget.Inventaire, reglages: Reglages, journal=None):

@@ -26,7 +26,7 @@ from .versions import la_plus_haute, plus_recente
 DEFAUT = Path(__file__).resolve().parent / "sources_defaut.json"
 API_NVIDIA = ("https://gfwsl.geforce.com/nvidia_web_services/controller.gfeclientcontent.NG.php/"
               "com.nvidia.services.GFEClientContent_NG.getDispDrvrByDevid/")
-TYPES = ("github", "page")
+TYPES = ("github", "page", "seul")    # seul : se met à jour tout seul
 
 
 @dataclass
@@ -95,6 +95,24 @@ def enregistrer_perso(sources: list[Source]) -> None:
     _fichier_perso().write_text(json.dumps(donnees, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
+def importer(chemin) -> int:
+    """Ajoute (ou remplace, à identifiant égal) les sources d'un fichier JSON."""
+    donnees = json.loads(Path(chemin).read_text(encoding="utf-8"))
+    if not isinstance(donnees, list):
+        raise ValueError("liste de sources attendue")
+    neuves = []
+    for d in donnees:
+        d = {k: v for k, v in d.items() if k in Source.__dataclass_fields__ and k != "perso"}
+        s = Source(**d, perso=True)
+        if s.type not in TYPES or not s.id or not s.motif:
+            raise ValueError(f"source invalide : {d.get('id')}")
+        re.compile(s.motif)
+        neuves.append(s)
+    ids = {s.id for s in neuves}
+    enregistrer_perso([s for s in charger() if s.id not in ids] + neuves)
+    return len(neuves)
+
+
 def nouvel_id(nom: str, existants: set[str]) -> str:
     base = re.sub(r"[^a-z0-9]+", "-", nom.lower()).strip("-") or "source"
     ident, n = base, 2
@@ -151,8 +169,21 @@ def derniere(source: Source) -> tuple[str, str, str]:
     raise ValueError(f"type de source inconnu : {source.type}")
 
 
+def version_installee(nom: str, installee: str) -> str:
+    """Version « Unknown » : celle écrite dans le nom (« Cartes du Ciel V4.3 »), sinon vide."""
+    from .versions import nombres
+    if nombres(installee) and installee.lower() not in ("unknown", "inconnu"):
+        return installee
+    m = re.search(r"\bv?(\d+(?:\.\d+)+)\b", nom, re.I)
+    return m.group(1) if m else ""
+
+
 def verifier(source: Source, nom_installe: str, installee: str) -> Resultat:
-    res = Resultat(nom_installe, installee, source=source.id, page=source.page or source.url)
+    installee = version_installee(nom_installe, installee)
+    res = Resultat(nom_installe, installee or "?", source=source.id, page=source.page or source.url)
+    if source.type == "seul":
+        res.etat = "seul"
+        return res
     if demo.actif():
         demo.pause(0.2)
         fausses = {"phd2": "2.6.14", "ascom": "7.1.3", "nina": "3.2", "astap": "2026.07.16"}
@@ -163,7 +194,10 @@ def verifier(source: Source, nom_installe: str, installee: str) -> Resultat:
         except Exception as exc:
             res.etat, res.erreur = "erreur", str(exc)[:200]
             return res
-    res.etat = "maj" if plus_recente(res.derniere, installee) else "a_jour"
+    if not installee:
+        res.etat = "inconnu"                  # rien à comparer : on ne prétend pas « à jour »
+    else:
+        res.etat = "maj" if plus_recente(res.derniere, installee) else "a_jour"
     return res
 
 

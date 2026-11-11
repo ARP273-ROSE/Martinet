@@ -124,3 +124,11 @@ def test_dialogue_source(app):
     d.type.setCurrentIndex(1)
     d.url.setText("http://non-securise")
     assert d._erreurs()
+
+
+def test_plan_tout_liste_ce_qui_sera_fait(app, fen):
+    fen.verifier_tout()
+    fen.file.attendre(30000)
+    texte = fen.plan_tout(fen.bilan, True)
+    assert "winget" in texte and "Defender" in texte and "NVIDIA" in texte
+    assert "raccourci" in texte.lower() or "shortcut" in texte.lower()

@@ -119,10 +119,10 @@ TEXTES: dict[str, dict[str, str]] = {
     "menu.a_propos": {"fr": "À propos", "en": "About"},
     # ---- pages
     "page.accueil": {"fr": "Tableau de bord", "en": "Dashboard"},
-    "page.accueil.aide": {"fr": "Tout vérifier en un clic, puis tout mettre à jour. Rien n'est modifié "
-                                "pendant la vérification.",
-                          "en": "Check everything in one click, then update everything. Nothing is changed "
-                                "while checking."},
+    "page.accueil.aide": {"fr": "« Tout vérifier » ne modifie rien. « Mettre à jour et nettoyer » fait tout ce "
+                                "qui se fait sans vous ; la liste exacte est montrée avant de commencer.",
+                          "en": "“Check everything” changes nothing. “Update and clean up” does everything that "
+                                "can be done without you; the exact list is shown before starting."},
     "page.programmes": {"fr": "Programmes (winget)", "en": "Programs (winget)"},
     "page.programmes.aide": {"fr": "Les logiciels et applis du Store que winget, le gestionnaire de paquets "
                                    "de Windows, sait mettre à jour sans fenêtre.",
@@ -202,7 +202,11 @@ TEXTES: dict[str, dict[str, str]] = {
     "col.resume": {"fr": "Résumé", "en": "Summary"},
     # ---- tableau de bord
     "accueil.verifier": {"fr": "Tout vérifier", "en": "Check everything"},
-    "accueil.tout": {"fr": "Tout mettre à jour", "en": "Update everything"},
+    "accueil.tout": {"fr": "Mettre à jour et nettoyer", "en": "Update and clean up"},
+    "accueil.tout.bulle": {"fr": "Programmes winget, Windows Update, Defender, pilote NVIDIA, ménage coché et "
+                                 "raccourcis morts mis de côté. La liste exacte est montrée avant de commencer.",
+                           "en": "winget programs, Windows Update, Defender, NVIDIA driver, checked clean-up and "
+                                 "dead shortcuts set aside. The exact list is shown before starting."},
     "accueil.pas_verifie": {"fr": "Pas encore vérifié", "en": "Not checked yet"},
     "accueil.a_jour": {"fr": "Tout est à jour", "en": "Everything is up to date"},
     "accueil.n_maj": {"fr": "{n} mise(s) à jour disponible(s)", "en": "{n} update(s) available"},
@@ -329,9 +333,9 @@ TEXTES: dict[str, dict[str, str]] = {
     "win.type_windows": {"fr": "Windows", "en": "Windows"},
     "win.facultatif": {"fr": "facultative", "en": "optional"},
     "win.resume": {"fr": "{n} mise(s) à jour en attente.", "en": "{n} pending update(s)."},
-    "win.inclure_facultatives": {"fr": "Inclure les mises à jour facultatives (ici, avec « Tout mettre à jour » "
+    "win.inclure_facultatives": {"fr": "Inclure les mises à jour facultatives (ici, avec « Mettre à jour et nettoyer » "
                                        "et en automatique)",
-                                 "en": "Include optional updates (here, with “Update everything” and in "
+                                 "en": "Include optional updates (here, with “Update and clean up” and in "
                                        "scheduled runs)"},
     "win.inclure_facultatives.aide": {"fr": "Pilotes facultatifs et mises à jour en avant-première de Windows.",
                                       "en": "Optional drivers and Windows preview updates."},
@@ -514,13 +518,26 @@ TEXTES: dict[str, dict[str, str]] = {
     "msg.rien_coche": {"fr": "Rien n'est coché.", "en": "Nothing is checked."},
     "msg.rien_selectionne": {"fr": "Sélectionnez d'abord une ligne.", "en": "Select a row first."},
     "msg.verifier_dabord": {"fr": "Lancez d'abord « Tout vérifier ».", "en": "Run “Check everything” first."},
-    "msg.confirmer_tout": {"fr": "Mettre à jour {prog} programme(s) et installer {win} mise(s) à jour Windows, "
-                                 "puis faire le ménage coché d'office ?\n\nLe pilote NVIDIA et les raccourcis morts "
-                                 "suivent les choix de la page Planification ; les logiciels hors winget "
-                                 "s'installent depuis leur page.",
-                           "en": "Update {prog} program(s) and install {win} Windows update(s), then run the "
-                                 "default clean-up?\n\nThe NVIDIA driver and dead shortcuts follow the choices of "
-                                 "the Schedule page; programs outside winget are installed from their own page."},
+    "msg.confirmer_tout": {"fr": "Martinet va faire, dans l'ordre :\n\n{liste}\n\nOn y va ?",
+                           "en": "Martinet will do, in this order:\n\n{liste}\n\nGo ahead?"},
+    "tout.programmes": {"fr": "• mettre à jour {n} programme(s) winget", "en": "• update {n} winget program(s)"},
+    "tout.windows": {"fr": "• installer {n} mise(s) à jour Windows", "en": "• install {n} Windows update(s)"},
+    "tout.windows_fac": {"fr": "• installer {n} mise(s) à jour Windows, dont {f} facultative(s)",
+                         "en": "• install {n} Windows update(s), {f} of them optional"},
+    "tout.defender": {"fr": "• mettre à jour les signatures de Microsoft Defender",
+                      "en": "• update the Microsoft Defender signatures"},
+    "tout.menage": {"fr": "• ménage ({taille}) : {liste}", "en": "• clean-up ({taille}): {liste}"},
+    "tout.pilote": {"fr": "• installer le pilote NVIDIA {version} (écran qui clignote)",
+                    "en": "• install the NVIDIA driver {version} (screen flickers)"},
+    "tout.raccourcis": {"fr": "• mettre de côté {n} raccourci(s) mort(s) (restaurables)",
+                        "en": "• set aside {n} dead shortcut(s) (can be restored)"},
+    "tout.pas_fait": {"fr": "Pas fait ici : {liste}.", "en": "Not done here: {liste}."},
+    "tout.pas_hors": {"fr": "{n} logiciel(s) hors winget (depuis leur page)",
+                      "en": "{n} program(s) outside winget (from their page)"},
+    "tout.pas_pilote": {"fr": "le pilote NVIDIA (désactivé dans Planification)",
+                        "en": "the NVIDIA driver (turned off in Schedule)"},
+    "tout.pas_raccourcis": {"fr": "les raccourcis morts (désactivé dans Planification)",
+                            "en": "dead shortcuts (turned off in Schedule)"},
     "msg.confirmer_installeur": {"fr": "Télécharger et lancer l'installeur officiel de {nom} {version} ?\n\n{adresse}",
                                  "en": "Download and run the official installer of {nom} {version}?\n\n{adresse}"},
     "msg.installeur_fini": {"fr": "Installeur de {nom} terminé (code {code}).",
@@ -553,9 +570,9 @@ TEXTES: dict[str, dict[str, str]] = {
                       "en": "Update installed: Martinet will restart."},
     "signal.titre": {"fr": "Signaler un problème", "en": "Report a problem"},
     "signal.invite": {"fr": "Décrivez ce qui s'est passé :", "en": "Describe what happened:"},
-    "signal.exemple": {"fr": "Par exemple : j'ai cliqué sur « Tout mettre à jour » et Firefox est resté à "
+    "signal.exemple": {"fr": "Par exemple : j'ai cliqué sur « Mettre à jour et nettoyer » et Firefox est resté à "
                              "l'ancienne version.",
-                       "en": "For example: I clicked “Update everything” and Firefox stayed on the old version."},
+                       "en": "For example: I clicked “Update and clean up” and Firefox stayed on the old version."},
     "signal.note": {"fr": "Le message part avec la version de Martinet et du système, rien d'autre.",
                     "en": "The message is sent with the Martinet and system versions, nothing else."},
     "signal.envoyer": {"fr": "Envoyer", "en": "Send"},

@@ -29,7 +29,7 @@
 The swift (\textit{martinet} in French) spends its life on the wing and hardly ever lands:\\
 Martinet does its rounds on its own.\\[2mm]
 \raggedright
-\textbf{Check everything} \quad → \quad \textbf{Update everything} \quad → \quad \textbf{Schedule}
+\textbf{Check everything} \quad → \quad \textbf{Update and clean up} \quad → \quad \textbf{Schedule}
 \end{tcolorbox}
 \vfill
 {\footnotesize\color{summit}\sffamily Windows 10 and 11\par}
@@ -93,9 +93,10 @@ On the very first start, Martinet offers to turn on the \textbf{scheduled run} e
 shortcuts and measures the clean-up. \textbf{Nothing is changed} while checking, which takes one to
 three minutes (Windows Update is the slowest).
 \item Each card sums up a page; click it to open the page.
-\item \menu{Update everything} applies, after confirmation, everything that can be done without you:
-winget programs, Windows updates (optional ones included if you chose so), the NVIDIA driver and dead
-shortcuts according to the Schedule page, the default clean-up.
+\item \menu{Update and clean up} does everything that can be done without you: winget programs,
+Windows updates (optional ones included if you chose so), Defender signatures, the checked clean-up,
+and, according to the Schedule page, the NVIDIA driver and dead shortcuts set aside. Before starting,
+Martinet shows the exact list, with the numbers, and what it will not do.
 \end{enumerate}
 
 \astuce{\menu{Show details}, bottom right, unfolds the live log: every line written by winget,
@@ -170,7 +171,7 @@ leads to the vendor's detection tool.
 
 The list is the one in \textit{Settings > Windows Update}, vendor drivers included (chipset, Wi-Fi,
 audio…). \textbf{Optional} updates (optional drivers, Windows previews) are included as long as
-\menu{Include optional updates} is checked; this choice also applies to “Update everything” and to
+\menu{Include optional updates} is checked; this choice also applies to “Update and clean up” and to
 scheduled runs. \menu{Update Defender} refreshes the antivirus signatures.
 
 \attention{After installing, Windows often asks for a restart: Martinet offers it (in one minute, time

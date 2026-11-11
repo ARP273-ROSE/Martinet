@@ -14,6 +14,11 @@ from .widgets import bouton, etiquette
 RACINE = Path(__file__).resolve().parent.parent
 
 
+def _minuscule(t: str) -> str:
+    """Première lettre en minuscule, sauf sigle ou nom propre (« Windows » reste tel quel)."""
+    return t[:1].lower() + t[1:] if t[1:2].islower() else t
+
+
 class FenetrePrincipale(QtWidgets.QMainWindow):
     _maj_signal = QtCore.pyqtSignal(object, bool)
 
@@ -263,9 +268,8 @@ class FenetrePrincipale(QtWidgets.QMainWindow):
         if b.inventaire is None and b.windows is None:
             self.message(tr("msg.verifier_dabord"))
             return
-        n_prog = len(orchestre.a_mettre_a_jour(b, self.reglages))
         n_win = len([m for m in (b.windows or []) if self.reglages.facultatives or not m.facultatif])
-        if not self.confirmer(tr("msg.confirmer_tout", prog=n_prog, win=n_win)):
+        if not self.confirmer(tr("msg.confirmer_tout", liste=self.plan_tout(b, systeme.est_admin() or n_win > 0))):
             return
         if n_win and not systeme.est_admin() and not self.exiger_admin():
             return
@@ -273,6 +277,43 @@ class FenetrePrincipale(QtWidgets.QMainWindow):
         self.lancer(tr("tache.tout"),
                     lambda j, a: orchestre.tout_mettre_a_jour(self.reglages, j, a, bilan=b),
                     self.fin_tout_mettre_a_jour)
+
+    def plan_tout(self, b, admin: bool) -> str:
+        """Ce que « Mettre à jour et nettoyer » va faire, ligne par ligne, avec les vrais nombres."""
+        from . import menage
+        r = self.reglages
+        lignes, pas_fait = [], []
+        n_prog = len(orchestre.a_mettre_a_jour(b, r))
+        if n_prog:
+            lignes.append(tr("tout.programmes", n=n_prog))
+        if b.windows is not None:
+            voulues = [m for m in b.windows if r.facultatives or not m.facultatif]
+            fac = sum(1 for m in voulues if m.facultatif)
+            if voulues:
+                lignes.append(tr("tout.windows_fac", n=len(voulues), f=fac) if fac
+                              else tr("tout.windows", n=len(voulues)))
+            lignes.append(tr("tout.defender"))
+        elements = [e for e in menage.ELEMENTS if e.coche and (admin or not e.admin)]
+        if elements:
+            taille = sum((b.menage.get(e.cle) or (0, 0))[0] or 0 for e in elements)
+            lignes.append(tr("tout.menage", taille=menage.taille_lisible(taille),
+                             liste=", ".join(_minuscule(tr("menage." + e.cle)) for e in elements)))
+        pilotes = [c for c in b.cartes if c.etat == "maj" and c.source == "nvidia" and c.fichier]
+        if pilotes and r.auto_pilote:
+            lignes += [tr("tout.pilote", version=c.derniere) for c in pilotes]
+        elif pilotes:
+            pas_fait.append(tr("tout.pas_pilote"))
+        if b.morts and r.auto_raccourcis:
+            lignes.append(tr("tout.raccourcis", n=len(b.morts)))
+        elif b.morts:
+            pas_fait.append(tr("tout.pas_raccourcis"))
+        hors = [x for x in b.hors if x.etat == "maj"]
+        if hors:
+            pas_fait.insert(0, tr("tout.pas_hors", n=len(hors)))
+        texte = "\n".join(lignes)
+        if pas_fait:
+            texte += "\n\n" + tr("tout.pas_fait", liste=" ; ".join(pas_fait))
+        return texte
 
     def fin_tout_mettre_a_jour(self, resume, erreur):
         if erreur:

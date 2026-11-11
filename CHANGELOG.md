@@ -1,5 +1,14 @@
 # Journal des versions / Changelog
 
+### 0.3.1
+
+- « Tout mettre à jour » devient « Mettre à jour et nettoyer » : le bouton fait aussi le ménage, le pilote
+  et les raccourcis. Avant de commencer, Martinet montre la liste exacte (avec les nombres) et ce qu'il
+  ne fera pas.
+- “Update everything” becomes “Update and clean up”: the button also cleans up, installs the driver and
+  sets shortcuts aside. Before starting, Martinet shows the exact list (with the numbers) and what it
+  will not do.
+
 ### 0.3.0
 
 - Vraie barre de progression, sur toute la largeur, avec le pourcentage ; l'étape en cours et la dernière

@@ -1,6 +1,6 @@
 """Enchaînements communs à la fenêtre et à la tâche planifiée.
 
-« Tout vérifier » ne modifie rien ; « tout mettre à jour » applique ce qui
+« Tout vérifier » ne modifie rien ; « mettre à jour et nettoyer » applique ce qui
 peut l'être sans intervention (winget, Windows Update, ménage coché) et se
 contente de SIGNALER le reste : un logiciel hors winget ou un pilote NVIDIA
 s'installent avec l'utilisateur devant l'écran.

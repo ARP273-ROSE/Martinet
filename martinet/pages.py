@@ -43,6 +43,7 @@ class PageAccueil(Page):
         super().__init__(fen)
         self.b_verifier = bouton(tr("accueil.verifier"), fen.verifier_tout, principal=True)
         self.b_tout = bouton(tr("accueil.tout"), fen.tout_mettre_a_jour, principal=True)
+        self.b_tout.setToolTip(tr("accueil.tout.bulle"))
         self.b_verifier.setMinimumHeight(40)
         self.b_tout.setMinimumHeight(40)
         self.v.addLayout(rangee(self.b_verifier, self.b_tout))

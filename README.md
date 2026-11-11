@@ -9,7 +9,7 @@
 
 | Page | Contenu |
 |---|---|
-| Tableau de bord | « Tout vérifier » (ne modifie rien), puis « Tout mettre à jour » |
+| Tableau de bord | « Tout vérifier » (ne modifie rien), puis « Mettre à jour et nettoyer » (liste exacte montrée avant) |
 | Programmes (winget) | logiciels et applis du Store mis à jour sans fenêtre par winget, le gestionnaire de paquets de Windows ; liste d'exclusions |
 | Hors winget | logiciels que winget ne suit pas : dernière version lue chez l'éditeur (Releases GitHub ou page de téléchargement), installeur officiel en un clic ; « confier à winget » quand il connaît le logiciel ; vos propres sources |
 | Windows et pilotes | Windows Update (système, pilotes des fabricants et mises à jour facultatives au choix), Defender, pilote NVIDIA comparé au service officiel de NVIDIA |

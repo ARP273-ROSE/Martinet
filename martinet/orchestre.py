@@ -191,10 +191,31 @@ def tout_mettre_a_jour(reglages: Reglages, journal=None, annulation=None,
             if reussi:
                 ok += 1
             else:
-                echecs.append(f"{p.nom} ({code})")
+                echecs.append((p, code))
+        # coupure réseau pendant le passage : on attend son retour et on réessaie une fois
+        reseau = [(p, c) for p, c in echecs if c in winget.CODES_RESEAU]
+        if reseau and systeme.attendre_reseau(180, journal, annulation):
+            for p, c in reseau:
+                stop()
+                if journal:
+                    journal(tr("journal.second_essai", nom=p.nom))
+                reussi, code = winget.mettre_a_jour(p.id, journal, annulation)
+                echecs.remove((p, c))
+                if reussi:
+                    ok += 1
+                else:
+                    echecs.append((p, code))
         resume.append(tr("resume.programmes", ok=ok, n=len(liste)))
-        if echecs:
-            resume.append(tr("resume.echecs", liste=", ".join(echecs)))
+        inapplicables = [p.nom for p, c in echecs if c == winget.CODE_INAPPLICABLE]
+        reseau = [p.nom for p, c in echecs if c in winget.CODES_RESEAU]
+        autres = [f"{p.nom} ({c})" for p, c in echecs
+                  if c != winget.CODE_INAPPLICABLE and c not in winget.CODES_RESEAU]
+        if reseau:
+            resume.append(tr("resume.echecs_reseau", liste=", ".join(reseau)))
+        if autres:
+            resume.append(tr("resume.echecs", liste=", ".join(autres)))
+        if inapplicables:
+            resume.append(tr("resume.inapplicables", liste=", ".join(inapplicables)))
     if windows and b.windows is not None:
         voulues = [m for m in b.windows if reglages.facultatives or not m.facultatif]
         pas("Windows Update")
@@ -272,6 +293,7 @@ def installer_pilote_silencieux(r, journal=None, annulation=None) -> tuple[bool,
     if journal:
         journal(tr("journal.lancement", nom=nom))
     try:
+        systeme.attendre_reseau(180, journal, annulation)
         systeme.telecharger_fichier(r.fichier, dest, None, annulation)
         code, _ = systeme.executer_flux([str(dest), *NVIDIA_SILENCIEUX], journal, annulation, timeout=3600)
     except systeme.Annule:

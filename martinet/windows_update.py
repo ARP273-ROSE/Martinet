@@ -105,6 +105,12 @@ def mettre_a_jour_defender(journal=None) -> bool:
         demo.pause(0.3)
         return True
     code, sortie = systeme.powershell("Update-MpSignature -ErrorAction Stop", timeout=600)
+    if code != 0 and "0x800106ba" in sortie.lower():
+        # service Defender arrêté : un autre antivirus est actif, ou Defender est désactivé
+        if journal:
+            from .i18n import tr
+            journal(tr("journal.defender_inactif"))
+        return True
     if journal and code != 0:
         journal(sortie.strip()[-200:])
     return code == 0

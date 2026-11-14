@@ -283,6 +283,35 @@ def telecharger_json(url: str, timeout: float = 20):
     return json.loads(telecharger_texte(url, timeout))
 
 
+def reseau_ok(hote: str = "github.com") -> bool:
+    """Le nom se résout-il ? (une coupure DNS fait échouer tous les téléchargements)"""
+    import socket
+    try:
+        socket.getaddrinfo(hote, 443)
+        return True
+    except OSError:
+        return False
+
+
+def attendre_reseau(delai: float = 180, journal=None, annulation=None, pas: float = 5) -> bool:
+    """Attend le retour du réseau (DNS) au plus « delai » secondes."""
+    import time
+    if reseau_ok():
+        return True
+    if journal:
+        from .i18n import tr
+        journal(tr("journal.attente_reseau", s=int(delai)))
+    fin = time.monotonic() + delai
+    while time.monotonic() < fin:
+        if annulation is not None and annulation.wait(pas):
+            raise Annule()
+        if annulation is None:
+            time.sleep(pas)
+        if reseau_ok():
+            return True
+    return False
+
+
 def telecharger_fichier(url: str, destination: Path, progression=None,
                         annulation: threading.Event | None = None) -> Path:
     """Téléchargement en HTTPS seulement, écrit d'abord dans un .part."""

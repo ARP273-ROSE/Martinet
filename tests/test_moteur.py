@@ -440,3 +440,32 @@ def test_passage_termine_ne_laisse_rien(tmp_path, monkeypatch):
     assert not historique.recuperer_passe_interrompue("x")
     assert historique.lire() == []
 
+
+
+def test_coupure_reseau_second_essai_et_tri_des_echecs(monkeypatch):
+    import threading
+    from martinet import orchestre, reglages, systeme, winget
+    paquets = [winget.Paquet(i, i, "1", "2", source="winget") for i in ("A", "B", "C", "D")]
+    essais = {}
+
+    def maj(pid, journal=None, annulation=None):
+        essais[pid] = essais.get(pid, 0) + 1
+        if pid == "A":                                   # réseau coupé, revenu au second essai
+            return (essais[pid] > 1), ("" if essais[pid] > 1 else "0x80072EE7")
+        if pid == "B":
+            return False, winget.CODE_INAPPLICABLE
+        if pid == "C":
+            return False, "0x8A150006"
+        return True, ""
+    monkeypatch.setattr(winget, "mettre_a_jour", maj)
+    monkeypatch.setattr(orchestre, "a_mettre_a_jour", lambda b, r: paquets)
+    monkeypatch.setattr(systeme, "attendre_reseau", lambda *a, **k: True)
+    monkeypatch.setattr(orchestre.raccourcis, "chercher_morts", lambda *a, **k: [], raising=False)
+    b = orchestre.Bilan(inventaire=winget.Inventaire(paquets=paquets))
+    resume = orchestre.tout_mettre_a_jour(reglages.Reglages(), None, threading.Event(), True, False, False,
+                                          bilan=b, admin=False, pilote=False, ranger_raccourcis=False)
+    texte = "\n".join(resume)
+    assert essais["A"] == 2 and essais["B"] == 1
+    assert "2" in resume[0] and "4" in resume[0]      # A (au second essai) et D
+    assert "C (0x8A150006)" in texte and "B" in texte.split("winget")[-1]
+    assert "0x80072EE7" not in texte

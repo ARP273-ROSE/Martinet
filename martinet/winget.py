@@ -182,6 +182,13 @@ def inventaire(journal=None) -> Inventaire:
 
 
 # ------------------------------------------------------------ actions
+# Échecs de réseau (nom non résolu, délai, connexion coupée, téléchargement raté) :
+# ils méritent un second essai une fois le réseau revenu.
+CODES_RESEAU = {"0x80072EE7", "0x80072EE2", "0x80072EFD", "0x80072EFE", "0x80072F78", "0x8A150008"}
+# winget annonce une mise à jour qu'il ne sait pas appliquer (installeur d'une autre portée ou architecture)
+CODE_INAPPLICABLE = "0x8A15002B"
+
+
 def mettre_a_jour(paquet_id: str, journal=None, annulation=None) -> tuple[bool, str]:
     if demo.actif():
         for etape in ("Téléchargement", "Vérification du hachage", "Installation"):

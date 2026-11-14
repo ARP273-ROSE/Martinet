@@ -1,5 +1,17 @@
 # Journal des versions / Changelog
 
+### 0.5.3
+
+- Coupure réseau pendant un passage : Martinet attend le retour du réseau (3 min au plus) puis refait une
+  fois les mises à jour tombées sur une erreur de réseau ; le pilote graphique attend aussi le réseau
+  avant son téléchargement. Le bilan sépare les échecs de réseau, les vrais échecs et les mises à jour que
+  winget annonce sans savoir les appliquer (0x8A15002B). Defender arrêté (autre antivirus) : une ligne
+  claire au lieu d'une erreur PowerShell.
+- Network drop during a run: Martinet waits for the network (up to 3 min) and retries once the updates
+  that failed on a network error; the graphics driver also waits before downloading. The summary separates
+  network failures, real failures and updates winget lists but cannot apply (0x8A15002B). Defender not
+  running (another antivirus): a clear line instead of a PowerShell error.
+
 ### 0.5.2
 
 - Un installeur qui demande à Windows de fermer Martinet en plein passage (Restart Manager d'un MSI) n'arrête

@@ -512,6 +512,11 @@ TEXTES: dict[str, dict[str, str]] = {
     "journal.lancement": {"fr": "Lancement de {nom}", "en": "Starting {nom}"},
     # ---- résumés
     "resume.programmes": {"fr": "Programmes : {ok} sur {n} mis à jour.", "en": "Programs: {ok} of {n} updated."},
+    "resume.echecs_reseau": {"fr": "Réseau coupé, non faits (à relancer) : {liste}", "en": "Network down, not done (run again): {liste}"},
+    "resume.inapplicables": {"fr": "winget annonce une mise à jour qu'il ne sait pas appliquer : {liste} — à ignorer dans « Programmes » ou à faire à la main", "en": "winget lists an update it cannot apply: {liste} — ignore it in “Programs” or update by hand"},
+    "journal.attente_reseau": {"fr": "Réseau injoignable (nom non résolu) : attente de son retour, {s} s au plus…", "en": "Network unreachable (name not resolved): waiting up to {s} s for it…"},
+    "journal.second_essai": {"fr": "Second essai, réseau revenu : {nom}", "en": "Second attempt, network back: {nom}"},
+    "journal.defender_inactif": {"fr": "Microsoft Defender n'est pas actif (autre antivirus, ou désactivé) : pas de signatures à mettre à jour.", "en": "Microsoft Defender is not running (another antivirus, or disabled): no signatures to update."},
     "resume.echecs": {"fr": "Échecs : {liste}", "en": "Failures: {liste}"},
     "resume.etape_ko": {"fr": "{etape} : échec ({detail}), la suite a continué.", "en": "{etape}: failed ({detail}), the rest went on."},
     "resume.windows": {"fr": "Windows Update : {n} mise(s) à jour, {etat}.", "en": "Windows Update: {n} update(s), {etat}."},

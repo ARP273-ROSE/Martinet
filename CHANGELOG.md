@@ -1,5 +1,20 @@
 # Journal des versions / Changelog
 
+### 0.4.0
+
+- Pilotes AMD : cartes Radeon et graphismes intégrés des Ryzen. Martinet lit la page AMD de la carte (ou du
+  processeur), retient le pilote recommandé (WHQL, jamais l'optionnel), le compare à la version d'AMD
+  Software installée et lance l'installeur officiel. Puces Vega et Polaris signalées comme branche de
+  maintenance. Le passage automatique signale le pilote AMD sans l'installer.
+- Téléchargements depuis drivers.amd.com acceptés (page d'origine fournie) ; une page web reçue à la place
+  d'un installeur est refusée.
+- AMD drivers: Radeon cards and Ryzen integrated graphics. Martinet reads the card's (or processor's) AMD
+  page, keeps the recommended driver (WHQL, never the optional one), compares it with the installed AMD
+  Software version and runs the official installer. Vega and Polaris chips flagged as the maintenance
+  branch. The automatic run reports the AMD driver without installing it.
+- Downloads from drivers.amd.com accepted (referrer sent); a web page received instead of an installer is
+  refused.
+
 ### 0.3.1
 
 - « Tout mettre à jour » devient « Mettre à jour et nettoyer » : le bouton fait aussi le ménage, le pilote

@@ -89,7 +89,7 @@ On the very first start, Martinet offers to turn on the \textbf{scheduled run} e
 \capture{../capture_accueil-en.png}
 
 \begin{enumerate}
-\item \menu{Check everything} queries winget, vendors, Windows Update and NVIDIA, looks for dead
+\item \menu{Check everything} queries winget, vendors, Windows Update, NVIDIA and AMD, looks for dead
 shortcuts and measures the clean-up. \textbf{Nothing is changed} while checking, which takes one to
 three minutes (Windows Update is the slowest).
 \item Each card sums up a page; click it to open the page.
@@ -164,8 +164,14 @@ themselves (browsers, Microsoft 365, Adobe, NVIDIA App…) are marked “Updates
 
 For an \textbf{NVIDIA} card, Martinet queries NVIDIA's official service (the one the NVIDIA app uses)
 with the card's identifier and compares with the installed driver. \menu{Download and install the
-driver} fetches the official installer and runs it. For an AMD or Intel card, \menu{Open the page}
-leads to the vendor's detection tool.
+driver} fetches the official installer and runs it.
+
+For a \textbf{Radeon} (or a Ryzen's integrated graphics), Martinet reads AMD's driver page for that
+card, or processor, and keeps only the \textbf{recommended} (WHQL) driver, never the “optional” one.
+It compares it with the installed AMD Software version. AMD's installer opens and is followed on
+screen: the automatic run only reports it. Vega and Polaris chips are on AMD's maintenance branch:
+new drivers are rare, Windows Update is usually enough. For an Intel card, \menu{Open the page} leads
+to Intel's detection tool.
 
 \subsection{Windows Update}
 

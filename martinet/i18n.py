@@ -321,6 +321,20 @@ TEXTES: dict[str, dict[str, str]] = {
     "win.pilote_a_jour": {"fr": "Pilote à jour", "en": "Driver up to date"},
     "win.pilote_inconnu": {"fr": "Vérification automatique impossible pour ce fabricant : voir sa page.",
                            "en": "Automatic check not possible for this vendor: see its page."},
+    "win.pilote_maj_amd": {"fr": "Nouveau pilote recommandé (WHQL) : {nom} {version}. L'installeur d'AMD s'ouvrira, "
+                                 "il faut le suivre.",
+                           "en": "New recommended (WHQL) driver: {nom} {version}. AMD's installer will open, "
+                                 "follow it."},
+    "win.pilote_amd_inconnu": {"fr": "Dernier pilote recommandé (WHQL) : {version}. Version installée illisible "
+                                     "(pilote livré par Windows Update, sans AMD Software ?).",
+                               "en": "Latest recommended (WHQL) driver: {version}. Installed version unreadable "
+                                     "(driver from Windows Update, without AMD Software?)."},
+    "win.pilote_historique": {"fr": "Puce sur la branche de maintenance d'AMD (Vega, Polaris) : nouveaux pilotes "
+                                    "rares, Windows Update suffit le plus souvent.",
+                              "en": "Chip on AMD's maintenance branch (Vega, Polaris): new drivers are rare, "
+                                    "Windows Update is usually enough."},
+    "tout.pas_amd": {"fr": "le pilote AMD {version} (son installeur se lance depuis « Windows et pilotes »)",
+                     "en": "the AMD driver {version} (its installer runs from “Windows and drivers”)"},
     "win.pas_de_carte": {"fr": "Aucune carte graphique reconnue.", "en": "No graphics card recognised."},
     "win.mises_a_jour": {"fr": "Windows Update", "en": "Windows Update"},
     "win.rechercher": {"fr": "Rechercher", "en": "Search"},

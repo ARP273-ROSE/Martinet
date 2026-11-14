@@ -89,7 +89,7 @@ Au tout premier lancement, Martinet propose d'activer le \textbf{passage automat
 \capture{../capture_accueil-fr.png}
 
 \begin{enumerate}
-\item \menu{Tout vérifier} interroge winget, les éditeurs, Windows Update et NVIDIA, cherche les
+\item \menu{Tout vérifier} interroge winget, les éditeurs, Windows Update, NVIDIA et AMD, cherche les
 raccourcis morts et mesure le ménage. \textbf{Rien n'est modifié} pendant la vérification, qui prend
 une à trois minutes (Windows Update est le plus lent).
 \item Chaque carte résume une page ; un clic sur la carte l'ouvre.
@@ -170,8 +170,14 @@ marqués « Se met à jour tout seul ».}
 
 Pour une carte \textbf{NVIDIA}, Martinet interroge le service officiel de NVIDIA (celui de
 l'application NVIDIA) avec l'identifiant de la carte, et compare au pilote installé.
-\menu{Télécharger et installer le pilote} récupère l'installeur officiel et le lance. Pour une carte
-AMD ou Intel, \menu{Ouvrir la page} mène à l'outil de détection du fabricant.
+\menu{Télécharger et installer le pilote} récupère l'installeur officiel et le lance.
+
+Pour une \textbf{Radeon} (ou les graphismes intégrés d'un Ryzen), Martinet lit la page de pilotes
+d'AMD propre à la carte, ou au processeur, et n'en retient que le pilote \textbf{recommandé} (WHQL),
+jamais l'« optionnel ». Il le compare à la version d'AMD Software installée. L'installeur d'AMD
+s'ouvre et se suit à l'écran : le passage automatique ne fait que le signaler. Les puces Vega et
+Polaris sont sur la branche de maintenance d'AMD : nouveaux pilotes rares, Windows Update suffit le
+plus souvent. Pour une carte Intel, \menu{Ouvrir la page} mène à l'outil de détection d'Intel.
 
 \subsection{Windows Update}
 

@@ -221,11 +221,76 @@ def lire_reponse_nvidia(donnees: dict) -> dict:
             "page": attr.get("DetailsURL") or "https://www.nvidia.com/drivers/"}
 
 
+# ------------------------------------------------------------ AMD
+#: une page par produit ; elle donne le pilote « recommandé » (WHQL) et l'« optionnel »
+PAGES_AMD = "https://www.amd.com/en/support/downloads/drivers.html/"
+PAGE_AMD_GENERALE = "https://www.amd.com/en/support/download/drivers.html"
+
+
+def url_amd(nom_carte: str, processeur: str = "") -> str:
+    """Page de pilotes AMD d'une carte Radeon, ou du processeur pour les graphismes intégrés."""
+    m = re.search(r"\bRX\s*(\d{4})\s*(XTX|XT|GRE)?\b", nom_carte, re.I)
+    if m:
+        num, suffixe = m.group(1), (m.group(2) or "").lower()
+        return (f"{PAGES_AMD}graphics/radeon-rx/radeon-rx-{num[0]}000-series/"
+                f"amd-radeon-rx-{num}{'-' + suffixe if suffixe else ''}.html")
+    m = re.search(r"\bRyzen\s+(\d)\s+(?:PRO\s+)?(\d{4})([A-Z0-9]*)\b", processeur, re.I)
+    if m and re.search(r"Radeon|Vega", nom_carte, re.I):
+        rang, num, suffixe = m.group(1), m.group(2), m.group(3).lower()
+        return (f"{PAGES_AMD}processors/ryzen/ryzen-{num[0]}000-series/"
+                f"amd-ryzen-{rang}-{num}{suffixe}.html")
+    return ""
+
+
+def lire_page_amd(texte: str) -> dict:
+    """Pilote recommandé (WHQL) d'une page produit AMD ; jamais l'optionnel."""
+    fichiers = sorted(set(re.findall(
+        r"https://drivers\.amd\.com/drivers/(whql-amd-software-adrenalin-edition-[^\"'\s<>]+?\.exe)", texte)))
+    choix = []
+    for f in fichiers:
+        m = re.search(r"edition-(\d{2}\.\d{1,2}\.\d{1,2})", f)
+        if m:
+            choix.append((m.group(1), f))
+    if not choix:
+        raise LookupError("pas de pilote recommandé sur la page AMD")
+    version = la_plus_haute([v for v, _ in choix])
+    fichier = next(f for v, f in choix if v == version)
+    return {"version": version, "fichier": "https://drivers.amd.com/drivers/" + fichier,
+            "historique": "vega-polaris" in fichier.lower() or "legacy" in fichier.lower(),
+            "nom": "AMD Software: Adrenalin Edition"}
+
+
+def verifier_carte_amd(carte: Carte) -> Resultat:
+    res = Resultat(carte.nom, carte.version_logiciel or carte.version_windows, source="amd")
+    res.page = url_amd(carte.nom, carte.processeur) or PAGE_AMD_GENERALE
+    if demo.actif():
+        demo.pause(0.2)
+        infos = {"version": "26.10.1", "historique": False, "nom": "AMD Software: Adrenalin Edition",
+                 "fichier": "https://drivers.amd.com/drivers/whql-amd-software-adrenalin-edition-26.10.1-exemple.exe"}
+    elif res.page == PAGE_AMD_GENERALE:
+        res.etat = "inconnu"
+        return res
+    else:
+        try:
+            infos = lire_page_amd(systeme.telecharger_texte(res.page, timeout=30))
+        except Exception as exc:
+            res.etat, res.erreur = "erreur", str(exc)[:200]
+            return res
+    res.derniere, res.fichier = infos["version"], infos["fichier"]
+    res.details = {"nom": infos["nom"], "historique": infos["historique"]}
+    if not carte.version_logiciel:
+        res.etat = "inconnu"                 # pilote livré par Windows Update, sans AMD Software
+    else:
+        res.etat = "maj" if plus_recente(res.derniere, carte.version_logiciel) else "a_jour"
+    return res
+
+
 def verifier_carte(carte: Carte) -> Resultat:
+    if carte.fabricant == "amd":
+        return verifier_carte_amd(carte)
     res = Resultat(carte.nom, carte.version, source=carte.fabricant)
     if carte.fabricant != "nvidia":
-        res.page = {"amd": "https://www.amd.com/support/download/drivers.html",
-                    "intel": "https://www.intel.com/content/www/us/en/support/detect.html"
+        res.page = {"intel": "https://www.intel.com/content/www/us/en/support/detect.html"
                     }.get(carte.fabricant, "")
         res.etat = "inconnu"
         return res

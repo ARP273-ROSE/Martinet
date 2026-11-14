@@ -374,3 +374,45 @@ def test_menage_miniatures_filtre(tmp_path, monkeypatch):
     assert menage.mesurer("miniatures") == (10, 1)
     menage.nettoyer("miniatures")
     assert not (ex / "thumbcache_256.db").exists() and (ex / "autre.dat").exists()
+
+
+PAGE_AMD = ('<a href="https://drivers.amd.com/drivers/amd-software-adrenalin-edition-26.11.1-win11-b.exe">opt</a>'
+            '<a href="https://drivers.amd.com/drivers/whql-amd-software-adrenalin-edition-26.10.1-win11-b.exe">rec</a>'
+            '<a href="https://drivers.amd.com/drivers/installer/26.20/beta/amd-software-adrenalin-edition-26.11.1-'
+            'minimalsetup-261111_web.exe">auto</a>')
+
+
+def test_amd_recommande_jamais_optionnel():
+    from martinet import sources
+    r = sources.lire_page_amd(PAGE_AMD)
+    assert r["version"] == "26.10.1" and r["fichier"].endswith("whql-amd-software-adrenalin-edition-26.10.1-win11-b.exe")
+    assert not r["historique"]
+    v = sources.lire_page_amd('"https://drivers.amd.com/drivers/whql-amd-software-adrenalin-edition-26.5.2-win11-may-vega-polaris.exe"')
+    assert v["version"] == "26.5.2" and v["historique"]
+
+
+def test_amd_page_produit():
+    from martinet import sources
+    assert sources.url_amd("AMD Radeon RX 9070 XT").endswith(
+        "graphics/radeon-rx/radeon-rx-9000-series/amd-radeon-rx-9070-xt.html")
+    assert sources.url_amd("AMD Radeon RX 7900 XTX").endswith("radeon-rx-7000-series/amd-radeon-rx-7900-xtx.html")
+    assert sources.url_amd("AMD Radeon(TM) Graphics", "AMD Ryzen 7 5700G with Radeon Graphics").endswith(
+        "processors/ryzen/ryzen-5000-series/amd-ryzen-7-5700g.html")
+    assert sources.url_amd("AMD Radeon(TM) Graphics", "AMD Ryzen 7 7800X3D 8-Core Processor").endswith(
+        "ryzen-7000-series/amd-ryzen-7-7800x3d.html")
+    assert sources.url_amd("Microsoft Basic Display Adapter", "Intel Core i5-6600K") == ""
+
+
+def test_amd_comparaison(monkeypatch):
+    from martinet import sources
+    from martinet.materiel import Carte
+    monkeypatch.setattr(sources.demo, "actif", lambda: False)
+    monkeypatch.setattr(sources.systeme, "telecharger_texte", lambda url, timeout=20: PAGE_AMD)
+    c = Carte("AMD Radeon RX 9070 XT", "amd", "7550", "32.0.21030.1000", version_logiciel="26.5.1")
+    r = sources.verifier_carte(c)
+    assert r.etat == "maj" and r.derniere == "26.10.1" and r.installee == "26.5.1"
+    c.version_logiciel = "26.10.1"
+    assert sources.verifier_carte(c).etat == "a_jour"
+    c.version_logiciel = ""
+    r = sources.verifier_carte(c)
+    assert r.etat == "inconnu" and r.derniere == "26.10.1" and r.fichier

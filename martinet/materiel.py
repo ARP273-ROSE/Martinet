@@ -22,12 +22,14 @@ class Carte:
     id_peripherique: str     # « 2786 »
     version_windows: str     # « 32.0.15.7680 »
     date: str = ""
+    version_logiciel: str = ""   # AMD : version d'Adrenalin (« 26.10.1 »)
+    processeur: str = ""         # nom du processeur (graphismes intégrés)
 
     @property
     def version(self) -> str:
         if self.fabricant == "nvidia":
             return nvidia_lisible(self.version_windows) or self.version_windows
-        return self.version_windows
+        return self.version_logiciel or self.version_windows
 
 
 def _valeur(cle, nom, defaut=""):
@@ -69,7 +71,9 @@ def cartes_graphiques() -> list[Carte]:
                             fabricant=FABRICANTS.get(m.group(1), "autre"),
                             id_peripherique=m.group(2).upper(),
                             version_windows=str(_valeur(cle, "DriverVersion")),
-                            date=str(_valeur(cle, "DriverDate"))))
+                            date=str(_valeur(cle, "DriverDate")),
+                            version_logiciel=str(_valeur(cle, "RadeonSoftwareVersion")),
+                            processeur=processeur()))
     # une même carte peut apparaître plusieurs fois (anciennes entrées)
     vues, uniques = set(), []
     for c in cartes:
@@ -77,6 +81,18 @@ def cartes_graphiques() -> list[Carte]:
             vues.add((c.id_peripherique, c.version_windows))
             uniques.append(c)
     return uniques
+
+
+def processeur() -> str:
+    """« AMD Ryzen 7 5700G with Radeon Graphics » : sert aux graphismes intégrés."""
+    if demo.actif():
+        return demo.PROCESSEUR
+    import winreg
+    try:
+        cle = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, r"HARDWARE\DESCRIPTION\System\CentralProcessor\0")
+    except OSError:
+        return ""
+    return " ".join(str(_valeur(cle, "ProcessorNameString")).split())
 
 
 def logiciels_du_registre() -> list[tuple[str, str, str]]:

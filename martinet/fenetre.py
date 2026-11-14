@@ -307,6 +307,9 @@ class FenetrePrincipale(QtWidgets.QMainWindow):
             lignes.append(tr("tout.raccourcis", n=len(b.morts)))
         elif b.morts:
             pas_fait.append(tr("tout.pas_raccourcis"))
+        for c in b.cartes:
+            if c.etat == "maj" and c.source == "amd":
+                pas_fait.append(tr("tout.pas_amd", version=c.derniere))
         hors = [x for x in b.hors if x.etat == "maj"]
         if hors:
             pas_fait.insert(0, tr("tout.pas_hors", n=len(hors)))

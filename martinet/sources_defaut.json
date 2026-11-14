@@ -87,6 +87,12 @@
   "type": "seul"
  },
  {
+  "id": "amd-software",
+  "nom": "AMD Software",
+  "motif": "^AMD (Software|Settings|Radeon|Ryzen Master|Install Manager)",
+  "type": "seul"
+ },
+ {
   "id": "bitdefender",
   "nom": "Bitdefender",
   "motif": "^Bitdefender",

@@ -241,8 +241,14 @@ def telecharger_fichier(url: str, destination: Path, progression=None,
         raise ValueError("adresse non sécurisée refusée")
     destination.parent.mkdir(parents=True, exist_ok=True)
     partiel = destination.with_suffix(destination.suffix + ".part")
-    req = urllib.request.Request(url, headers={"User-Agent": AGENT})
+    entetes = {"User-Agent": AGENT}
+    if "drivers.amd.com" in url.lower():
+        # sans page d'origine, AMD renvoie vers une page « téléchargement incomplet »
+        entetes["Referer"] = "https://www.amd.com/"
+    req = urllib.request.Request(url, headers=entetes)
     with urllib.request.urlopen(req, timeout=60) as r, open(partiel, "wb") as f:
+        if "text/html" in (r.headers.get("Content-Type") or "").lower():
+            raise ValueError(f"page web reçue au lieu de l'installeur : {r.geturl()[:120]}")
         total = int(r.headers.get("Content-Length") or 0)
         lu = 0
         while True:

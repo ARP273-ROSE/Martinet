@@ -362,20 +362,26 @@ class PageWindows(Page):
         if cartes:
             textes = []
             for r in cartes:
-                if r.etat == "maj":
+                if r.etat == "maj" and r.source == "amd":
+                    etat = tr("win.pilote_maj_amd", version=r.derniere, nom=r.details.get("nom") or "")
+                elif r.etat == "maj":
                     etat = tr("win.pilote_maj", version=r.derniere, date=_jour(r.details.get("date")),
                               nom=r.details.get("nom") or "")
                 elif r.etat == "a_jour":
                     etat = tr("win.pilote_a_jour")
                 elif r.etat == "erreur":
                     etat = tr("etat.erreur", detail=r.erreur)
+                elif r.derniere:
+                    etat = tr("win.pilote_amd_inconnu", version=r.derniere)
                 else:
                     etat = tr("win.pilote_inconnu")
+                if r.details.get("historique"):
+                    etat += "<br>" + tr("win.pilote_historique")
                 textes.append(f"<b>{r.nom}</b> — {tr('win.pilote_installe', version=r.installee)}<br>{etat}")
             self.l_carte.setText("<br><br>".join(textes))
         elif self.bilan.windows is not None:
             self.l_carte.setText(tr("win.pas_de_carte"))
-        maj = [r for r in cartes if r.etat == "maj" and r.fichier]
+        maj = [r for r in cartes if r.etat in ("maj", "inconnu") and r.fichier]
         self.b_pilote.setEnabled(bool(maj))
         self.b_page.setEnabled(any(r.page for r in cartes))
         if self.bilan.windows is None:
@@ -429,7 +435,7 @@ class PageWindows(Page):
 
     def installer_pilote(self):
         for r in self.bilan.cartes:
-            if r.etat == "maj" and r.fichier:
+            if r.etat in ("maj", "inconnu") and r.fichier:
                 self.fen.telecharger_et_installer(r)
 
     def ouvrir_page_pilote(self):

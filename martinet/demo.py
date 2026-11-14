@@ -50,6 +50,7 @@ MISES_A_JOUR_WINDOWS = [
 
 CARTES = [{"nom": "NVIDIA GeForce RTX 4070", "fabricant": "nvidia", "id_peripherique": "2786",
            "version_windows": "32.0.15.8120", "date": "2026-09-02"}]
+PROCESSEUR = "AMD Ryzen 7 7800X3D 8-Core Processor"
 
 RACCOURCIS_MORTS = [
     ("Bureau", "Ancien jeu.lnk", r"D:\Jeux\AncienJeu\jeu.exe"),

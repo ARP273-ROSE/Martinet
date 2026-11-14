@@ -5,7 +5,7 @@ import os
 
 from PyQt6 import QtWidgets
 
-from . import linux_paquets, menage, style, systeme
+from . import linux_applis, linux_paquets, menage, reglages as mod_reglages, style, systeme
 from .i18n import tr
 from .pages import Page
 from .widgets import Tableau, bouton, etiquette, rangee
@@ -26,15 +26,45 @@ class PagePaquets(Page):
         self.table = Tableau([tr("col.paquet"), tr("col.installee"), tr("col.disponible"), tr("col.provenance")],
                              cochable=False)
         self.table.horizontalHeader().setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeMode.Stretch)
-        self.v.addWidget(self.table, 1)
-        self.v.addWidget(self.outil)
+        self.table.setMinimumHeight(170)
+        self.v.addWidget(self.table, 3)
+        # gestionnaire : yay (le vôtre) ou pamac
+        self.choix = QtWidgets.QComboBox()
+        for cle in ("auto", "yay", "pamac"):
+            self.choix.addItem(tr("lx.gestionnaire." + cle), cle)
+        self.choix.setCurrentIndex(max(0, self.choix.findData(self.reglages.gestionnaire_linux)))
+        self.choix.currentIndexChanged.connect(self._choix)
+        self.outil.setWordWrap(False)
+        ligne = QtWidgets.QHBoxLayout()
+        ligne.addWidget(etiquette(tr("lx.gestionnaire_choix")))
+        ligne.addWidget(self.choix)
+        ligne.addWidget(self.outil, 1)
+        self.v.addLayout(ligne)
+        # vos applications GitHub
+        g = QtWidgets.QGroupBox(tr("lx.applis"))
+        vg = QtWidgets.QVBoxLayout(g)
+        self.l_applis = etiquette("", style.GRIS)
+        self.t_applis = Tableau([tr("col.application"), tr("col.installee"), tr("col.disponible"),
+                                 tr("col.depot")])
+        self.t_applis.horizontalHeader().setSectionResizeMode(3, QtWidgets.QHeaderView.ResizeMode.Stretch)
+        self.b_applis = bouton(tr("prog.maj_selection"), self.mettre_a_jour_applis)
+        vg.addWidget(self.l_applis)
+        self.t_applis.setMinimumHeight(110)
+        vg.addWidget(self.t_applis)
+        vg.addLayout(rangee(self.b_applis))
+        self.v.addWidget(g, 2)
+        self.rafraichir()
+
+    def _choix(self):
+        self.reglages.gestionnaire_linux = self.choix.currentData()
+        mod_reglages.enregistrer(self.reglages)
         self.rafraichir()
 
     def rafraichir(self):
         paquets = self.bilan.paquets
-        o = linux_paquets.outils()
-        gestionnaire = "pamac" if o["pamac"] else "yay" if o["yay"] else "pacman"
-        self.outil.setText(tr("lx.gestionnaire", outil=gestionnaire))
+        self.outil.setText(tr("lx.gestionnaire",
+                              outil=linux_paquets.gestionnaire(self.reglages.gestionnaire_linux)))
+        self._rafraichir_applis()
         if paquets is None:
             self.table.remplir([])
             self.info.setText(tr("accueil.pas_verifie"))
@@ -46,6 +76,38 @@ class PagePaquets(Page):
         self.info.setText(tr("lx.resume_paquets", n=len(paquets), depots=n["depots"], aur=n["aur"],
                              flatpak=n["flatpak"]) if paquets else tr("accueil.a_jour"))
         self.b_maj.setEnabled(bool(paquets))
+
+    def _rafraichir_applis(self):
+        applis = self.bilan.applis
+        if applis is None:
+            self.t_applis.remplir([])
+            self.l_applis.setText(tr("accueil.pas_verifie"))
+            self.b_applis.setEnabled(False)
+            return
+        from .widgets import COULEUR_ETAT
+        self.t_applis.remplir(([a.nom, a.installee, a.derniere or "—", a.depot], a, a.etat == "maj",
+                               COULEUR_ETAT.get(a.etat)) for a in applis)
+        n = sum(1 for a in applis if a.etat == "maj")
+        self.l_applis.setText(tr("lx.applis_aucune") if not applis else
+                              tr("lx.applis_n", n=n, total=len(applis)) if n else tr("lx.applis_a_jour",
+                                                                                     total=len(applis)))
+        self.b_applis.setEnabled(n > 0)
+
+    def mettre_a_jour_applis(self):
+        choix = [a for a in self.t_applis.donnees() if a.etat == "maj"]
+        if not choix:
+            self.fen.message(tr("msg.rien_coche"))
+            return
+        from .orchestre_linux import mettre_a_jour_applis
+
+        def fini(lignes, erreur):
+            if erreur:
+                return self.fen.erreur_tache(erreur)
+            self.fen.consigner(lignes)
+            self.fen.message("\n".join(lignes))
+            self.fen.verifier_tout({"programmes"})
+
+        self.fen.lancer(tr("lx.applis"), lambda j, a: mettre_a_jour_applis(choix, j, a), fini)
 
     def mettre_a_jour(self):
         if not self.fen.confirmer(tr("lx.confirmer_maj", n=len(self.bilan.paquets or []))):
@@ -63,7 +125,8 @@ class PagePaquets(Page):
             if systeme.redemarrage_en_attente():
                 self.fen.proposer_redemarrage()
 
-        self.fen.lancer(tr("lx.tache_maj"), lambda j, a: linux_paquets.mettre_a_jour(j, a), fini)
+        choix = self.reglages.gestionnaire_linux
+        self.fen.lancer(tr("lx.tache_maj"), lambda j, a: linux_paquets.mettre_a_jour(j, a, choix=choix), fini)
 
 
 # ====================================================================== système
@@ -203,8 +266,9 @@ class PageSysteme(Page):
 
 
 def regle_polkit_case(page) -> QtWidgets.QCheckBox | None:
-    """Case « sans mot de passe » de la page Planification (pamac seulement)."""
-    if not linux_paquets.outils()["pamac"]:
+    """Case « sans mot de passe » de la page Planification (pamac, ou pacman lancé par yay)."""
+    o = linux_paquets.outils()
+    if not (o["pamac"] or o["yay"]):
         return None
     c = QtWidgets.QCheckBox(tr("lx.sans_mot_de_passe"))
     c.setToolTip(tr("lx.sans_mot_de_passe.bulle"))

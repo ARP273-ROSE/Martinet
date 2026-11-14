@@ -18,7 +18,7 @@
 | Planification | passage automatique quotidien ou hebdomadaire, notification à la fin |
 | Historique | chaque passage et son détail |
 
-**Sous Manjaro / Arch** : pages *Paquets* (dépôts, AUR, Flatpak, par pamac, sinon yay, sinon pacman ; tout le système d'un coup), *Système* (redémarrage nécessaire, noyau plus suivi, micrologiciels fwupd, fichiers `.pacnew`, paquets orphelins à retirer un par un), *Lanceurs morts* (`.desktop`), *Ménage* (cache des paquets en gardant 2 versions, fichiers de construction AUR, runtimes Flatpak inutilisés…), planification par minuteur systemd, règle polkit facultative limitée à pamac pour mettre à jour sans mot de passe.
+**Sous Manjaro / Arch** : pages *Paquets* (dépôts, AUR, Flatpak, par yay ou pamac au choix ; tout le système d'un coup ; vos applications publiées sur GitHub retrouvées dans `~/.local/share` et mises à jour par leur archive officielle vérifiée), *Système* (redémarrage nécessaire, noyau plus suivi, micrologiciels fwupd, fichiers `.pacnew`, paquets orphelins à retirer un par un), *Lanceurs morts* (`.desktop`), *Ménage* (cache des paquets en gardant 2 versions, fichiers de construction AUR, runtimes Flatpak inutilisés…), planification par minuteur systemd, règle polkit facultative limitée à pamac et pacman (pour yay) pour mettre à jour sans mot de passe.
 
 **Sous Windows 10** : même fonctionnement, bandeau de fin de support, aide à installer winget s'il manque.
 
@@ -39,7 +39,7 @@ Installation : Windows, `Martinet-Setup.exe` ; Linux, `Martinet-linux-x86_64.tar
 - **Clean-up**: temporary files older than 7 days, error reports, Windows Update cache, crash dumps, logs, driver setup leftovers; on request: thumbnails, browser and shader caches, superseded components (DISM), recycle bin. No “registry cleaning”.
 - **Schedule**: daily or weekly unattended run with a notification; **History** of every run.
 
-- **On Manjaro / Arch**: *Packages* (repositories, AUR, Flatpak through pamac, else yay, else pacman; whole system at once), *System* (restart needed, unmaintained kernel, fwupd firmware, `.pacnew` files, orphan packages removed one by one), *Dead launchers* (`.desktop`), *Clean-up* (package cache keeping 2 versions, AUR build files, unused Flatpak runtimes…), systemd timer, optional polkit rule limited to pamac for password-less updates.
+- **On Manjaro / Arch**: *Packages* (repositories, AUR, Flatpak through yay or pamac; whole system at once; your applications published on GitHub found in `~/.local/share` and updated from their verified official archive), *System* (restart needed, unmaintained kernel, fwupd firmware, `.pacnew` files, orphan packages removed one by one), *Dead launchers* (`.desktop`), *Clean-up* (package cache keeping 2 versions, AUR build files, unused Flatpak runtimes…), systemd timer, optional polkit rule limited to pamac and pacman (for yay) for password-less updates.
 - **On Windows 10**: same behaviour, end-of-support banner, help to install winget if missing.
 
 Install: Windows, `Martinet-Setup.exe`; Linux, `Martinet-linux-x86_64.tar.gz` then `./installer.sh` (no sudo).

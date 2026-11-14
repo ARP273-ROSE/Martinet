@@ -94,7 +94,7 @@ class PageAccueil(Page):
         if b.paquets is None:
             self._carte("paquets", jamais)
         else:
-            n = len(b.paquets)
+            n = len(b.paquets) + len([a for a in (b.applis or []) if a.etat == "maj"])
             self._carte("paquets", tr("accueil.n_maj", n=n) if n else tr("accueil.a_jour"))
         s = b.lx
         if s is None:

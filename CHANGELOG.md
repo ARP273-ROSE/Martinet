@@ -2,21 +2,25 @@
 
 ### 0.5.0
 
-- **Manjaro / Arch** : mode Linux complet. Paquets des dépôts, de l'AUR et Flatpak (pamac, sinon yay, sinon
-  pacman ; tout le système d'un coup, jamais de mise à jour partielle) ; page Système : redémarrage
+- **Manjaro / Arch** : mode Linux complet. Paquets des dépôts, de l'AUR et Flatpak (yay s'il est installé,
+  sinon pamac, au choix ; yay sans terminal, mot de passe par pkexec ; tout le système d'un coup, jamais de
+  mise à jour partielle) ; vos applications publiées sur GitHub (installées par leur installer.sh)
+  retrouvées seules et mises à jour par leur archive officielle, empreinte SHA-256 vérifiée ; page Système : redémarrage
   nécessaire, noyau plus suivi, micrologiciels (fwupd), fichiers .pacnew, paquets orphelins retirés un par
   un ; lanceurs .desktop morts mis de côté ; ménage (cache des paquets en gardant 2 versions, fichiers de
   construction AUR, runtimes Flatpak inutilisés, miniatures, journaux, vidages, corbeille) en une seule
   demande de mot de passe ; passage automatique par minuteur systemd ; règle polkit facultative, limitée
-  à pamac et au compte, pour mettre à jour sans mot de passe. Paquet Linux x86_64 (`installer.sh`, sans sudo).
+  à pamac, à pacman (yay) et au compte, pour mettre à jour sans mot de passe. Paquet Linux x86_64 (`installer.sh`, sans sudo).
 - **Windows 10** : bandeau de fin de support, bouton vers le Microsoft Store si winget manque, PowerShell
   5.1 forcé en TLS 1.2 pour installer le module WinGet.
-- **Manjaro / Arch**: full Linux mode. Repository, AUR and Flatpak packages (pamac, else yay, else pacman;
-  whole system at once, never a partial upgrade); System page: restart needed, unmaintained kernel,
+- **Manjaro / Arch**: full Linux mode. Repository, AUR and Flatpak packages (yay when installed, else pamac,
+  your choice; yay without a terminal, password through pkexec; whole system at once, never a partial
+  upgrade); your applications published on GitHub (installed with their installer.sh) found on their own
+  and updated from their official archive, SHA-256 checked; System page: restart needed, unmaintained kernel,
   firmware (fwupd), .pacnew files, orphan packages removed one by one; dead .desktop launchers set aside;
   clean-up (package cache keeping 2 versions, AUR build files, unused Flatpak runtimes, thumbnails, logs,
   dumps, trash) with a single password request; scheduled run through a systemd timer; optional polkit
-  rule, limited to pamac and the account, for password-less updates. Linux x86_64 package (`installer.sh`,
+  rule, limited to pamac, pacman (yay) and the account, for password-less updates. Linux x86_64 package (`installer.sh`,
   no sudo).
 - **Windows 10**: end-of-support banner, button to the Microsoft Store when winget is missing, PowerShell
   5.1 forced to TLS 1.2 to install the WinGet module.

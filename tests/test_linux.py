@@ -61,7 +61,7 @@ def test_pacnew(tmp_path):
 
 def test_regle_polkit_limitee_a_pamac():
     t = lp.texte_regle("utilisateur")
-    assert 'action.id == "org.manjaro.pamac.commit"' in t and 'subject.user == "utilisateur"' in t
+    assert 'action.id == "org.manjaro.pamac.commit"' in t and 'subject.user != "utilisateur"' in t
 
 
 def test_paccache_et_journal():
@@ -191,3 +191,70 @@ def test_tailles_dans_la_langue():
         assert menage.taille_lisible(3 * 1024 ** 3) == "3,0 Go"
     finally:
         definir_langue(avant)
+
+
+def test_gestionnaire_yay_d_abord(monkeypatch):
+    present = {"pamac": True, "yay": True}
+    monkeypatch.setattr(lp, "outils", lambda: {**{k: False for k in ("paccache", "flatpak", "fwupdmgr",
+                                                                      "checkupdates", "pacman")}, **present})
+    assert lp.gestionnaire("auto") == "yay"
+    assert lp.gestionnaire("pamac") == "pamac"
+    present["yay"] = False
+    assert lp.gestionnaire("auto") == "pamac" and lp.gestionnaire("yay") == "pamac"
+    assert "--sudo" in lp.YAY_SANS_QUESTION and "pkexec" in lp.YAY_SANS_QUESTION
+
+
+def test_regle_polkit_yay():
+    t = lp.texte_regle("utilisateur")
+    assert 'action.lookup("program") == "/usr/bin/pacman"' in t and "org.freedesktop.policykit.exec" in t
+
+
+def test_release_github():
+    from martinet import linux_applis as la
+    d = {"tag_name": "v0.9.0", "assets": [
+        {"name": "Coupole-0.9.0-linux-x86_64.tar.gz", "browser_download_url": "https://x/a.tar.gz"},
+        {"name": "Coupole-linux-x86_64.tar.gz", "browser_download_url": "https://x/b.tar.gz"},
+        {"name": "SHA256SUMS", "browser_download_url": "https://x/S"}]}
+    assert la.lire_release(d, "Coupole", "x86_64") == ("0.9.0", "https://x/a.tar.gz", "https://x/S")
+    assert la._empreinte_attendue("abc  Coupole-0.9.0-linux-x86_64.tar.gz\n", "Coupole-0.9.0-linux-x86_64.tar.gz") == "abc"
+
+
+def test_applis_trouvees(tmp_path, monkeypatch):
+    import json
+    from martinet import linux_applis as la
+    monkeypatch.setattr(la.demo, "actif", lambda: False)
+    monkeypatch.setenv("XDG_DATA_HOME", str(tmp_path))
+    for tech, depot in (("coupole", "proprio/Coupole"), ("martinet", "proprio/Martinet")):
+        app = tmp_path / tech / "app"
+        app.mkdir(parents=True)
+        (app / "kit.json").write_text(json.dumps({"nom_technique": tech, "nom_fichier": tech.title(),
+                                                   "depot_distribution": depot}))
+        (app / "VERSION").write_text("0.8.6\n")
+    (tmp_path / "applications").mkdir()
+    trouvees = la.trouver()
+    assert [(a.tech, a.installee, a.depot) for a in trouvees] == [("coupole", "0.8.6", "proprio/Coupole")]
+
+
+def test_maj_appli_par_installer_sh(tmp_path, monkeypatch):
+    """Archive vérifiée par son empreinte puis installer.sh : le vrai chemin, hors réseau."""
+    import hashlib, io, tarfile
+    from martinet import linux_applis as la
+    monkeypatch.setattr(la.demo, "actif", lambda: False)
+    temoin = tmp_path / "installe.txt"
+    script = f"#!/bin/sh\necho ok > {temoin}\n".encode()
+    tampon = io.BytesIO()
+    with tarfile.open(fileobj=tampon, mode="w:gz") as t:
+        info = tarfile.TarInfo("Coupole/installer.sh")
+        info.size, info.mode = len(script), 0o755
+        t.addfile(info, io.BytesIO(script))
+    donnees = tampon.getvalue()
+    nom = "Coupole-0.9.0-linux-x86_64.tar.gz"
+    monkeypatch.setattr(la.systeme, "telecharger_fichier", lambda url, dest, p=None, a=None: dest.write_bytes(donnees))
+    monkeypatch.setattr(la.systeme, "telecharger_texte",
+                        lambda url, timeout=20: f"{hashlib.sha256(donnees).hexdigest()}  {nom}\n")
+    a = la.Appli("Coupole", "coupole", "Coupole", "p/Coupole", str(tmp_path / "pas-en-marche"), "0.8.6", "0.9.0",
+                 f"https://x/{nom}", "https://x/SHA256SUMS", "maj")
+    assert la.mettre_a_jour(a) == (True, "") and temoin.read_text().strip() == "ok"
+    monkeypatch.setattr(la.systeme, "telecharger_texte", lambda url, timeout=20: f"{'0' * 64}  {nom}\n")
+    ok, detail = la.mettre_a_jour(a)
+    assert not ok and "SHA-256" in detail

@@ -137,6 +137,9 @@ def _liste_console() -> int:
         print(f"[Windows] {m.titre}")
     for p in b.paquets or []:
         print(f"[{p.origine}]  {p.nom} : {p.installee} -> {p.disponible}")
+    for a in b.applis or []:
+        if a.etat == "maj":
+            print(f"[github]  {a.nom} : {a.installee} -> {a.derniere}")
     if b.lx is not None:
         for m in b.lx.micrologiciels:
             print(f"[fwupd]  {m.appareil} : {m.installee} -> {m.disponible}")

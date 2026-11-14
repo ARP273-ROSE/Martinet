@@ -111,6 +111,11 @@ MENAGE_LINUX = {
     "corbeille": (1_200_000_000, 61),
 }
 
+APPLIS_LINUX = [
+    ("Coupole", "coupole", "Coupole", "proprietaire/Coupole", "/opt/exemple/coupole", "0.8.6", "0.9.0"),
+    ("Tutti", "tutti", "Tutti", "proprietaire/Tutti", "/opt/exemple/tutti", "1.3.0", "1.3.0"),
+]
+
 LANCEURS_MORTS = [
     ("menu", ".local/share/applications/ancien-jeu.desktop", "/opt/ancien-jeu/jeu"),
     ("autostart", ".config/autostart/outil-retire.desktop", "outil-retire"),

@@ -6,7 +6,7 @@ fenêtre et la planification n'ont pas à savoir sur quel système elles sont.
 """
 from __future__ import annotations
 
-from . import linux_paquets, menage, raccourcis, systeme
+from . import linux_applis, linux_paquets, menage, raccourcis, systeme
 from .i18n import tr
 from .orchestre import Bilan, avancer
 from .reglages import Reglages
@@ -41,7 +41,11 @@ def verifier_tout(reglages: Reglages, journal=None, annulation=None, etapes=None
                 journal(tr("journal.echec_etape", etape=nom, detail=str(exc)[:200]))
 
     if "programmes" in etapes:
-        etape("programmes", lambda: setattr(b, "paquets", linux_paquets.rechercher(journal)))
+        def _paquets():
+            b.paquets = linux_paquets.rechercher(journal, reglages.gestionnaire_linux)
+            part("programmes", 0.7, tr("lx.applis"))
+            b.applis = linux_applis.verifier(journal=journal)
+        etape("programmes", _paquets)
     if "windows" in etapes:
         etape("windows", lambda: setattr(b, "lx", linux_paquets.etat_systeme(journal)))
     if "raccourcis" in etapes:
@@ -55,6 +59,26 @@ def verifier_tout(reglages: Reglages, journal=None, annulation=None, etapes=None
         etape("menage", _menage)
     avancer(journal, 1.0)
     return b
+
+
+def mettre_a_jour_applis(applis: list, journal=None, annulation=None) -> list[str]:
+    """Vos applications GitHub : une par une, une appli ouverte est laissée pour plus tard."""
+    lignes, ok, echecs = [], 0, []
+    for a in applis:
+        if annulation is not None and annulation.is_set():
+            raise systeme.Annule()
+        if journal:
+            journal(tr("journal.maj_paquet", nom=a.nom, avant=a.installee, apres=a.derniere))
+        reussi, detail = linux_applis.mettre_a_jour(a, journal, annulation)
+        if reussi:
+            ok += 1
+        else:
+            echecs.append(f"{a.nom} ({detail})")
+    if applis:
+        lignes.append(tr("lx.resume.applis", ok=ok, n=len(applis)))
+    if echecs:
+        lignes.append(tr("resume.echecs", liste=", ".join(echecs)))
+    return lignes
 
 
 def a_nettoyer(reglages: Reglages) -> list:
@@ -77,11 +101,13 @@ def tout_mettre_a_jour(reglages: Reglages, journal=None, annulation=None, progra
     if programmes and b.paquets:
         stop()
         avancer(journal, 0.0, tr("lx.etape.programmes"))
-        ok, detail = linux_paquets.mettre_a_jour(journal, annulation)
+        ok, detail = linux_paquets.mettre_a_jour(journal, annulation, choix=reglages.gestionnaire_linux)
         resume.append(tr("lx.resume.paquets", n=len(b.paquets)) if ok
                       else tr("lx.resume.paquets_ko", detail=detail))
     elif programmes and b.paquets is not None:
         resume.append(tr("lx.resume.rien"))
+    if programmes:
+        resume += mettre_a_jour_applis([a for a in (b.applis or []) if a.etat == "maj"], journal, annulation)
     if nettoyer:
         stop()
         avancer(journal, 1 / unites, tr("etape.menage"))

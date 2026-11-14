@@ -132,15 +132,32 @@ def lire_fwupd(donnees) -> list[Micrologiciel]:
     return resultat
 
 
+def gestionnaire(choix: str = "auto") -> str:
+    """« yay », « pamac » ou « pacman ». En automatique, yay d'abord : il n'est installé que
+    par qui s'en sert (pamac, lui, est livré d'office avec Manjaro)."""
+    o = outils()
+    if choix in ("yay", "pamac") and o[choix]:
+        return choix
+    for nom in ("yay", "pamac"):
+        if o[nom]:
+            return nom
+    return "pacman"
+
+
+#: yay sans terminal : pkexec pour les droits, menus de relecture des PKGBUILD passés
+YAY_SANS_QUESTION = ["--noconfirm", "--sudo", "pkexec", "--answerclean", "None", "--answerdiff", "None",
+                     "--answeredit", "None", "--answerupgrade", "None", "--removemake"]
+
+
 # ------------------------------------------------------------ recherche
-def rechercher(journal=None) -> list[Paquet]:
+def rechercher(journal=None, choix: str = "auto") -> list[Paquet]:
     """Mises à jour des dépôts, de l'AUR et de Flatpak, sans rien modifier."""
     if demo.actif():
         demo.pause(0.6)
         return [Paquet(*p) for p in demo.PAQUETS_LINUX]
     o = outils()
     paquets: list[Paquet] = []
-    if o["pamac"]:
+    if gestionnaire(choix) == "pamac":
         if journal:
             journal("pamac checkupdates -a")
         _code, sortie = systeme.executer(["pamac", "checkupdates", "-a"], timeout=300, env=systeme.ENV_C)
@@ -211,7 +228,8 @@ def chercher_pacnew(racine: str = "/etc") -> list[str]:
 
 
 # ------------------------------------------------------------ actions
-def mettre_a_jour(journal=None, annulation=None, aur: bool = True, flatpak: bool = True) -> tuple[bool, str]:
+def mettre_a_jour(journal=None, annulation=None, aur: bool = True, flatpak: bool = True,
+                  choix: str = "auto") -> tuple[bool, str]:
     """Tout le système (jamais de mise à jour partielle), puis Flatpak."""
     if demo.actif():
         for p in demo.PAQUETS_LINUX:
@@ -220,10 +238,11 @@ def mettre_a_jour(journal=None, annulation=None, aur: bool = True, flatpak: bool
                 journal(f"{p[0]} {p[1]} -> {p[2]}")
         return True, ""
     o = outils()
-    if o["pamac"]:
+    g = gestionnaire(choix)
+    if g == "pamac":
         cmd = ["pamac", "upgrade", "--aur" if aur else "--no-aur", "--no-confirm"]
-    elif o["yay"]:
-        cmd = ["yay", "-Syu", "--noconfirm", "--sudo", "pkexec"] + ([] if aur else ["--repo"])
+    elif g == "yay":
+        cmd = ["yay", "-Syu", *YAY_SANS_QUESTION] + ([] if aur else ["--repo"])
     elif o["pacman"]:
         cmd = ["pkexec", "pacman", "-Syu", "--noconfirm"]
     else:
@@ -273,12 +292,20 @@ REGLE_POLKIT = Path("/etc/polkit-1/rules.d/49-martinet-pamac.rules")
 
 
 def texte_regle(utilisateur: str) -> str:
-    return ("// Martinet : mises à jour de " + utilisateur + " sans mot de passe (pamac seulement).\n"
+    """pamac, et pacman lancé par pkexec (ce que fait yay) : rien d'autre, et pour ce compte seulement."""
+    return ("// Martinet : mises à jour de " + utilisateur + " sans mot de passe (pamac, et pacman via yay).\n"
             "polkit.addRule(function(action, subject) {\n"
-            "    if (action.id == \"org.manjaro.pamac.commit\" && subject.user == \""
-            + utilisateur + "\") {\n"
+            "    if (subject.user != \"" + utilisateur + "\") {\n"
+            "        return polkit.Result.NOT_HANDLED;\n"
+            "    }\n"
+            "    if (action.id == \"org.manjaro.pamac.commit\") {\n"
             "        return polkit.Result.YES;\n"
             "    }\n"
+            "    if (action.id == \"org.freedesktop.policykit.exec\" &&\n"
+            "        action.lookup(\"program\") == \"/usr/bin/pacman\") {\n"
+            "        return polkit.Result.YES;\n"
+            "    }\n"
+            "    return polkit.Result.NOT_HANDLED;\n"
             "});\n")
 
 

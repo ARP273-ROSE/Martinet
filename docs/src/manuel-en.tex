@@ -247,7 +247,7 @@ usually done by hand in a terminal. The pages change a little:
 \toprule
 \textbf{\color{ink}Page} & \textbf{What it does} \\
 \midrule
-Packages & Manjaro repositories, AUR and Flatpak; the whole system is updated at once \\
+Packages & Manjaro repositories, AUR and Flatpak, the whole system at once; your applications published on GitHub \\
 System & restart needed, unmaintained kernel, firmware (fwupd), \texttt{.pacnew} files, orphan packages \\
 Dead launchers & \texttt{.desktop} launchers in the menu, on the Desktop and in autostart whose program has disappeared \\
 Clean-up & package cache, AUR build files, unused Flatpak runtimes… \\
@@ -260,10 +260,19 @@ Schedule & systemd timer of your account \\
 
 \capture{../capture_lx_paquets-en.png}
 
-Martinet goes through \textbf{pamac} (Manjaro's tool: repositories and AUR in one transaction, password
-asked in a real window), otherwise \textbf{yay}, otherwise pacman. There is no box per package: on Arch
-and Manjaro a partial upgrade can break the system, so it is all or nothing. Flatpak applications
-follow straight after.
+Martinet goes through \textbf{yay} when it is installed (it means you use it), otherwise
+\textbf{pamac} (the tool shipped with Manjaro), otherwise pacman; the \menu{Package manager} list
+forces one or the other. yay runs without a terminal: the password is asked in a real window
+(pkexec) and the PKGBUILD review menus are skipped. There is no box per package: on Arch and Manjaro a
+partial upgrade can break the system, so it is all or nothing. Flatpak applications follow straight
+after.
+
+\textbf{Your GitHub applications}: every application installed with its \fichier{installer.sh} in
+\fichier{\textasciitilde/.local/share} (Coupole, Tutti…) is found on its own, from its
+\fichier{app/kit.json}, and compared with the latest release on GitHub. The update follows the
+official path: the release's Linux archive, its SHA-256 checked against \fichier{SHA256SUMS}, then its
+\fichier{installer.sh}, without sudo. An open application is left for the next run; its settings,
+kept elsewhere, are never touched.
 
 \subsection{System}
 
@@ -295,7 +304,8 @@ single password request.
 
 The automatic run is a systemd timer of your account (\fichier{\textasciitilde/.config/systemd/user}).
 For it to update packages while you are away, check \menu{Update without asking for the password}:
-Martinet installs a polkit rule that allows \textbf{only pamac}, and \textbf{only for your account}.
+Martinet installs a polkit rule that allows \textbf{only pamac and pacman} (the one yay runs through
+pkexec), and \textbf{only for your account}.
 Without it, the run asks for the password if you are at the screen, otherwise it skips packages and
 reports it. Unchecking removes the rule.
 

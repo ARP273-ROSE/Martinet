@@ -329,6 +329,9 @@ class FenetrePrincipale(QtWidgets.QMainWindow):
             n = {o: sum(1 for p in b.paquets if p.origine == o) for o in ("depots", "aur", "flatpak")}
             lignes.append(tr("lx.tout.paquets", n=len(b.paquets), depots=n["depots"], aur=n["aur"],
                              flatpak=n["flatpak"]))
+        applis = [a for a in (b.applis or []) if a.etat == "maj"]
+        if applis:
+            lignes.append(tr("lx.tout.applis", n=len(applis), liste=", ".join(a.nom for a in applis)))
         elements = [e for e in menage.elements() if e.coche]
         if elements:
             taille = sum((b.menage.get(e.cle) or (0, 0))[0] or 0 for e in elements)
@@ -616,5 +619,5 @@ class FenetrePrincipale(QtWidgets.QMainWindow):
         QtWidgets.QMessageBox.information(self, tr("signal.merci"), msg)
 
 
-ETAPES = {"programmes": ("inventaire", "hors", "sans_source", "paquets"), "windows": ("cartes", "windows", "lx"),
+ETAPES = {"programmes": ("inventaire", "hors", "sans_source", "paquets", "applis"), "windows": ("cartes", "windows", "lx"),
           "raccourcis": ("morts",), "menage": ("menage",)}

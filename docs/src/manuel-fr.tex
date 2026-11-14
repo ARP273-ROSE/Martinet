@@ -256,7 +256,7 @@ ce qu'on fait d'habitude à la main dans un terminal. Les pages changent un peu 
 \toprule
 \textbf{\color{ink}Page} & \textbf{Ce qu'elle fait} \\
 \midrule
-Paquets & dépôts Manjaro, AUR et Flatpak ; tout le système se met à jour d'un coup \\
+Paquets & dépôts Manjaro, AUR et Flatpak, tout le système d'un coup ; vos applications publiées sur GitHub \\
 Système & redémarrage nécessaire, noyau plus suivi, micrologiciels (fwupd), fichiers \texttt{.pacnew}, paquets orphelins \\
 Lanceurs morts & lanceurs \texttt{.desktop} du menu, du Bureau et du démarrage automatique dont le programme a disparu \\
 Ménage & cache des paquets, fichiers de construction de l'AUR, runtimes Flatpak inutilisés… \\
@@ -269,10 +269,19 @@ Planification & minuteur systemd de votre compte \\
 
 \capture{../capture_lx_paquets-fr.png}
 
-Martinet passe par \textbf{pamac} (l'outil de Manjaro : dépôts et AUR en une transaction, mot de
-passe demandé par une vraie fenêtre), sinon par \textbf{yay}, sinon par pacman. Il n'y a pas de case
-par paquet : sous Arch et Manjaro, une mise à jour partielle peut casser le système, on met donc à
-jour tout ou rien. Les applications Flatpak suivent dans la foulée.
+Martinet passe par \textbf{yay} s'il est installé (c'est qu'on s'en sert), sinon par \textbf{pamac}
+(l'outil livré avec Manjaro), sinon par pacman ; la liste \menu{Gestionnaire} impose l'un ou l'autre.
+yay tourne sans terminal : le mot de passe est demandé par une vraie fenêtre (pkexec) et les menus de
+relecture des PKGBUILD sont passés. Il n'y a pas de case par paquet : sous Arch et Manjaro, une mise à
+jour partielle peut casser le système, on met donc à jour tout ou rien. Les applications Flatpak
+suivent dans la foulée.
+
+\textbf{Vos applications GitHub} : toute application installée par son \fichier{installer.sh} dans
+\fichier{\textasciitilde/.local/share} (Coupole, Tutti…) est retrouvée seule, d'après sa fiche
+\fichier{app/kit.json}, et comparée à la dernière version publiée sur GitHub. La mise à jour reprend
+le chemin officiel : l'archive Linux de la version, son empreinte SHA-256 vérifiée contre
+\fichier{SHA256SUMS}, puis son \fichier{installer.sh}, sans sudo. Une application ouverte est laissée
+pour le passage suivant ; ses réglages, rangés ailleurs, ne sont jamais touchés.
 
 \subsection{Système}
 
@@ -304,8 +313,8 @@ d'administrateur passe en une seule demande de mot de passe.
 
 Le passage automatique est un minuteur systemd de votre compte (\fichier{\textasciitilde/.config/systemd/user}).
 Pour qu'il mette à jour les paquets quand vous n'êtes pas là, cochez \menu{Mettre à jour sans demander
-le mot de passe} : Martinet pose une règle polkit qui autorise \textbf{seulement pamac}, et
-\textbf{seulement pour votre compte}. Sans elle, le passage demande le mot de passe s'il vous trouve
+le mot de passe} : Martinet pose une règle polkit qui autorise \textbf{seulement pamac et pacman}
+(celui que yay lance par pkexec), et \textbf{seulement pour votre compte}. Sans elle, le passage demande le mot de passe s'il vous trouve
 devant l'écran, sinon il saute les paquets et le signale. Décocher retire la règle.
 
 \section{Historique}

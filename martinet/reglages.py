@@ -23,6 +23,7 @@ class Reglages:
     auto_jour: int = 6            # 0 = lundi … 6 = dimanche
     auto_heure: str = "12:00"
     auto_frequence: str = "hebdo"  # quotidien, hebdo
+    gestionnaire_linux: str = "auto"   # auto (yay s'il est installé, sinon pamac), yay, pamac
 
 
 def _fichier():

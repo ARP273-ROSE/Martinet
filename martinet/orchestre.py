@@ -27,6 +27,7 @@ class Bilan:
     # Linux
     paquets: list | None = None                       # linux_paquets.Paquet (dépôts, AUR, Flatpak)
     lx: object | None = None                          # linux_paquets.Systeme
+    applis: list | None = None                        # linux_applis.Appli (vos applications GitHub)
 
 
 def _est_bruit(p: winget.Paquet) -> bool:

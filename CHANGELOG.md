@@ -1,5 +1,16 @@
 # Journal des versions / Changelog
 
+### 0.5.2
+
+- Un installeur qui demande à Windows de fermer Martinet en plein passage (Restart Manager d'un MSI) n'arrête
+  plus tout : Martinet refuse poliment et le passage continue ; l'installeur remet au prochain redémarrage
+  ce qui était vraiment utilisé. Fermeture propre même si une tâche tourne encore (plus de plantage de Qt).
+  Le journal du passage est écrit au fil de l'eau : un passage coupé net apparaît dans l'historique au
+  lancement suivant, avec sa dernière ligne.
+- An installer asking Windows to close Martinet mid-run (an MSI's Restart Manager) no longer stops
+  everything: Martinet declines and the run goes on. Clean exit even with a task still running (no more Qt
+  crash). The run log is written as it goes: a run cut short shows up in the history at the next start.
+
 ### 0.5.1
 
 - Windows 10 : le bandeau tient compte de la prolongation de l'ESU grand public jusqu'au 12 octobre 2027

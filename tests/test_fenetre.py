@@ -132,3 +132,27 @@ def test_plan_tout_liste_ce_qui_sera_fait(app, fen):
     texte = fen.plan_tout(fen.bilan, True)
     assert "winget" in texte and "Defender" in texte and "NVIDIA" in texte
     assert "raccourci" in texte.lower() or "shortcut" in texte.lower()
+
+
+def test_fin_de_session_refusee_pendant_un_passage(app, fen):
+    import threading
+    win = fen
+    win.file.attendre(20000)
+    libre = threading.Event()
+    win.file.ajouter("essai", lambda j, a: libre.wait(10))
+
+    class Gestionnaire:
+        annule = False
+
+        def cancel(self):
+            self.annule = True
+
+    g = Gestionnaire()
+    win.fin_de_session(g)
+    assert g.annule
+    libre.set()
+    assert win.file.arreter(5000)
+    g2 = Gestionnaire()
+    win.file.attendre(5000)
+    win.fin_de_session(g2)
+    assert not g2.annule

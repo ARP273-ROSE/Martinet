@@ -571,6 +571,8 @@ TEXTES: dict[str, dict[str, str]] = {
                            "en": "Some checks failed:\n{liste}"},
     "msg.redemarrer": {"fr": "Redémarrer l'ordinateur dans une minute pour terminer les mises à jour ?",
                        "en": "Restart the computer in one minute to finish the updates?"},
+    "msg.fermeture_refusee": {"fr": "Windows a demandé de fermer Martinet (un installeur, le plus souvent) : refusé, le passage continue.", "en": "Windows asked Martinet to close (usually an installer): declined, the run goes on."},
+    "hist.interrompu": {"fr": "Passage interrompu : Martinet a été fermé avant la fin. Dernière ligne :", "en": "Run interrupted: Martinet was closed before the end. Last line:"},
     "msg.quitter_en_cours": {"fr": "Une opération est en cours. Quitter quand même ?",
                              "en": "An operation is in progress. Quit anyway?"},
     "msg.manuel_absent": {"fr": "Le manuel est introuvable.", "en": "The user guide cannot be found."},

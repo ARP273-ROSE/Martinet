@@ -106,6 +106,13 @@ class FileTaches(QtCore.QObject):
                 self.ligne.emit(f"{type(exc).__name__}: {exc}")
         self._suivante()
 
+    def arreter(self, delai_ms: int = 5000) -> bool:
+        """À la sortie : annule et laisse le fil finir. Un QThread détruit en
+        pleine course fait avorter Qt (0xc0000409 sous Windows)."""
+        self.annuler()
+        o = self._courant
+        return o is None or o.wait(delai_ms)
+
     def attendre(self, delai_ms: int = 600000) -> bool:
         """Pour les essais : boucle d'événements jusqu'à file vide."""
         boucle = QtCore.QEventLoop()

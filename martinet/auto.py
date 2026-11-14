@@ -16,8 +16,14 @@ from .i18n import tr
 def executer(notifier: bool = True) -> int:
     r = mod_reglages.charger()
     journal: list[str] = []
+    historique.demarrer_passe("auto")
+
+    def noter(texte: str) -> None:
+        journal.append(texte)
+        historique.ecrire_passe(texte)
+
     try:
-        resume = orchestre.tout_mettre_a_jour(r, journal.append, threading.Event(),
+        resume = orchestre.tout_mettre_a_jour(r, noter, threading.Event(),
                                               r.auto_programmes, r.auto_windows, r.auto_menage,
                                               pilote=r.auto_pilote, ranger_raccourcis=r.auto_raccourcis)
         code = 0
@@ -25,6 +31,7 @@ def executer(notifier: bool = True) -> int:
         resume = [tr("msg.erreur", detail=f"{type(exc).__name__}: {exc}")]
         code = 1
     historique.ajouter("auto", journal + [""] + resume, " · ".join(resume)[:300])
+    historique.finir_passe()
     if notifier:
         _notifier(resume)
     return code

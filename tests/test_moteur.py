@@ -416,3 +416,27 @@ def test_amd_comparaison(monkeypatch):
     c.version_logiciel = ""
     r = sources.verifier_carte(c)
     assert r.etat == "inconnu" and r.derniere == "26.10.1" and r.fichier
+
+
+def test_passage_interrompu_entre_dans_historique(tmp_path, monkeypatch):
+    from martinet import historique, systeme
+    monkeypatch.setattr(systeme, "dossier_donnees", lambda: tmp_path)
+    historique.demarrer_passe("manuel")
+    historique.ecrire_passe("winget upgrade Exemple.Paquet")
+    historique.ecrire_passe("Installation de Exemple 2.0…")
+    assert historique.recuperer_passe_interrompue("Passage interrompu")
+    e = historique.lire()[0]
+    assert e["mode"] == "manuel" and "Installation de Exemple 2.0" in e["resume"]
+    assert not (tmp_path / "passage_en_cours.log").exists()
+    assert not historique.recuperer_passe_interrompue("x")      # une seule fois
+
+
+def test_passage_termine_ne_laisse_rien(tmp_path, monkeypatch):
+    from martinet import historique, systeme
+    monkeypatch.setattr(systeme, "dossier_donnees", lambda: tmp_path)
+    historique.demarrer_passe("auto")
+    historique.ecrire_passe("ligne")
+    historique.finir_passe()
+    assert not historique.recuperer_passe_interrompue("x")
+    assert historique.lire() == []
+

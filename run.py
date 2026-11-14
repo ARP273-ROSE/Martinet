@@ -226,7 +226,13 @@ def main() -> int:
         win._vigie, win._vigie_timer = vigie, minuteur
     except Exception:
         pass
-    return app.exec()
+    app.commitDataRequest.connect(win.fin_de_session)
+    code = app.exec()
+    if not win.file.arreter(5000):
+        # un fil bloqué (installeur figé) : sortir sans laisser Qt avorter ;
+        # le passage en cours reste sur disque et entrera dans l'historique
+        os._exit(code)
+    return code
 
 
 if __name__ == "__main__":

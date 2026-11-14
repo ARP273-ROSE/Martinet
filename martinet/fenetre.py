@@ -34,10 +34,15 @@ class FenetrePrincipale(QtWidgets.QMainWindow):
         self.file.ligne.connect(self._ligne)
         self.qsettings = QtCore.QSettings("ARP273-ROSE", "Martinet")
         self._journal_courant: list[str] = []
+        self._passe_ouverte = False
         self.setWindowTitle(f"Martinet {__version__}")
         self.resize(1180, 780)
         self._construire()
         self._menus()
+        try:
+            historique.recuperer_passe_interrompue(tr("hist.interrompu"))
+        except Exception:                             # noqa: BLE001 — jamais bloquant au démarrage
+            pass
         # état de la tâche planifiée, lu en arrière-plan (PowerShell : une seconde)
         self.lancer(tr("tache.planif"), lambda j, a: planif.etat(), self._etat_planif_lu, silencieux=True)
 
@@ -212,6 +217,8 @@ class FenetrePrincipale(QtWidgets.QMainWindow):
         barre = self.console.verticalScrollBar()
         self.console.appendPlainText(texte)
         self._journal_courant.append(texte)
+        if self._passe_ouverte:
+            historique.ecrire_passe(texte)
         # la console suit toujours la dernière ligne (même après une sélection)
         self.console.moveCursor(QtGui.QTextCursor.MoveOperation.End)
         barre.setValue(barre.maximum())
@@ -275,6 +282,8 @@ class FenetrePrincipale(QtWidgets.QMainWindow):
         if n_win and not systeme.est_admin() and not self.exiger_admin():
             return
         self._journal_courant = []
+        historique.demarrer_passe("manuel")
+        self._passe_ouverte = True
         self.lancer(tr("tache.tout"),
                     lambda j, a: orchestre.tout_mettre_a_jour(self.reglages, j, a, bilan=b),
                     self.fin_tout_mettre_a_jour)
@@ -357,6 +366,7 @@ class FenetrePrincipale(QtWidgets.QMainWindow):
         return texte
 
     def fin_tout_mettre_a_jour(self, resume, erreur):
+        self._passe_ouverte = False
         if erreur:
             return self.erreur_tache(erreur)
         self.consigner(resume)
@@ -373,6 +383,7 @@ class FenetrePrincipale(QtWidgets.QMainWindow):
         except OSError:
             pass
         self._journal_courant = []
+        historique.finir_passe()
         if "historique" in self.pages:
             self.pages["historique"].rafraichir()
 
@@ -443,6 +454,16 @@ class FenetrePrincipale(QtWidgets.QMainWindow):
                 systeme.executer(["systemctl", "reboot"], timeout=30)
             else:
                 systeme.executer(["shutdown.exe", "/r", "/t", "60", "/c", "Martinet"], timeout=30)
+
+    def fin_de_session(self, gestionnaire) -> None:
+        """Windows demande de fermer Martinet : fermeture de session, ou plus
+        souvent le Restart Manager d'un installeur lancé par Martinet lui-même
+        (un MSI qui croit devoir libérer des fichiers). Pendant un passage on
+        refuse : l'installeur continue sans nous et remet à plus tard, au
+        prochain redémarrage, ce qui était vraiment en cours d'utilisation."""
+        if self.file.occupee:
+            gestionnaire.cancel()
+            self._ligne(tr("msg.fermeture_refusee"))
 
     def closeEvent(self, ev):
         if self.file.occupee and not self.confirmer(tr("msg.quitter_en_cours")):

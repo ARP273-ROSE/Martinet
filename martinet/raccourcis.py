@@ -151,7 +151,101 @@ def verdict(cible: str) -> str:
     return "ok" if os.path.exists(cible) else "mort"
 
 
+# ------------------------------------------------------------ Linux : lanceurs .desktop
+def lieux_linux() -> list[tuple[str, Path]]:
+    """Lanceurs de l'utilisateur seulement : ceux de /usr/share appartiennent aux paquets."""
+    maison = Path.home()
+    donnees = Path(os.environ.get("XDG_DATA_HOME") or maison / ".local" / "share")
+    config = Path(os.environ.get("XDG_CONFIG_HOME") or maison / ".config")
+    return [("menu", donnees / "applications"), ("autostart", config / "autostart"),
+            ("bureau", dossier_bureau_linux())]
+
+
+def dossier_bureau_linux() -> Path:
+    """XDG_DESKTOP_DIR de ~/.config/user-dirs.dirs (« Bureau » en français), sinon ~/Desktop."""
+    maison = Path.home()
+    config = Path(os.environ.get("XDG_CONFIG_HOME") or maison / ".config")
+    try:
+        for ligne in (config / "user-dirs.dirs").read_text(encoding="utf-8").splitlines():
+            if ligne.startswith("XDG_DESKTOP_DIR="):
+                valeur = ligne.split("=", 1)[1].strip().strip('"')
+                return Path(valeur.replace("$HOME", str(maison)))
+    except OSError:
+        pass
+    return maison / "Desktop"
+
+
+def lire_desktop(texte: str) -> dict:
+    """Clés de la section [Desktop Entry]."""
+    cles, dans = {}, False
+    for ligne in texte.splitlines():
+        ligne = ligne.strip()
+        if ligne.startswith("["):
+            dans = ligne == "[Desktop Entry]"
+            continue
+        if dans and "=" in ligne and not ligne.startswith("#"):
+            k, v = ligne.split("=", 1)
+            cles.setdefault(k.strip(), v.strip())
+    return cles
+
+
+def programme_desktop(cles: dict) -> str:
+    """Le programme lancé : TryExec, sinon le premier mot d'Exec (après « env VAR=… »)."""
+    import shlex
+    if cles.get("TryExec"):
+        return cles["TryExec"]
+    try:
+        mots = shlex.split(cles.get("Exec", ""))
+    except ValueError:
+        mots = cles.get("Exec", "").split()
+    if mots and os.path.basename(mots[0]) == "env":
+        mots = mots[1:]
+        while mots and ("=" in mots[0] or mots[0].startswith("-")):
+            mots = mots[1:]
+    return mots[0] if mots else ""
+
+
+def verdict_desktop(cles: dict) -> tuple[str, str]:
+    """(« ok » | « mort » | « non_verifie », programme)."""
+    import shutil
+    if cles.get("Type", "Application") != "Application":
+        return "non_verifie", ""                 # liens vers une adresse, dossiers
+    prog = programme_desktop(cles)
+    if not prog or prog.startswith("%"):
+        return "non_verifie", prog
+    if prog.startswith("/"):
+        racine = "/".join(prog.split("/")[:3])
+        if prog.startswith(("/media/", "/run/media/", "/mnt/")) and not os.path.exists(racine):
+            return "non_verifie", prog           # disque amovible ou réseau absent
+        return ("ok" if os.path.exists(prog) else "mort"), prog
+    return ("ok" if shutil.which(prog) else "mort"), prog
+
+
+def _chercher_desktop(journal=None) -> list[Raccourci]:
+    morts, lus = [], 0
+    for lieu, dossier in lieux_linux():
+        if not dossier.is_dir():
+            continue
+        for f in sorted(dossier.glob("*.desktop")):
+            try:
+                cles = lire_desktop(f.read_text(encoding="utf-8", errors="replace"))
+            except OSError:
+                continue
+            lus += 1
+            etat, prog = verdict_desktop(cles)
+            if etat == "mort":
+                morts.append(Raccourci(str(f), lieu, prog))
+    if journal:
+        journal(f"{lus} lanceurs lus, {len(morts)} morts")
+    return morts
+
+
 def chercher_morts(journal=None) -> list[Raccourci]:
+    if demo.actif() and systeme.linux():
+        demo.pause(0.5)
+        return [Raccourci(str(Path.home() / c), l, p) for l, c, p in demo.LANCEURS_MORTS]
+    if systeme.linux():
+        return _chercher_desktop(journal)
     if demo.actif():
         demo.pause(0.5)
         return [Raccourci(f"C:\\Exemple\\{l}\\{n}", "bureau" if l == "Bureau" else "demarrer", c)

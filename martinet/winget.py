@@ -68,6 +68,8 @@ def disponible() -> bool:
 # ------------------------------------------------------------ module PowerShell
 SCRIPT_MODULE = r"""
 $ErrorActionPreference = 'Stop'
+# Windows 10 : PowerShell 5.1 parle encore TLS 1.0 par défaut, que la galerie refuse
+[Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
 if (-not (Get-Module -ListAvailable -Name Microsoft.WinGet.Client)) {
     if (-not (Get-PackageProvider -ListAvailable -Name NuGet -ErrorAction SilentlyContinue)) {
         Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -Scope CurrentUser | Out-Null

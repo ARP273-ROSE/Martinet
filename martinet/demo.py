@@ -1,7 +1,8 @@
-"""Mode démonstration : données fictives quand on n'est pas sous Windows.
+"""Mode démonstration : données fictives, Windows comme Linux.
 
-Sert aux essais automatiques, aux captures du manuel et au développement
-sous Linux. Activé d'office hors Windows, ou par MARTINET_DEMO=1.
+Sert aux essais automatiques et aux captures du manuel. Activé par
+MARTINET_DEMO=1 (MARTINET_SYSTEME choisit alors le système imité), ou
+d'office sur un système que Martinet ne pilote pas (macOS).
 """
 from __future__ import annotations
 
@@ -11,7 +12,10 @@ import time
 
 
 def actif() -> bool:
-    return os.environ.get("MARTINET_DEMO") == "1" or sys.platform != "win32"
+    if os.environ.get("MARTINET_DEMO") == "1":
+        return True
+    from . import systeme
+    return systeme.cible() == "autre"          # macOS… : rien de réel à piloter
 
 
 def pause(s: float = 0.15) -> None:
@@ -73,3 +77,41 @@ MENAGE = {
     "composants": (None, None),
     "corbeille": (3_100_000_000, 152),
 }
+
+# ------------------------------------------------------------ Linux (Manjaro)
+PAQUETS_LINUX = [
+    ("firefox", "145.0-1", "145.0.1-1", "depots"),
+    ("linux612", "6.12.57-1", "6.12.58-1", "depots"),
+    ("mesa", "1:25.2.6-1", "1:25.2.7-1", "depots"),
+    ("nvidia-utils", "580.95.05-1", "580.105.08-1", "depots"),
+    ("visual-studio-code-bin", "1.105.1-1", "1.106.0-1", "aur"),
+    ("Stellarium", "25.3", "25.4", "flatpak", "org.stellarium.Stellarium"),
+]
+
+SYSTEME_LINUX = {
+    "noyau": "6.12.57-1-MANJARO",
+    "redemarrer": False,
+    "noyaux_fin_de_vie": ["linux66"],
+    "hors_depots": ["linux66", "visual-studio-code-bin", "yay"],
+    "pacnew": ["/etc/pacman.conf.pacnew", "/etc/mkinitcpio.conf.pacnew"],
+    "orphelins": [("python-sphinx", 14_600_000), ("qt5-tools", 9_800_000)],
+    "micrologiciels": [],
+    "outils": {"pamac": True, "yay": True, "paccache": True, "flatpak": True, "fwupdmgr": True,
+               "checkupdates": True, "pacman": True},
+}
+
+MENAGE_LINUX = {
+    "cache_paquets": (3_400_000_000, 412),
+    "cache_desinstalles": (650_000_000, 38),
+    "fichiers_construction": (1_100_000_000, 5200),
+    "flatpak_inutilises": (None, None),
+    "miniatures": (310_000_000, 8400),
+    "journaux_systeme": (980_000_000, None),
+    "vidages_systeme": (0, 0),
+    "corbeille": (1_200_000_000, 61),
+}
+
+LANCEURS_MORTS = [
+    ("menu", ".local/share/applications/ancien-jeu.desktop", "/opt/ancien-jeu/jeu"),
+    ("autostart", ".config/autostart/outil-retire.desktop", "outil-retire"),
+]

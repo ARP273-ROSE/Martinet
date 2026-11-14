@@ -47,14 +47,30 @@
     "martinet.fenetre",
     "martinet.orchestre",
     "martinet.i18n",
-    "interface_kit"
+    "interface_kit",
+    "martinet.orchestre_linux",
+    "martinet.pages_linux",
+    "martinet.linux_paquets",
+    "martinet.menage_linux"
   ],
   "icone_png": "logo_256.png",
   "icone_grande": "logo_512.png",
   "nom_affiche_fr": "Martinet",
   "nom_affiche_en": "Martinet",
-  "description_fr": "Tenir Windows à jour : programmes, pilotes, raccourcis, ménage",
-  "description_en": "Keep Windows up to date: programs, drivers, shortcuts, clean-up",
+  "description_fr": "Tenir Windows et Manjaro à jour : programmes, paquets, pilotes, lanceurs, ménage",
+  "description_en": "Keep Windows and Manjaro up to date: programs, packages, drivers, launchers, clean-up",
   "categories_linux": "System;Utility;",
-  "release_unique": true
+  "release_unique": true,
+  "systemes_unix": [
+    "linux-x86_64"
+  ],
+  "tests_ci": [
+    "tests/test_confidentialite.py",
+    "tests/test_i18n.py",
+    "tests/test_textes_en_dur.py",
+    "tests/test_kit.py",
+    "tests/test_moteur.py",
+    "tests/test_linux.py",
+    "tests/test_fenetre.py"
+  ]
 }

@@ -38,3 +38,19 @@ jobs:
         run: python run.py --verifier --lang fr
         env:
           MARTINET_DEMO: '0'
+
+  manjaro:
+    # le mode Linux sur un vrai Manjaro : pamac, paccache, pacman, flatpak, fwupd répondent pour de vrai
+    runs-on: ubuntu-latest
+    container: manjarolinux/base:latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: pacman -Syu --noconfirm --needed python python-pyqt6 python-pytest pamac-cli pacman-contrib flatpak fwupd
+      - name: Bilan en ligne de commande (vrai système)
+        run: python run.py --verifier --lang fr
+        env:
+          MARTINET_DEMO: '0'
+          QT_QPA_PLATFORM: offscreen
+      - run: python -m pytest -q tests/test_linux.py
+        env:
+          QT_QPA_PLATFORM: offscreen

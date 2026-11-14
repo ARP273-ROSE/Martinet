@@ -135,6 +135,17 @@ def _liste_console() -> int:
             print(f"[{x.source}]  {x.nom} : {x.installee} -> {x.derniere}")
     for m in b.windows or []:
         print(f"[Windows] {m.titre}")
+    for p in b.paquets or []:
+        print(f"[{p.origine}]  {p.nom} : {p.installee} -> {p.disponible}")
+    if b.lx is not None:
+        for m in b.lx.micrologiciels:
+            print(f"[fwupd]  {m.appareil} : {m.installee} -> {m.disponible}")
+        for f in b.lx.pacnew:
+            print(f"[pacnew]  {f}")
+        for n, _t in b.lx.orphelins:
+            print(f"[orphelin]  {n}")
+        if b.lx.redemarrer:
+            print(tr("resume.redemarrer"))
     for k, v in b.erreurs.items():
         print(tr("journal.echec_etape", etape=k, detail=v))
     return 0

@@ -13,6 +13,7 @@ from pathlib import Path
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 os.environ["MARTINET_DEMO"] = "1"
 os.environ["MARTINET_DEMO_RAPIDE"] = "1"
+os.environ["MARTINET_SYSTEME"] = "windows"
 os.environ["MARTINET_DONNEES"] = tempfile.mkdtemp(prefix="martinet-captures-")
 ICI = Path(__file__).resolve().parent
 sys.path.insert(0, str(ICI.parent))
@@ -61,6 +62,22 @@ def main():
         d.grab().save(str(ICI / f"capture_source-{lg}.png"))
         d.close()
         w.close()
+    # Linux (Manjaro) : les pages propres à Linux, dans les deux langues
+    os.environ["MARTINET_SYSTEME"] = "linux"
+    for lg in ("fr", "en"):
+        definir_langue(lg)
+        w = FenetrePrincipale()
+        w.resize(1180, 760)
+        w.show()
+        w.file.attendre(10000)
+        w.verifier_tout()
+        w.file.attendre(30000)
+        for cle in ("accueil", "paquets", "systeme", "menage", "planif"):
+            w.aller(cle)
+            app.processEvents()
+            w.grab().save(str(ICI / f"capture_lx_{cle}-{lg}.png"))
+        w.close()
+    os.environ["MARTINET_SYSTEME"] = "windows"
     print("captures écrites dans", ICI)
 
 

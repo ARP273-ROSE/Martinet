@@ -42,7 +42,8 @@ Martinet does its rounds on its own.\\[2mm]
 
 On Linux, one command (\texttt{apt}, \texttt{yay}…) updates everything. On Windows, each program has
 its own updater, drivers have another one, Windows yet another. Martinet brings all of it into one
-window:
+window, on Windows 11 as on Windows 10; it also exists for \textbf{Manjaro} and Arch
+(section~\ref{sec:linux}), with the same dashboard:
 
 \begin{center}
 \renewcommand{\arraystretch}{1.35}
@@ -183,6 +184,15 @@ scheduled runs. \menu{Update Defender} refreshes the antivirus signatures.
 \attention{After installing, Windows often asks for a restart: Martinet offers it (in one minute, time
 to save your work).}
 
+\subsection{Windows 10}
+
+Martinet works the same way on Windows 10. A banner reminds you that Microsoft no longer publishes its
+security fixes (end of support on 14 October 2025, end of the free ESU extension on 13 October 2026);
+what still comes keeps coming: programs, drivers, graphics driver, Microsoft Defender signatures. If
+\textbf{winget} is missing (Windows 10 never updated), the Programs page says so and opens the
+Microsoft Store on “App Installer”.
+
+
 \section{Dead shortcuts}\label{sec:raccourcis}
 
 \capture{../capture_raccourcis-en.png}
@@ -224,13 +234,78 @@ the NVIDIA driver (installed without a window), dead shortcuts set aside, clean-
 Programs outside winget are only \textbf{reported}: not all of their installers can run without you.
 \menu{Run it now} does the same work straight away.
 
+\section{On Manjaro (Linux)}\label{sec:linux}
+
+\capture{../capture_lx_accueil-en.png}
+
+On Manjaro and Arch, Martinet does not replace the package manager: it drives it, and gathers what is
+usually done by hand in a terminal. The pages change a little:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabularx}{\linewidth}{>{\sffamily\bfseries\color{bordeaux}}l >{\raggedright\arraybackslash}X}
+\toprule
+\textbf{\color{ink}Page} & \textbf{What it does} \\
+\midrule
+Packages & Manjaro repositories, AUR and Flatpak; the whole system is updated at once \\
+System & restart needed, unmaintained kernel, firmware (fwupd), \texttt{.pacnew} files, orphan packages \\
+Dead launchers & \texttt{.desktop} launchers in the menu, on the Desktop and in autostart whose program has disappeared \\
+Clean-up & package cache, AUR build files, unused Flatpak runtimes… \\
+Schedule & systemd timer of your account \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsection{Packages}
+
+\capture{../capture_lx_paquets-en.png}
+
+Martinet goes through \textbf{pamac} (Manjaro's tool: repositories and AUR in one transaction, password
+asked in a real window), otherwise \textbf{yay}, otherwise pacman. There is no box per package: on Arch
+and Manjaro a partial upgrade can break the system, so it is all or nothing. Flatpak applications
+follow straight after.
+
+\subsection{System}
+
+\capture{../capture_lx_systeme-en.png}
+
+What needs your decision, and that Martinet never does on its own:
+\begin{itemize}
+\item \textbf{Restart}: the running kernel was replaced by an update.
+\item \textbf{Unmaintained kernel}: Manjaro drops an end-of-life kernel from its repositories; it stays
+installed, without fixes. Install a maintained one (\textit{Manjaro Settings > Kernel}).
+\item \textbf{Firmware} (fwupd): motherboard, drives, mouse… Do not cut the power meanwhile.
+\item \textbf{\texttt{.pacnew} files}: a new configuration shipped by a package waits for you to
+compare it with yours (\texttt{sudo pacdiff}).
+\item \textbf{Orphan packages}: installed as a dependency, nothing needs them any more. Check the ones
+to remove: a tool you installed yourself may be among them.
+\end{itemize}
+
+\subsection{Clean-up}
+
+\capture{../capture_lx_menage-en.png}
+
+The pacman cache is \textbf{never emptied completely}: the last two versions of each package stay, so
+you can roll back if an update breaks something. Whatever needs administrator rights goes through a
+single password request.
+
+\subsection{Schedule without a password}
+
+\capture{../capture_lx_planif-en.png}
+
+The automatic run is a systemd timer of your account (\fichier{\textasciitilde/.config/systemd/user}).
+For it to update packages while you are away, check \menu{Update without asking for the password}:
+Martinet installs a polkit rule that allows \textbf{only pamac}, and \textbf{only for your account}.
+Without it, the run asks for the password if you are at the screen, otherwise it skips packages and
+reports it. Unchecking removes the rule.
+
 \section{History}
 
 \capture{../capture_historique-en.png}
 
 Every run, manual or scheduled, with line-by-line details. \menu{File > Open the data folder} leads to
 the folder where Martinet keeps its settings, sources, history and the shortcuts set aside
-(\fichier{\%LOCALAPPDATA\%\textbackslash Martinet}).
+(\fichier{\%LOCALAPPDATA\%\textbackslash Martinet} on Windows, \fichier{\textasciitilde/.local/state/Martinet} on Linux).
 
 \section{Command line}
 

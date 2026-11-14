@@ -1,7 +1,7 @@
 # Martinet
 
-**FR** — Tenir Windows à jour d'un seul geste, comme `yay` ou `apt` sous Linux.
-**EN** — Keep Windows up to date in one go, like `yay` or `apt` on Linux. *(English below.)*
+**FR** — Tenir Windows (11 et 10) et Manjaro à jour d'un seul geste.
+**EN** — Keep Windows (11 and 10) and Manjaro up to date in one go. *(English below.)*
 
 ![Martinet](logo_128.png)
 
@@ -18,11 +18,15 @@
 | Planification | passage automatique quotidien ou hebdomadaire, notification à la fin |
 | Historique | chaque passage et son détail |
 
+**Sous Manjaro / Arch** : pages *Paquets* (dépôts, AUR, Flatpak, par pamac, sinon yay, sinon pacman ; tout le système d'un coup), *Système* (redémarrage nécessaire, noyau plus suivi, micrologiciels fwupd, fichiers `.pacnew`, paquets orphelins à retirer un par un), *Lanceurs morts* (`.desktop`), *Ménage* (cache des paquets en gardant 2 versions, fichiers de construction AUR, runtimes Flatpak inutilisés…), planification par minuteur systemd, règle polkit facultative limitée à pamac pour mettre à jour sans mot de passe.
+
+**Sous Windows 10** : même fonctionnement, bandeau de fin de support, aide à installer winget s'il manque.
+
 En ligne de commande : `run.py --verifier` (liste sans rien changer), `run.py --auto` (passage complet).
 
 Catalogue de sources fourni : PHD2, ASCOM Platform, N.I.N.A., ASTAP, GraXpert, SharpCap, et les logiciels qui se mettent à jour seuls ; le reste s'ajoute ou s'importe depuis l'interface.
 
-Installation : télécharger `Martinet-Setup.exe` depuis les [Releases](https://github.com/ARP273-ROSE/Martinet/releases/latest). Martinet se met lui-même à jour.
+Installation : Windows, `Martinet-Setup.exe` ; Linux, `Martinet-linux-x86_64.tar.gz` puis `./installer.sh` (sans sudo) ; depuis les [Releases](https://github.com/ARP273-ROSE/Martinet/releases/latest). Martinet se met lui-même à jour.
 
 ---
 
@@ -34,6 +38,11 @@ Installation : télécharger `Martinet-Setup.exe` depuis les [Releases](https://
 - **Dead shortcuts**: set aside and restorable, never deleted; network targets and missing drives are never counted.
 - **Clean-up**: temporary files older than 7 days, error reports, Windows Update cache, crash dumps, logs, driver setup leftovers; on request: thumbnails, browser and shader caches, superseded components (DISM), recycle bin. No “registry cleaning”.
 - **Schedule**: daily or weekly unattended run with a notification; **History** of every run.
+
+- **On Manjaro / Arch**: *Packages* (repositories, AUR, Flatpak through pamac, else yay, else pacman; whole system at once), *System* (restart needed, unmaintained kernel, fwupd firmware, `.pacnew` files, orphan packages removed one by one), *Dead launchers* (`.desktop`), *Clean-up* (package cache keeping 2 versions, AUR build files, unused Flatpak runtimes…), systemd timer, optional polkit rule limited to pamac for password-less updates.
+- **On Windows 10**: same behaviour, end-of-support banner, help to install winget if missing.
+
+Install: Windows, `Martinet-Setup.exe`; Linux, `Martinet-linux-x86_64.tar.gz` then `./installer.sh` (no sudo).
 
 Command line: `run.py --verifier` (list only), `run.py --auto` (full run).
 

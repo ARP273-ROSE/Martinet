@@ -31,7 +31,7 @@ class Element:
     nombre: int | None = None
 
 
-ELEMENTS = [
+ELEMENTS_WINDOWS = [
     Element("temp_utilisateur", True, False),
     Element("temp_windows", True, True),
     Element("rapports_erreurs", True, False),
@@ -46,6 +46,40 @@ ELEMENTS = [
     Element("composants", False, True),
     Element("corbeille", False, False),
 ]
+
+
+ELEMENTS = ELEMENTS_WINDOWS          # compatibilité : utiliser elements()
+
+ELEMENTS_LINUX = [
+    Element("cache_paquets", True, True),
+    Element("cache_desinstalles", True, True),
+    Element("fichiers_construction", True, False),
+    Element("flatpak_inutilises", True, False),
+    Element("miniatures", False, False),
+    Element("journaux_systeme", False, True),
+    Element("vidages_systeme", False, True),
+    Element("corbeille", False, False),
+]
+
+
+def elements() -> list[Element]:
+    """Les éléments du système en cours (Windows ou Linux)."""
+    return ELEMENTS_LINUX if systeme.linux() else ELEMENTS_WINDOWS
+
+
+def nettoyer_tout(cles: list[str], journal=None) -> int:
+    """Plusieurs éléments d'un coup : sous Linux, une seule demande de mot de passe."""
+    if systeme.linux():
+        from . import menage_linux
+        return menage_linux.nettoyer_tout(cles, journal)
+    total = 0
+    for c in cles:
+        try:
+            total += nettoyer(c, journal)
+        except OSError as exc:
+            if journal:
+                journal(f"{c} : {exc}")
+    return total
 
 
 #: éléments où seuls les fichiers de plus de AGE_MINI_JOURS sont pris
@@ -151,6 +185,9 @@ def _corbeille() -> tuple[int, int]:
 
 # ------------------------------------------------------------ mesurer / nettoyer
 def mesurer(cle: str) -> tuple[int | None, int | None]:
+    if systeme.linux():
+        from . import menage_linux
+        return menage_linux.mesurer(cle)
     if demo.actif():
         demo.pause(0.1)
         return demo.MENAGE[cle]
@@ -218,13 +255,20 @@ def navigateurs_ouverts() -> list[str]:
     return [p for p in PROCESSUS_NAVIGATEURS if p in vus]
 
 
-def taille_lisible(octets: int | None, unites=("o", "Ko", "Mo", "Go", "To")) -> str:
+def taille_lisible(octets: int | None, unites=None) -> str:
+    """« 1,5 Go » en français, « 1.5 GB » en anglais."""
+    from .i18n import langue
     if octets is None:
         return "?"
+    francais = langue() == "fr"
+    unites = unites or (("o", "Ko", "Mo", "Go", "To") if francais else ("B", "KB", "MB", "GB", "TB"))
     v = float(octets)
     for u in unites:
         if v < 1024 or u == unites[-1]:
-            return f"{v:.0f} {u}" if u in unites[:2] else f"{v:.1f} {u}".replace(".", ",")
+            if u in unites[:2]:
+                return f"{v:.0f} {u}"
+            texte = f"{v:.1f} {u}"
+            return texte.replace(".", ",") if francais else texte
         v /= 1024
     return ""
 

@@ -50,7 +50,9 @@ class PageAccueil(Page):
         grille = QtWidgets.QGridLayout()
         grille.setSpacing(12)
         self.cartes: dict[str, QtWidgets.QPushButton] = {}
-        for i, cle in enumerate(("programmes", "hors", "windows", "raccourcis", "menage", "planif")):
+        cles = (("paquets", "systeme", "raccourcis", "menage", "planif") if systeme.linux()
+                else ("programmes", "hors", "windows", "raccourcis", "menage", "planif"))
+        for i, cle in enumerate(cles):
             c = QtWidgets.QPushButton()
             c.setProperty("role", "carte")
             c.setMinimumHeight(92)
@@ -70,6 +72,48 @@ class PageAccueil(Page):
     def rafraichir(self):
         b = self.bilan
         jamais = tr("accueil.pas_verifie")
+        if systeme.linux():
+            self._rafraichir_linux(b, jamais)
+        else:
+            self._rafraichir_windows(b, jamais)
+        self._carte("raccourcis", jamais if b.morts is None else
+                    (tr("accueil.n_morts", n=len(b.morts)) if b.morts else tr("accueil.aucun_mort")))
+        if not b.menage:
+            self._carte("menage", jamais)
+        else:
+            total = sum((t or 0) for k, (t, _n) in b.menage.items()
+                        if any(e.cle == k and e.coche for e in menage.elements()))
+            self._carte("menage", tr("accueil.recuperable", taille=menage.taille_lisible(total)))
+        etat = self.fen.etat_planif
+        if etat is None:
+            self._carte("planif", tr("accueil.planif_aucune"))
+        else:
+            self._carte("planif", tr("accueil.planif_prochaine", date=_date(etat.get("prochaine"))))
+
+    def _rafraichir_linux(self, b, jamais):
+        if b.paquets is None:
+            self._carte("paquets", jamais)
+        else:
+            n = len(b.paquets)
+            self._carte("paquets", tr("accueil.n_maj", n=n) if n else tr("accueil.a_jour"))
+        s = b.lx
+        if s is None:
+            self._carte("systeme", jamais)
+            return
+        points = []
+        if s.redemarrer:
+            points.append(tr("lx.accueil.redemarrer"))
+        if s.noyaux_fin_de_vie:
+            points.append(tr("lx.accueil.noyau_fin"))
+        if s.micrologiciels:
+            points.append(tr("lx.accueil.micrologiciels", n=len(s.micrologiciels)))
+        if s.pacnew:
+            points.append(tr("lx.accueil.pacnew", n=len(s.pacnew)))
+        if s.orphelins:
+            points.append(tr("lx.accueil.orphelins", n=len(s.orphelins)))
+        self._carte("systeme", "  ·  ".join(points) if points else tr("lx.accueil.rien"))
+
+    def _rafraichir_windows(self, b, jamais):
         if b.inventaire is None:
             self._carte("programmes", jamais)
             self._carte("hors", jamais)
@@ -87,20 +131,9 @@ class PageAccueil(Page):
             txt = tr("accueil.n_maj", n=n) if n else tr("accueil.a_jour")
             if pilote:
                 txt += "  ·  " + tr("accueil.pilote_gpu", version=pilote[0].derniere)
+            if systeme.windows10():
+                txt += "  ·  " + tr("accueil.w10")
             self._carte("windows", txt)
-        self._carte("raccourcis", jamais if b.morts is None else
-                    (tr("accueil.n_morts", n=len(b.morts)) if b.morts else tr("accueil.aucun_mort")))
-        if not b.menage:
-            self._carte("menage", jamais)
-        else:
-            total = sum((t or 0) for k, (t, _n) in b.menage.items()
-                        if any(e.cle == k and e.coche for e in menage.ELEMENTS))
-            self._carte("menage", tr("accueil.recuperable", taille=menage.taille_lisible(total)))
-        etat = self.fen.etat_planif
-        if etat is None:
-            self._carte("planif", tr("accueil.planif_aucune"))
-        else:
-            self._carte("planif", tr("accueil.planif_prochaine", date=_date(etat.get("prochaine"))))
 
 
 def _jour(iso: str | None) -> str:
@@ -139,6 +172,11 @@ class PageProgrammes(Page):
             self.voir_ignores))
         self.info = etiquette("", style.GRIS)
         self.v.addWidget(self.info)
+        # winget absent (Windows 10 pas à jour) : le Store installe « Programme d'installation d'application »
+        self.b_store = bouton(tr("prog.ouvrir_store"),
+                              lambda: systeme.ouvrir("ms-windows-store://pdp/?ProductId=9NBLGGH4NNS1"))
+        self.b_store.setVisible(False)
+        self.v.addLayout(rangee(self.b_store))
         self.v.addWidget(self.table, 1)
         self.rafraichir()
 
@@ -162,6 +200,7 @@ class PageProgrammes(Page):
         texte = tr("prog.resume", n=len(lignes), suivis=suivis)
         if inv.erreur == "winget":
             texte = tr("prog.sans_winget")
+        self.b_store.setVisible(inv.erreur == "winget")
         self.info.setText(texte)
 
     def mettre_a_jour(self):
@@ -332,6 +371,10 @@ class PageWindows(Page):
 
     def __init__(self, fen):
         super().__init__(fen)
+        if systeme.windows10():
+            bandeau = etiquette(tr("win.w10"))
+            bandeau.setObjectName("avertissement")
+            self.v.addWidget(bandeau)
         g = QtWidgets.QGroupBox(tr("win.carte"))
         vg = QtWidgets.QVBoxLayout(g)
         self.l_carte = etiquette(tr("accueil.pas_verifie"))
@@ -541,7 +584,7 @@ class PageMenage(Page):
     def rafraichir(self):
         mesures = self.bilan.menage
         lignes = []
-        for e in menage.ELEMENTS:
+        for e in menage.elements():
             t, n = mesures.get(e.cle, (None, None))
             if not mesures:
                 taille = "—"
@@ -559,7 +602,8 @@ class PageMenage(Page):
         if not choix:
             self.fen.message(tr("msg.rien_coche"))
             return
-        if any(e.admin for e in choix) and not systeme.est_admin():
+        if not systeme.linux() and any(e.admin for e in choix) and not systeme.est_admin():
+            # sous Linux, pas d'élévation de la fenêtre : polkit demande le mot de passe le moment venu
             if not self.fen.exiger_admin():
                 choix = [e for e in choix if not e.admin]
         if any(e.cle == "corbeille" for e in choix):
@@ -567,13 +611,11 @@ class PageMenage(Page):
                 choix = [e for e in choix if e.cle != "corbeille"]
 
         def travail(journal, annulation):
-            total = 0
             for e in choix:
-                if annulation.is_set():
-                    raise systeme.Annule()
                 journal(tr("journal.menage", element=tr(f"menage.{e.cle}")))
-                total += menage.nettoyer(e.cle, journal)
-            return total
+            if annulation.is_set():
+                raise systeme.Annule()
+            return menage.nettoyer_tout([e.cle for e in choix], journal)
 
         def fini(total, erreur):
             if erreur:
@@ -628,6 +670,15 @@ class PagePlanif(Page):
         self.c_racc.setChecked(r.auto_raccourcis)
         for c in (self.c_prog, self.c_win, self.c_pilote, self.c_racc, self.c_menage):
             v2.addWidget(c)
+        self.c_polkit = None
+        if systeme.linux():
+            # Linux : pas de Windows Update ni de pilote à part (ils viennent avec les paquets)
+            self.c_win.setVisible(False)
+            self.c_pilote.setVisible(False)
+            from .pages_linux import regle_polkit_case
+            self.c_polkit = regle_polkit_case(self)
+            if self.c_polkit is not None:
+                v2.addWidget(self.c_polkit)
         v2.addWidget(etiquette(tr("planif.signale"), style.GRIS))
         self.v.addWidget(g2)
         self.etat = etiquette("")
@@ -660,6 +711,13 @@ class PagePlanif(Page):
         r.auto_pilote = self.c_pilote.isChecked()
         r.auto_raccourcis = self.c_racc.isChecked()
         mod_reglages.enregistrer(r)
+        if self.c_polkit is not None:
+            from . import linux_paquets
+            if self.c_polkit.isChecked() != linux_paquets.regle_active():
+                ok_regle, detail = linux_paquets.poser_regle(self.c_polkit.isChecked())
+                if not ok_regle:
+                    self.c_polkit.setChecked(linux_paquets.regle_active())
+                    self.fen.message(tr("lx.regle_echec", detail=detail), alerte=True)
         if self.actif.isChecked():
             if not self.fen.exiger_admin():
                 return
@@ -714,4 +772,12 @@ class PageHistorique(Page):
 
 PAGES = [PageAccueil, PageProgrammes, PageHors, PageWindows, PageRaccourcis, PageMenage,
          PagePlanif, PageHistorique]
+
+
+def pages_du_systeme() -> list:
+    """Les pages du système en cours : Windows, ou Linux (paquets et état du système)."""
+    if systeme.linux():
+        from .pages_linux import PagePaquets, PageSysteme
+        return [PageAccueil, PagePaquets, PageSysteme, PageRaccourcis, PageMenage, PagePlanif, PageHistorique]
+    return PAGES
 

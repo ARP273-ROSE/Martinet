@@ -31,6 +31,11 @@ def executer(notifier: bool = True) -> int:
 
 
 def _notifier(resume: list[str]) -> None:
+    if systeme.linux() and systeme.outil("notify-send"):
+        # service systemd de l'utilisateur : pas toujours d'écran pour Qt, mais le bus de session répond
+        systeme.executer(["notify-send", "-a", "Martinet", "-i", "system-software-update",
+                          tr("auto.titre"), "\n".join(resume[:6])], timeout=30)
+        return
     try:
         from PyQt6 import QtCore, QtGui, QtWidgets
         app = QtWidgets.QApplication.instance() or QtWidgets.QApplication(sys.argv[:1])

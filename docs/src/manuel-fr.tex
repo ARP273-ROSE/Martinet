@@ -42,7 +42,8 @@ Martinet fait sa tournée tout seul.\\[2mm]
 
 Sous Linux, une seule commande (\texttt{apt}, \texttt{yay}…) met tout à jour. Sous Windows, chaque
 programme a sa propre mise à jour, les pilotes en ont une autre, Windows encore une autre. Martinet
-réunit tout cela dans une fenêtre :
+réunit tout cela dans une fenêtre, sous Windows 11 comme sous Windows 10 ; il existe aussi pour
+\textbf{Manjaro} et Arch (section~\ref{sec:linux}), avec le même tableau de bord :
 
 \begin{center}
 \renewcommand{\arraystretch}{1.35}
@@ -190,6 +191,15 @@ choix vaut aussi pour « Mettre à jour et nettoyer » et pour le passage automa
 \attention{Après l'installation, Windows demande souvent un redémarrage : Martinet le propose (dans une
 minute, le temps d'enregistrer votre travail).}
 
+\subsection{Windows 10}
+
+Martinet fonctionne de la même façon sous Windows 10. Un bandeau rappelle que Microsoft n'en publie
+plus les correctifs de sécurité (fin du support le 14 octobre 2025, fin de l'extension gratuite ESU le
+13 octobre 2026) ; ce qui arrive encore passe toujours : programmes, pilotes, pilote graphique,
+signatures de Microsoft Defender. Si \textbf{winget} manque (Windows 10 jamais mis à jour), la page
+Programmes le dit et ouvre le Microsoft Store sur « Programme d'installation d'application ».
+
+
 \section{Raccourcis morts}\label{sec:raccourcis}
 
 \capture{../capture_raccourcis-fr.png}
@@ -233,13 +243,78 @@ pilote NVIDIA (installé sans fenêtre), raccourcis morts mis de côté, ménage
 Les logiciels hors winget sont seulement \textbf{signalés} : leurs installeurs ne savent pas tous
 s'installer sans vous. \menu{Lancer ce passage maintenant} fait le même travail tout de suite.
 
+\section{Sous Manjaro (Linux)}\label{sec:linux}
+
+\capture{../capture_lx_accueil-fr.png}
+
+Sous Manjaro et Arch, Martinet ne remplace pas le gestionnaire de paquets : il le pilote, et réunit
+ce qu'on fait d'habitude à la main dans un terminal. Les pages changent un peu :
+
+\begin{center}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabularx}{\linewidth}{>{\sffamily\bfseries\color{bordeaux}}l >{\raggedright\arraybackslash}X}
+\toprule
+\textbf{\color{ink}Page} & \textbf{Ce qu'elle fait} \\
+\midrule
+Paquets & dépôts Manjaro, AUR et Flatpak ; tout le système se met à jour d'un coup \\
+Système & redémarrage nécessaire, noyau plus suivi, micrologiciels (fwupd), fichiers \texttt{.pacnew}, paquets orphelins \\
+Lanceurs morts & lanceurs \texttt{.desktop} du menu, du Bureau et du démarrage automatique dont le programme a disparu \\
+Ménage & cache des paquets, fichiers de construction de l'AUR, runtimes Flatpak inutilisés… \\
+Planification & minuteur systemd de votre compte \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsection{Paquets}
+
+\capture{../capture_lx_paquets-fr.png}
+
+Martinet passe par \textbf{pamac} (l'outil de Manjaro : dépôts et AUR en une transaction, mot de
+passe demandé par une vraie fenêtre), sinon par \textbf{yay}, sinon par pacman. Il n'y a pas de case
+par paquet : sous Arch et Manjaro, une mise à jour partielle peut casser le système, on met donc à
+jour tout ou rien. Les applications Flatpak suivent dans la foulée.
+
+\subsection{Système}
+
+\capture{../capture_lx_systeme-fr.png}
+
+Ce qui demande votre décision, et que Martinet ne fait jamais tout seul :
+\begin{itemize}
+\item \textbf{Redémarrage} : le noyau en marche a été remplacé par une mise à jour.
+\item \textbf{Noyau plus suivi} : Manjaro retire des dépôts un noyau arrivé en fin de vie ; il reste
+installé, sans correctif. Installez-en un suivi (\textit{Paramètres Manjaro > Noyau}).
+\item \textbf{Micrologiciels} (fwupd) : carte mère, disques, souris… On ne coupe pas le courant pendant.
+\item \textbf{Fichiers \texttt{.pacnew}} : une nouvelle configuration fournie par un paquet attend que
+vous la compariez à la vôtre (\texttt{sudo pacdiff}).
+\item \textbf{Paquets orphelins} : installés comme dépendance, plus rien n'en a besoin. Cochez ceux à
+retirer : un outil installé à la main peut s'y trouver.
+\end{itemize}
+
+\subsection{Ménage}
+
+\capture{../capture_lx_menage-fr.png}
+
+Le cache de pacman n'est \textbf{jamais vidé en entier} : les deux dernières versions de chaque paquet
+restent, de quoi revenir en arrière si une mise à jour casse quelque chose. Ce qui demande les droits
+d'administrateur passe en une seule demande de mot de passe.
+
+\subsection{Planification sans mot de passe}
+
+\capture{../capture_lx_planif-fr.png}
+
+Le passage automatique est un minuteur systemd de votre compte (\fichier{\textasciitilde/.config/systemd/user}).
+Pour qu'il mette à jour les paquets quand vous n'êtes pas là, cochez \menu{Mettre à jour sans demander
+le mot de passe} : Martinet pose une règle polkit qui autorise \textbf{seulement pamac}, et
+\textbf{seulement pour votre compte}. Sans elle, le passage demande le mot de passe s'il vous trouve
+devant l'écran, sinon il saute les paquets et le signale. Décocher retire la règle.
+
 \section{Historique}
 
 \capture{../capture_historique-fr.png}
 
 Chaque passage, à la main ou automatique, avec le détail ligne par ligne. Le menu
 \menu{Fichier > Ouvrir le dossier des données} mène au dossier où Martinet range ses réglages, ses
-sources, l'historique et les raccourcis mis de côté (\fichier{\%LOCALAPPDATA\%\textbackslash Martinet}).
+sources, l'historique et les raccourcis mis de côté (\fichier{\%LOCALAPPDATA\%\textbackslash Martinet} sous Windows, \fichier{\textasciitilde/.local/state/Martinet} sous Linux).
 
 \section{Ligne de commande}
 

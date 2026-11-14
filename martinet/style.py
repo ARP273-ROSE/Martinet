@@ -35,6 +35,7 @@ QPushButton[role="carte"] {{ text-align: left; padding: 14px; background: white;
 QPushButton[role="carte"]:hover {{ border: 1px solid {CIEL}; background: #F7FBFF; }}
 QLabel[role="titre"] {{ font-size: 17pt; font-weight: 700; color: {CIEL_FONCE}; }}
 QLabel[role="sous-titre"] {{ color: {GRIS}; font-size: 10.5pt; }}
+QLabel#avertissement {{ background: #FFF4D6; border: 1px solid #E8C770; border-radius: 6px; padding: 8px 10px; }}
 QFrame#bandeau {{ background: #FFF4D6; border: 1px solid #E8C770; border-radius: 6px; }}
 QGroupBox {{ font-weight: 600; border: 1px solid #D5DDE6; border-radius: 8px; margin-top: 12px; padding-top: 10px; background: white; }}
 QGroupBox::title {{ subcontrol-origin: margin; left: 10px; padding: 0 4px; color: {CIEL_FONCE}; }}

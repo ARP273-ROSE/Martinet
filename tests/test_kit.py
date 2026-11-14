@@ -51,7 +51,7 @@ def test_un_seul_workflow_de_publication():
     publient = [p.name for p in wf.glob('*.yml')
                 if 'action-gh-release' in p.read_text(encoding='utf-8')
                 or 'gh release create' in p.read_text(encoding='utf-8')]
-    assert publient == ['release-windows.yml'], publient
+    assert publient == ['release.yml'], publient
 
 
 def test_une_seule_source_pour_le_logo():

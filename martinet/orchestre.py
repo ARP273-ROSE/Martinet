@@ -24,6 +24,9 @@ class Bilan:
     morts: list | None = None                         # raccourcis.Raccourci
     menage: dict = field(default_factory=dict)        # clé -> (taille, nombre)
     erreurs: dict = field(default_factory=dict)       # étape -> message
+    # Linux
+    paquets: list | None = None                       # linux_paquets.Paquet (dépôts, AUR, Flatpak)
+    lx: object | None = None                          # linux_paquets.Systeme
 
 
 def _est_bruit(p: winget.Paquet) -> bool:
@@ -78,6 +81,9 @@ def hors_winget(inv: winget.Inventaire, reglages: Reglages, journal=None, sur_av
 
 
 def verifier_tout(reglages: Reglages, journal=None, annulation=None, etapes=None) -> Bilan:
+    if systeme.linux():
+        from . import orchestre_linux
+        return orchestre_linux.verifier_tout(reglages, journal, annulation, etapes)
     etapes = etapes or {"programmes", "windows", "raccourcis", "menage"}
     b = Bilan()
     # parts de la barre : (étape, poids) dans l'ordre où elles s'enchaînent
@@ -125,8 +131,8 @@ def verifier_tout(reglages: Reglages, journal=None, annulation=None, etapes=None
         etape("raccourcis", lambda: setattr(b, "morts", raccourcis.chercher_morts(journal)))
     if "menage" in etapes:
         def _menage():
-            for i, e in enumerate(menage.ELEMENTS):
-                part("menage", i / len(menage.ELEMENTS), tr("menage." + e.cle))
+            for i, e in enumerate(menage.elements()):
+                part("menage", i / len(menage.elements()), tr("menage." + e.cle))
                 b.menage[e.cle] = menage.mesurer(e.cle)
         etape("menage", _menage)
     avancer(journal, 1.0)
@@ -144,6 +150,10 @@ def tout_mettre_a_jour(reglages: Reglages, journal=None, annulation=None,
                        admin: bool | None = None, pilote: bool | None = None,
                        ranger_raccourcis: bool | None = None) -> list[str]:
     """Applique les mises à jour sans intervention ; renvoie le résumé."""
+    if systeme.linux():
+        from . import orchestre_linux
+        return orchestre_linux.tout_mettre_a_jour(reglages, journal, annulation, programmes, nettoyer,
+                                                  bilan, ranger_raccourcis)
     admin = systeme.est_admin() if admin is None else admin
     pilote = reglages.auto_pilote if pilote is None else pilote
     ranger_raccourcis = reglages.auto_raccourcis if ranger_raccourcis is None else ranger_raccourcis
@@ -157,7 +167,7 @@ def tout_mettre_a_jour(reglages: Reglages, journal=None, annulation=None,
             raise systeme.Annule()
 
     liste = a_mettre_a_jour(b, reglages) if programmes and b.inventaire is not None else []
-    a_nettoyer = [e for e in menage.ELEMENTS if e.coche and (admin or not e.admin)] if nettoyer else []
+    a_nettoyer = [e for e in menage.elements() if e.coche and (admin or not e.admin)] if nettoyer else []
     pilotes = [r for r in b.cartes if r.etat == "maj" and r.source == "nvidia" and r.fichier] \
         if pilote and admin else []
     unites = (len(liste) + (2 if windows and b.windows is not None else 0) + len(a_nettoyer)

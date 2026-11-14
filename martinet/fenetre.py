@@ -8,7 +8,7 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 
 from . import __version__, historique, orchestre, planif, reglages as mod_reglages, sources, style, systeme
 from .i18n import langue, tr
-from .pages import PAGES
+from .pages import pages_du_systeme
 from .widgets import bouton, etiquette
 
 RACINE = Path(__file__).resolve().parent.parent
@@ -52,7 +52,8 @@ class FenetrePrincipale(QtWidgets.QMainWindow):
         self.nav.setFixedWidth(230)
         self.pile = QtWidgets.QStackedWidget()
         self.pages = {}
-        for classe in PAGES:
+        self._classes = pages_du_systeme()
+        for classe in self._classes:
             page = classe(self)
             self.pages[classe.cle] = page
             self.pile.addWidget(page)
@@ -160,7 +161,7 @@ class FenetrePrincipale(QtWidgets.QMainWindow):
 
     # ------------------------------------------------------------ navigation
     def aller(self, cle: str):
-        for i, classe in enumerate(PAGES):
+        for i, classe in enumerate(self._classes):
             if classe.cle == cle:
                 self.nav.setCurrentRow(i)
 
@@ -265,7 +266,7 @@ class FenetrePrincipale(QtWidgets.QMainWindow):
 
     def tout_mettre_a_jour(self):
         b = self.bilan
-        if b.inventaire is None and b.windows is None:
+        if b.inventaire is None and b.windows is None and b.paquets is None and b.lx is None:
             self.message(tr("msg.verifier_dabord"))
             return
         n_win = len([m for m in (b.windows or []) if self.reglages.facultatives or not m.facultatif])
@@ -281,6 +282,8 @@ class FenetrePrincipale(QtWidgets.QMainWindow):
     def plan_tout(self, b, admin: bool) -> str:
         """Ce que « Mettre à jour et nettoyer » va faire, ligne par ligne, avec les vrais nombres."""
         from . import menage
+        if systeme.linux():
+            return self._plan_tout_linux(b)
         r = self.reglages
         lignes, pas_fait = [], []
         n_prog = len(orchestre.a_mettre_a_jour(b, r))
@@ -293,7 +296,7 @@ class FenetrePrincipale(QtWidgets.QMainWindow):
                 lignes.append(tr("tout.windows_fac", n=len(voulues), f=fac) if fac
                               else tr("tout.windows", n=len(voulues)))
             lignes.append(tr("tout.defender"))
-        elements = [e for e in menage.ELEMENTS if e.coche and (admin or not e.admin)]
+        elements = [e for e in menage.elements() if e.coche and (admin or not e.admin)]
         if elements:
             taille = sum((b.menage.get(e.cle) or (0, 0))[0] or 0 for e in elements)
             lignes.append(tr("tout.menage", taille=menage.taille_lisible(taille),
@@ -314,6 +317,38 @@ class FenetrePrincipale(QtWidgets.QMainWindow):
         if hors:
             pas_fait.insert(0, tr("tout.pas_hors", n=len(hors)))
         texte = "\n".join(lignes)
+        if pas_fait:
+            texte += "\n\n" + tr("tout.pas_fait", liste=" ; ".join(pas_fait))
+        return texte
+
+    def _plan_tout_linux(self, b) -> str:
+        from . import menage
+        r = self.reglages
+        lignes, pas_fait = [], []
+        if b.paquets:
+            n = {o: sum(1 for p in b.paquets if p.origine == o) for o in ("depots", "aur", "flatpak")}
+            lignes.append(tr("lx.tout.paquets", n=len(b.paquets), depots=n["depots"], aur=n["aur"],
+                             flatpak=n["flatpak"]))
+        elements = [e for e in menage.elements() if e.coche]
+        if elements:
+            taille = sum((b.menage.get(e.cle) or (0, 0))[0] or 0 for e in elements)
+            lignes.append(tr("tout.menage", taille=menage.taille_lisible(taille),
+                             liste=", ".join(_minuscule(tr("menage." + e.cle)) for e in elements)))
+        if b.morts and r.auto_raccourcis:
+            lignes.append(tr("tout.raccourcis", n=len(b.morts)))
+        elif b.morts:
+            pas_fait.append(tr("tout.pas_raccourcis"))
+        s = b.lx
+        if s is not None:
+            if s.micrologiciels:
+                pas_fait.append(tr("lx.pas.micrologiciels", n=len(s.micrologiciels)))
+            if s.orphelins:
+                pas_fait.append(tr("lx.pas.orphelins", n=len(s.orphelins)))
+            if s.pacnew:
+                pas_fait.append(tr("lx.pas.pacnew", n=len(s.pacnew)))
+        texte = "\n".join(lignes) or tr("lx.tout.rien")
+        if b.paquets or any(e.admin for e in elements):
+            texte += "\n\n" + tr("lx.tout.mot_de_passe")
         if pas_fait:
             texte += "\n\n" + tr("tout.pas_fait", liste=" ; ".join(pas_fait))
         return texte
@@ -387,8 +422,8 @@ class FenetrePrincipale(QtWidgets.QMainWindow):
         self.message(tr("msg.erreur", detail=erreur), alerte=True)
 
     def exiger_admin(self) -> bool:
-        if systeme.est_admin():
-            return True
+        if systeme.est_admin() or systeme.linux():
+            return True                       # Linux : polkit demande le mot de passe au moment voulu
         if self.confirmer(tr("admin.demander")):
             self.relancer_admin()
         return False
@@ -401,7 +436,10 @@ class FenetrePrincipale(QtWidgets.QMainWindow):
 
     def proposer_redemarrage(self):
         if self.confirmer(tr("msg.redemarrer")):
-            systeme.executer(["shutdown.exe", "/r", "/t", "60", "/c", "Martinet"], timeout=30)
+            if systeme.linux():
+                systeme.executer(["systemctl", "reboot"], timeout=30)
+            else:
+                systeme.executer(["shutdown.exe", "/r", "/t", "60", "/c", "Martinet"], timeout=30)
 
     def closeEvent(self, ev):
         if self.file.occupee and not self.confirmer(tr("msg.quitter_en_cours")):
@@ -578,5 +616,5 @@ class FenetrePrincipale(QtWidgets.QMainWindow):
         QtWidgets.QMessageBox.information(self, tr("signal.merci"), msg)
 
 
-ETAPES = {"programmes": ("inventaire", "hors", "sans_source"), "windows": ("cartes", "windows"),
+ETAPES = {"programmes": ("inventaire", "hors", "sans_source", "paquets"), "windows": ("cartes", "windows", "lx"),
           "raccourcis": ("morts",), "menage": ("menage",)}

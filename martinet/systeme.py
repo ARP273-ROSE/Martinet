@@ -18,6 +18,42 @@ from pathlib import Path
 
 NOM = "Martinet"
 WINDOWS = sys.platform == "win32"
+
+
+def cible() -> str:
+    """« windows », « linux » ou « autre » ; MARTINET_SYSTEME l'impose (essais, captures)."""
+    force = os.environ.get("MARTINET_SYSTEME", "")
+    if force in ("windows", "linux"):
+        return force
+    if WINDOWS:
+        return "windows"
+    return "linux" if sys.platform.startswith("linux") else "autre"
+
+
+def linux() -> bool:
+    return cible() == "linux"
+
+
+def windows10() -> bool:
+    """Windows 10 (numéro de build inférieur à 22000) ; MARTINET_WINDOWS10=1 l'imite pour les essais."""
+    if os.environ.get("MARTINET_WINDOWS10") == "1":
+        return True
+    if not WINDOWS:
+        return False
+    try:
+        return sys.getwindowsversion().build < 22000
+    except AttributeError:
+        return False
+
+
+def outil(nom: str) -> str | None:
+    """Chemin d'une commande, ou None si elle n'est pas installée."""
+    import shutil
+    return shutil.which(nom)
+
+
+#: sorties de pacman, paccache, journalctl… lisibles quelle que soit la langue du système
+ENV_C = {"LC_ALL": "C", "LANG": "C"}
 SANS_FENETRE = 0x08000000 if WINDOWS else 0          # CREATE_NO_WINDOW
 AGENT = "Martinet (logiciel libre de mise a jour)"
 
@@ -117,11 +153,12 @@ def clixml_lisible(texte: str) -> str:
     return "\n".join(l for l in texte.splitlines() if l.strip() != "#< CLIXML")
 
 
-def executer(cmd: list[str], timeout: float | None = 600) -> tuple[int, str]:
+def executer(cmd: list[str], timeout: float | None = 600, env: dict | None = None) -> tuple[int, str]:
     """Lance une commande sans fenêtre et renvoie (code, sortie + erreurs)."""
     try:
         r = subprocess.run(cmd, capture_output=True, timeout=timeout,
-                           creationflags=SANS_FENETRE, stdin=subprocess.DEVNULL)
+                           creationflags=SANS_FENETRE, stdin=subprocess.DEVNULL,
+                           env={**os.environ, **env} if env else None)
     except FileNotFoundError:
         return 127, f"introuvable : {cmd[0]}"
     except subprocess.TimeoutExpired:
@@ -144,11 +181,12 @@ def nettoyer_ligne(ligne: str) -> str:
 
 
 def executer_flux(cmd: list[str], ligne_cb=None, annulation: threading.Event | None = None,
-                  timeout: float | None = 7200) -> tuple[int, str]:
+                  timeout: float | None = 7200, env: dict | None = None) -> tuple[int, str]:
     """Comme executer(), en transmettant chaque ligne au fil de l'eau."""
     try:
         proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                                stdin=subprocess.DEVNULL, creationflags=SANS_FENETRE)
+                                stdin=subprocess.DEVNULL, creationflags=SANS_FENETRE,
+                                env={**os.environ, **env} if env else None)
     except FileNotFoundError:
         return 127, f"introuvable : {cmd[0]}"
     lignes: list[str] = []
@@ -294,6 +332,12 @@ def lancer_installeur(chemin: Path, arguments: list[str] | None = None) -> int |
 
 
 def redemarrage_en_attente() -> bool:
+    if linux():
+        from . import demo
+        if demo.actif():
+            return False
+        # le noyau en marche a été remplacé : ses modules ont disparu du disque
+        return not Path("/usr/lib/modules", os.uname().release).is_dir()
     if not WINDOWS:
         return False
     import winreg

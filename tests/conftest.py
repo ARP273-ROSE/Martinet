@@ -7,6 +7,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 os.environ["MARTINET_DEMO_RAPIDE"] = "1"
 os.environ.setdefault("MARTINET_DEMO", "1")          # tests/test_windows.py le remet à 0
+# système imité par défaut : Windows (les essais Linux le changent eux-mêmes)
+if os.environ.get("MARTINET_DEMO") == "1":
+    os.environ.setdefault("MARTINET_SYSTEME", "windows")
 
 import pytest  # noqa: E402
 

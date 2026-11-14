@@ -46,6 +46,17 @@ def windows10() -> bool:
         return False
 
 
+#: fin de l'extension ESU grand public de Windows 10 (prolongée d'un an par Microsoft en juin 2026)
+FIN_ESU_WINDOWS10 = "2027-10-12"
+
+
+def windows10_esu(aujourd_hui=None) -> bool:
+    """Windows 10 reçoit-il encore des correctifs (PC inscrit à l'ESU) ?"""
+    import datetime
+    jour = aujourd_hui or datetime.date.today()
+    return jour <= datetime.date.fromisoformat(FIN_ESU_WINDOWS10)
+
+
 def outil(nom: str) -> str | None:
     """Chemin d'une commande, ou None si elle n'est pas installée."""
     import shutil

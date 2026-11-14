@@ -132,7 +132,7 @@ class PageAccueil(Page):
             if pilote:
                 txt += "  ·  " + tr("accueil.pilote_gpu", version=pilote[0].derniere)
             if systeme.windows10():
-                txt += "  ·  " + tr("accueil.w10")
+                txt += "  ·  " + tr("accueil.w10" if systeme.windows10_esu() else "accueil.w10_fin")
             self._carte("windows", txt)
 
 
@@ -372,7 +372,7 @@ class PageWindows(Page):
     def __init__(self, fen):
         super().__init__(fen)
         if systeme.windows10():
-            bandeau = etiquette(tr("win.w10"))
+            bandeau = etiquette(tr("win.w10" if systeme.windows10_esu() else "win.w10_fin"))
             bandeau.setObjectName("avertissement")
             self.v.addWidget(bandeau)
         g = QtWidgets.QGroupBox(tr("win.carte"))

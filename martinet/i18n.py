@@ -830,10 +830,14 @@ TEXTES: dict[str, dict[str, str]] = {
     "tout.pas_raccourcis.lx": {"fr": "les lanceurs morts (désactivé dans Planification)",
                               "en": "dead launchers (turned off in Schedule)"},
     # ---- Windows 10
-    "accueil.w10": {"fr": "Windows 10 : plus de correctifs de sécurité",
-                   "en": "Windows 10: no more security fixes"},
-    "win.w10": {"fr": "<b>Windows 10</b> : Microsoft n'en publie plus les correctifs de sécurité (fin du support le 14 octobre 2025, de l'extension gratuite ESU le 13 octobre 2026). Martinet continue de mettre à jour ce qui l'est encore : programmes, pilotes, pilote graphique et signatures de Microsoft Defender.",
-               "en": "<b>Windows 10</b>: Microsoft no longer publishes its security fixes (end of support on 14 October 2025, end of the free ESU extension on 13 October 2026). Martinet keeps updating what still is: programs, drivers, graphics driver and Microsoft Defender signatures."},
+    "accueil.w10": {"fr": "Windows 10 : correctifs jusqu'au 12/10/2027 (ESU)",
+                   "en": "Windows 10: fixes until 12/10/2027 (ESU)"},
+    "accueil.w10_fin": {"fr": "Windows 10 : plus de correctifs de sécurité",
+                       "en": "Windows 10: no more security fixes"},
+    "win.w10": {"fr": "<b>Windows 10</b> : le support a pris fin le 14 octobre 2025, mais les PC inscrits à l'extension ESU (gratuite en Europe avec un compte Microsoft) reçoivent les correctifs de sécurité jusqu'au <b>12 octobre 2027</b>. Inscription à vérifier dans Paramètres › Windows Update. Martinet les installe comme le reste : programmes, pilotes, pilote graphique, signatures de Defender.",
+               "en": "<b>Windows 10</b>: support ended on 14 October 2025, but PCs enrolled in the ESU extension (free in Europe with a Microsoft account) get security fixes until <b>12 October 2027</b>. Check enrolment in Settings › Windows Update. Martinet installs them like everything else: programs, drivers, graphics driver, Defender signatures."},
+    "win.w10_fin": {"fr": "<b>Windows 10</b> : l'extension ESU a pris fin le 12 octobre 2027 ; Microsoft ne publie plus de correctifs de sécurité. Martinet continue de mettre à jour ce qui l'est encore : programmes, pilotes, pilote graphique et signatures de Defender.",
+                   "en": "<b>Windows 10</b>: the ESU extension ended on 12 October 2027; Microsoft no longer publishes security fixes. Martinet keeps updating what still is: programs, drivers, graphics driver and Defender signatures."},
     "prog.ouvrir_store": {"fr": "Ouvrir le Microsoft Store (installer winget)",
                          "en": "Open the Microsoft Store (install winget)"},
     # ---- Linux : applications GitHub, gestionnaire

@@ -1,5 +1,12 @@
 # Journal des versions / Changelog
 
+### 0.5.1
+
+- Windows 10 : le bandeau tient compte de la prolongation de l'ESU grand public jusqu'au 12 octobre 2027
+  (gratuite en Europe) ; il ne parle de fin des correctifs qu'après cette date.
+- Windows 10: the banner accounts for the consumer ESU extension until 12 October 2027 (free in Europe);
+  it only mentions the end of fixes after that date.
+
 ### 0.5.0
 
 - **Manjaro / Arch** : mode Linux complet. Paquets des dépôts, de l'AUR et Flatpak (yay s'il est installé,

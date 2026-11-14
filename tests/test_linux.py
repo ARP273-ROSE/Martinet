@@ -258,3 +258,10 @@ def test_maj_appli_par_installer_sh(tmp_path, monkeypatch):
     monkeypatch.setattr(la.systeme, "telecharger_texte", lambda url, timeout=20: f"{'0' * 64}  {nom}\n")
     ok, detail = la.mettre_a_jour(a)
     assert not ok and "SHA-256" in detail
+
+
+def test_esu_windows10():
+    import datetime
+    from martinet import systeme
+    assert systeme.windows10_esu(datetime.date(2026, 11, 15))
+    assert not systeme.windows10_esu(datetime.date(2027, 10, 13))

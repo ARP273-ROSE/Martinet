@@ -1,5 +1,15 @@
 # Journal des versions / Changelog
 
+### 0.5.6
+
+- Windows : la version de vos applications du kit est lue dans leur dossier (app\VERSION), plus dans le
+  registre : leur mise à jour intégrée ne réécrit pas le registre, qui affichait encore l'ancienne version
+  (une application à jour était annoncée « à faire à la main »). Console : plus de marqueurs techniques
+  (Windows Update, mise à jour des applications).
+- Windows: your kit apps' version is read from their folder (app\VERSION), not from the registry, which
+  their built-in update does not rewrite (an up-to-date app was listed as “to do by hand”). Console: no more
+  technical markers (Windows Update, app updates).
+
 ### 0.5.5
 
 - Windows : vos applications du kit installées dans le profil (celles qui ont une source GitHub) sont

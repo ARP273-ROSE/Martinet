@@ -520,6 +520,8 @@ TEXTES: dict[str, dict[str, str]] = {
     "resume.applis": {"fr": "Vos applications : {ok} sur {n} mises à jour.", "en": "Your apps: {ok} of {n} updated."},
     "win.applis.rien": {"fr": "son updater ne trouve pas de mise à jour applicable", "en": "its updater finds no applicable update"},
     "tout.applis": {"fr": "• mettre à jour {n} de vos applications par leur propre mise à jour : {liste} (une application ouverte est laissée de côté)", "en": "• update {n} of your apps through their own updater: {liste} (an open app is skipped)"},
+    "wu.telechargement": {"fr": "Téléchargement des mises à jour Windows…", "en": "Downloading Windows updates…"},
+    "wu.installation": {"fr": "Installation des mises à jour Windows…", "en": "Installing Windows updates…"},
     "resume.echecs": {"fr": "Échecs : {liste}", "en": "Failures: {liste}"},
     "resume.etape_ko": {"fr": "{etape} : échec ({detail}), la suite a continué.", "en": "{etape}: failed ({detail}), the rest went on."},
     "resume.windows": {"fr": "Windows Update : {n} mise(s) à jour, {etat}.", "en": "Windows Update: {n} update(s), {etat}."},

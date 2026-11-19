@@ -503,3 +503,25 @@ def test_applis_du_kit_windows(tmp_path, monkeypatch):
     texte = "\n".join(resume)
     assert vus == ["Tutti"]
     assert "1 sur 1" in texte and "SharpCap" in texte and "Tutti 1.3.0" not in texte
+
+
+def test_version_kit_lue_dans_app_pas_dans_le_registre(tmp_path, monkeypatch):
+    """L'updater intégré ne réécrit pas le registre : Perce-Neige 1.75.2 y restait 1.60.1."""
+    import json
+    from martinet import demo, orchestre, reglages, sources, winget
+    monkeypatch.setenv("LOCALAPPDATA", str(tmp_path))
+    monkeypatch.setattr(demo, "actif", lambda: False)
+    app = tmp_path / "Programs" / "Jeu" / "app"
+    app.mkdir(parents=True)
+    (app.parent / "python").mkdir()
+    (app.parent / "python" / "python.exe").write_bytes(b"")
+    (app / "updater.py").write_text("")
+    (app / "VERSION").write_text("1.75.2\n")
+    (app / "kit.json").write_text(json.dumps({"nom_technique": "jeu", "depot_distribution": "proprietaire/Jeu"}))
+    monkeypatch.setattr(sources, "charger", lambda: [sources.Source(id="jeu", nom="Jeu", motif="^Jeu",
+                                                                    type="github", depot="proprietaire/Jeu")])
+    monkeypatch.setattr(sources, "derniere", lambda s: ("1.75.2", "", ""))
+    inv = winget.Inventaire(paquets=[winget.Paquet("", "Jeu", "1.60.1", source="")])
+    monkeypatch.setattr(winget.Inventaire, "non_suivis", property(lambda self: self.paquets), raising=False)
+    resultats, _ = orchestre.hors_winget(inv, reglages.Reglages())
+    assert resultats[0].installee == "1.75.2" and resultats[0].etat == "a_jour"

@@ -68,6 +68,11 @@ def trouver() -> list[Appli]:
     return applis
 
 
+def par_depot() -> dict:
+    """{« proprietaire/depot » en minuscules : Appli}."""
+    return {a.depot.lower(): a for a in trouver()}
+
+
 def en_marche(dossier: str) -> bool:
     """Un processus tourne-t-il depuis ce dossier (son Python embarqué) ?"""
     chemin = dossier.rstrip("\\/").replace("'", "''") + "\\"
@@ -92,8 +97,11 @@ def mettre_a_jour(a: Appli, journal=None, annulation=None) -> tuple[bool, str]:
     if en_marche(a.dossier):
         return False, tr("lx.applis.ouverte", nom=a.nom)
     python = Path(a.dossier) / "python" / "python.exe"
+    def lisible(ligne: str) -> None:
+        if journal and not ligne.startswith("MARTINET:"):
+            journal(ligne)
     code, sortie = systeme.executer_flux([str(python), "-I", "-c", SCRIPT_MAJ, a.archive or "VERSION"],
-                                         journal, annulation, timeout=1800,
+                                         lisible, annulation, timeout=1800,
                                          cwd=str(Path(a.dossier) / "app"))
     if code == 0 and "MARTINET:OK" in sortie:
         return True, ""

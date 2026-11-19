@@ -62,6 +62,12 @@ def hors_winget(inv: winget.Inventaire, reglages: Reglages, journal=None, sur_av
         candidats = [winget.Paquet("", n, v) for n, v, _ in materiel.logiciels_du_registre()]
     suivis = [p.nom for p in inv.paquets if p.suivi]
     ignores = {n.lower() for n in reglages.ignores_hors_winget}
+    # vos applications du kit : leur version vraie est app\VERSION ; le registre garde
+    # celle de l'installation, car leur mise à jour intégrée ne le réécrit pas
+    try:
+        kit = windows_applis.par_depot()
+    except Exception:                         # noqa: BLE001
+        kit = {}
     resultats, sans_source = [], []
     tries = sorted(candidats, key=lambda x: x.nom.lower())
     for i, p in enumerate(tries):
@@ -77,7 +83,9 @@ def hors_winget(inv: winget.Inventaire, reglages: Reglages, journal=None, sur_av
             continue                          # une autre entrée du même logiciel est suivie
         if journal:
             journal(tr("journal.source", nom=p.nom))
-        resultats.append(sources.verifier(source, p.nom, p.installee))
+        appli = kit.get((source.depot or "").lower()) if source.type == "github" else None
+        installee = appli.installee if appli is not None and appli.installee else p.installee
+        resultats.append(sources.verifier(source, p.nom, installee))
     return resultats, sans_source
 
 
@@ -312,7 +320,7 @@ def applis_du_kit(b: Bilan) -> list:
     if systeme.linux():
         return []
     depots = {s.id: (s.depot or "").lower() for s in sources.charger()}
-    installees = {a.depot.lower(): a for a in windows_applis.trouver()}
+    installees = windows_applis.par_depot()
     return [(r, installees[depots[r.source]]) for r in b.hors
             if r.etat == "maj" and depots.get(r.source) in installees]
 

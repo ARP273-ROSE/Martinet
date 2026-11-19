@@ -93,7 +93,19 @@ def installer(ids: list[str], journal=None, annulation=None) -> dict:
         return {"code": 2, "redemarrer": True, "n": len(ids), "details": []}
     import os
     os.environ["MARTINET_MAJ"] = ",".join(ids)
-    code, sortie = systeme.powershell_flux(SCRIPT_INSTALLATION, journal, annulation, timeout=14400)
+    from .i18n import tr
+    marqueurs = {"TELECHARGEMENT": tr("wu.telechargement"), "INSTALLATION": tr("wu.installation")}
+    cache = [False]
+
+    def lisible(ligne: str) -> None:
+        # le protocole avec PowerShell (marqueurs, JSON final) n'a rien à faire dans la console
+        if cache[0] or not journal:
+            return
+        if ligne.strip() == "###JSON###":
+            cache[0] = True
+            return
+        journal(marqueurs.get(ligne.strip(), ligne))
+    code, sortie = systeme.powershell_flux(SCRIPT_INSTALLATION, lisible, annulation, timeout=14400)
     donnees = systeme.json_de_sortie(sortie)
     if donnees is None:
         raise RuntimeError(sortie.strip()[-300:] or f"code {code}")

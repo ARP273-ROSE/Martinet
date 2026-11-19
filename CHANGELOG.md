@@ -1,5 +1,17 @@
 # Journal des versions / Changelog
 
+### 0.5.5
+
+- Windows : vos applications du kit installées dans le profil (celles qui ont une source GitHub) sont
+  mises à jour par « Mettre à jour et nettoyer » au lieu d'être laissées « à faire à la main ». Martinet
+  lance, avec le Python de chaque application, sa propre mise à jour (hôtes GitHub, empreinte,
+  signature quand l'application en a une) ; seul son code est remplacé, ses réglages ne bougent pas. Une
+  application ouverte est laissée de côté.
+- Windows: your kit apps installed in the user profile (those with a GitHub source) are now updated by
+  “Update and clean up” instead of being left “to do by hand”. Martinet runs each app's own updater with
+  that app's Python (GitHub hosts, checksum, signature when the app has one); only its code is replaced,
+  its settings stay. An open app is skipped.
+
 ### 0.5.4
 
 - Mises à jour signées : Martinet n'installe plus une mise à jour que si son archive figure dans un

@@ -469,3 +469,37 @@ def test_coupure_reseau_second_essai_et_tri_des_echecs(monkeypatch):
     assert "2" in resume[0] and "4" in resume[0]      # A (au second essai) et D
     assert "C (0x8A150006)" in texte and "B" in texte.split("winget")[-1]
     assert "0x80072EE7" not in texte
+
+
+def test_applis_du_kit_windows(tmp_path, monkeypatch):
+    import json
+    import threading
+    from martinet import demo, orchestre, reglages, sources, windows_applis
+    monkeypatch.setenv("LOCALAPPDATA", str(tmp_path))
+    monkeypatch.setattr(demo, "actif", lambda: False)
+    for nom, depot in (("Tutti", "proprietaire/Tutti"), ("Martinet", "proprietaire/Martinet")):
+        app = tmp_path / "Programs" / nom / "app"
+        app.mkdir(parents=True)
+        (app.parent / "python").mkdir()
+        (app.parent / "python" / "python.exe").write_bytes(b"")
+        (app / "updater.py").write_text("")
+        (app / "VERSION").write_text("1.3.0\n")
+        (app / "kit.json").write_text(json.dumps({"nom_technique": nom.lower(), "nom_affiche": nom,
+                                                  "depot_distribution": depot}))
+    trouvees = windows_applis.trouver()
+    assert [a.nom for a in trouvees] == ["Tutti"] and trouvees[0].installee == "1.3.0"
+
+    monkeypatch.setattr(sources, "charger", lambda: [sources.Source(id="tutti", nom="Tutti", motif="^Tutti",
+                                                                    type="github", depot="proprietaire/Tutti")])
+    r = sources.Resultat("Tutti", "1.3.0", "1.3.2", "maj", source="tutti")
+    autre = sources.Resultat("SharpCap", "4.1", "4.2", "maj", source="sharpcap")
+    b = orchestre.Bilan(hors=[r, autre])
+    assert [a.nom for _r, a in orchestre.applis_du_kit(b)] == ["Tutti"]
+
+    vus = []
+    monkeypatch.setattr(windows_applis, "mettre_a_jour", lambda a, j=None, an=None: (vus.append(a.nom), (True, ""))[1])
+    resume = orchestre.tout_mettre_a_jour(reglages.Reglages(), None, threading.Event(), True, False, False,
+                                          bilan=b, admin=False, pilote=False, ranger_raccourcis=False)
+    texte = "\n".join(resume)
+    assert vus == ["Tutti"]
+    assert "1 sur 1" in texte and "SharpCap" in texte and "Tutti 1.3.0" not in texte

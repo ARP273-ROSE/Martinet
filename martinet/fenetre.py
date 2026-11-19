@@ -298,6 +298,12 @@ class FenetrePrincipale(QtWidgets.QMainWindow):
         n_prog = len(orchestre.a_mettre_a_jour(b, r))
         if n_prog:
             lignes.append(tr("tout.programmes", n=n_prog))
+        try:
+            kit = orchestre.applis_du_kit(b)
+        except Exception:                             # noqa: BLE001 — le plan reste montrable
+            kit = []
+        if kit:
+            lignes.append(tr("tout.applis", n=len(kit), liste=", ".join(a.nom for _r, a in kit)))
         if b.windows is not None:
             voulues = [m for m in b.windows if r.facultatives or not m.facultatif]
             fac = sum(1 for m in voulues if m.facultatif)
@@ -322,7 +328,8 @@ class FenetrePrincipale(QtWidgets.QMainWindow):
         for c in b.cartes:
             if c.etat == "maj" and c.source == "amd":
                 pas_fait.append(tr("tout.pas_amd", version=c.derniere))
-        hors = [x for x in b.hors if x.etat == "maj"]
+        kit_ids = {id(r) for r, _a in kit}
+        hors = [x for x in b.hors if x.etat == "maj" and id(x) not in kit_ids]
         if hors:
             pas_fait.insert(0, tr("tout.pas_hors", n=len(hors)))
         texte = "\n".join(lignes)

@@ -192,12 +192,13 @@ def nettoyer_ligne(ligne: str) -> str:
 
 
 def executer_flux(cmd: list[str], ligne_cb=None, annulation: threading.Event | None = None,
-                  timeout: float | None = 7200, env: dict | None = None) -> tuple[int, str]:
+                  timeout: float | None = 7200, env: dict | None = None,
+                  cwd: str | None = None) -> tuple[int, str]:
     """Comme executer(), en transmettant chaque ligne au fil de l'eau."""
     try:
         proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                 stdin=subprocess.DEVNULL, creationflags=SANS_FENETRE,
-                                env={**os.environ, **env} if env else None)
+                                env={**os.environ, **env} if env else None, cwd=cwd)
     except FileNotFoundError:
         return 127, f"introuvable : {cmd[0]}"
     lignes: list[str] = []

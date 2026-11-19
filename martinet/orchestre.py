@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from . import materiel, menage, raccourcis, sources, systeme, windows_update, winget
+from . import materiel, menage, raccourcis, sources, systeme, windows_applis, windows_update, winget
 from .i18n import tr
 from .reglages import Reglages
 
@@ -171,7 +171,8 @@ def tout_mettre_a_jour(reglages: Reglages, journal=None, annulation=None,
     a_nettoyer = [e for e in menage.elements() if e.coche and (admin or not e.admin)] if nettoyer else []
     pilotes = [r for r in b.cartes if r.etat == "maj" and r.source == "nvidia" and r.fichier] \
         if pilote and admin else []
-    unites = (len(liste) + (2 if windows and b.windows is not None else 0) + len(a_nettoyer)
+    kit = applis_du_kit(b) if programmes else []
+    unites = (len(liste) + len(kit) + (2 if windows and b.windows is not None else 0) + len(a_nettoyer)
               + len(pilotes) + 1) or 1
     fait = [0]
 
@@ -216,6 +217,28 @@ def tout_mettre_a_jour(reglages: Reglages, journal=None, annulation=None,
             resume.append(tr("resume.echecs", liste=", ".join(autres)))
         if inapplicables:
             resume.append(tr("resume.inapplicables", liste=", ".join(inapplicables)))
+    poses = set()
+    if kit:
+        ok_kit, ko_kit = 0, []
+        for r, a in kit:
+            stop()
+            pas(f"{a.nom} {r.installee} → {r.derniere}")
+            if journal:
+                journal(tr("journal.maj_paquet", nom=a.nom, avant=r.installee, apres=r.derniere))
+            try:
+                reussi, detail = windows_applis.mettre_a_jour(a, journal, annulation)
+            except systeme.Annule:
+                raise
+            except Exception as exc:              # noqa: BLE001 — une appli en échec n'arrête pas les autres
+                reussi, detail = False, str(exc)[:200]
+            if reussi:
+                ok_kit += 1
+                poses.add(id(r))
+            else:
+                ko_kit.append(f"{a.nom} ({detail})")
+        resume.append(tr("resume.applis", ok=ok_kit, n=len(kit)))
+        if ko_kit:
+            resume.append(tr("resume.echecs", liste=", ".join(ko_kit)))
     if windows and b.windows is not None:
         voulues = [m for m in b.windows if reglages.facultatives or not m.facultatif]
         pas("Windows Update")
@@ -250,7 +273,6 @@ def tout_mettre_a_jour(reglages: Reglages, journal=None, annulation=None,
                 if journal:
                     journal(f"{e.cle} : {exc}")
         resume.append(tr("resume.menage", taille=menage.taille_lisible(libere)))
-    poses = set()
     for r in pilotes:
         stop()
         pas(f"{r.nom} {r.derniere}")
@@ -282,6 +304,17 @@ def tout_mettre_a_jour(reglages: Reglages, journal=None, annulation=None,
 #: composants par défaut, réglages existants conservés — pas de « -clean »),
 #: sans fenêtre et sans redémarrage forcé
 NVIDIA_SILENCIEUX = ["-s", "-noreboot"]
+
+
+def applis_du_kit(b: Bilan) -> list:
+    """(résultat « hors winget », application du kit) : vos applications que leur
+    propre updater sait mettre à jour sans vous."""
+    if systeme.linux():
+        return []
+    depots = {s.id: (s.depot or "").lower() for s in sources.charger()}
+    installees = {a.depot.lower(): a for a in windows_applis.trouver()}
+    return [(r, installees[depots[r.source]]) for r in b.hors
+            if r.etat == "maj" and depots.get(r.source) in installees]
 
 
 def installer_pilote_silencieux(r, journal=None, annulation=None) -> tuple[bool, str]:

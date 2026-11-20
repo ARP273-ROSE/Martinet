@@ -63,7 +63,8 @@
   "type": "page",
   "url": "https://www.zwoastro.com/software/ascom-driver/",
   "regex": "Windows\\s+X64\\s+Version:\\s*V(\\d+(?:\\.\\d+)+)",
-  "page": "https://www.zwoastro.com/software/ascom-driver/"
+  "page": "https://www.zwoastro.com/software/ascom-driver/",
+  "installeur": "https://dl.zwoastro.com/software?app=ASCOMDrive&platform=windows64&region=Overseas"
  },
  {
   "id": "zwo-camera",
@@ -72,7 +73,8 @@
   "type": "page",
   "url": "https://www.zwoastro.com/software/camera-driver/",
   "regex": "Windows\\s+Version:\\s*V(\\d+(?:\\.\\d+)+)",
-  "page": "https://www.zwoastro.com/software/camera-driver/"
+  "page": "https://www.zwoastro.com/software/camera-driver/",
+  "installeur": "https://dl.zwoastro.com/software?app=AsiCameraDriver&platform=windows86&region=Overseas"
  },
  {
   "id": "asistudio",
@@ -81,7 +83,11 @@
   "type": "page",
   "url": "https://www.zwoastro.com/software/asistudio/",
   "regex": "Windows\\s+X64\\s+Version:\\s*V(\\d+(?:\\.\\d+)+)",
-  "page": "https://www.zwoastro.com/software/asistudio/"
+  "page": "https://www.zwoastro.com/software/asistudio/",
+  "installeur": "https://dl.zwoastro.com/software?app=ASIStudio&platform=windows64&region=Overseas",
+  "silencieux": "/S",
+  "signataire": "\\bCN=\\\"?SUZHOU ZWO CO\\., LTD\\.",
+  "bloquants": "asi(studio|cap|img|live|meteorcap|videostack|deepstack|fitsview|mountcontroller)"
  },
  {
   "id": "cartes-du-ciel",

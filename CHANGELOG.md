@@ -1,5 +1,18 @@
 # Journal des versions / Changelog
 
+### 0.6.1
+
+- ASIStudio se met à jour tout seul : Martinet télécharge l'installeur officiel de ZWO, vérifie sa signature
+  (SUZHOU ZWO CO., LTD.) et l'installe sans fenêtre ; il attend si ASICap, ASIImg ou un autre logiciel
+  ASI est ouvert. Les pilotes ZWO (caméra, ASCOM) restent à installer à la main, mais le bouton
+  « Installer » télécharge maintenant directement l'installeur officiel. Deux paquets du même nom (les deux
+  « Microsoft Teams ») sont distingués par leur identifiant dans le résumé des échecs.
+- ASIStudio updates on its own: Martinet downloads the official ZWO installer, checks its signature
+  (SUZHOU ZWO CO., LTD.) and installs it without a window; it waits while ASICap, ASIImg or another ASI
+  program is open. ZWO drivers (camera, ASCOM) are still installed by hand, but the "Install" button now
+  downloads the official installer directly. Two packages with the same name (both "Microsoft Teams") are
+  told apart by their identifier in the failure summary.
+
 ### 0.6.0
 
 - Poste d'observatoire (N.I.N.A., PHD2, SharpCap, APT ou ASCOM installés) : le passage automatique attend

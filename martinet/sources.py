@@ -42,6 +42,10 @@ class Source:
     exclure_apres: str = ""
     fichier: str = ""             # motif du fichier à télécharger (github)
     page: str = ""                # page de téléchargement à ouvrir
+    installeur: str = ""          # lien direct (stable) de l'installeur Windows (page)
+    silencieux: str = ""          # options d'installation sans fenêtre : le passage auto l'installe
+    signataire: str = ""          # motif du titulaire de la signature Authenticode exigée
+    bloquants: str = ""           # motif des processus ouverts qui reportent l'installation seule
     perso: bool = False
 
     def correspond(self, nom_installe: str) -> bool:
@@ -165,7 +169,7 @@ def derniere(source: Source) -> tuple[str, str, str]:
         v = version_dans_page(texte, source.regex, source.exclure_apres)
         if not v:
             raise LookupError("version introuvable sur la page")
-        return v, source.page or source.url, ""
+        return v, source.page or source.url, source.installeur
     raise ValueError(f"type de source inconnu : {source.type}")
 
 
@@ -199,6 +203,48 @@ def verifier(source: Source, nom_installe: str, installee: str) -> Resultat:
     else:
         res.etat = "maj" if plus_recente(res.derniere, installee) else "a_jour"
     return res
+
+
+def nom_installeur(res: Resultat) -> str:
+    """Nom du fichier à écrire : celui du lien, ou « source-version.exe » quand le
+    lien est une adresse de redirection (« …/software?app=… »)."""
+    nom = res.fichier.rsplit("/", 1)[-1].split("?")[0]
+    if not re.search(r"\.(exe|msi)$", nom, re.I):
+        version = re.sub(r"[^\w.]", "_", res.derniere or "derniere")
+        nom = f"{res.source or 'installeur'}-{version}.exe"
+    return nom
+
+
+def automatique(source: Source | None) -> bool:
+    """Source que le passage automatique sait installer seul : options silencieuses,
+    signataire exigé et un moyen d'obtenir l'installeur."""
+    return bool(source and source.silencieux and source.signataire
+                and (source.installeur or (source.type == "github" and source.fichier)))
+
+
+SCRIPT_SIGNATURE = r"""
+$s = Get-AuthenticodeSignature -LiteralPath $env:MARTINET_FICHIER
+'###JSON###'
+[pscustomobject]@{ etat = [string]$s.Status; sujet = [string]$s.SignerCertificate.Subject } | ConvertTo-Json -Compress
+"""
+
+
+def signature(chemin) -> tuple[str, str]:
+    """(état Authenticode, sujet du certificat) d'un fichier téléchargé."""
+    code, sortie = systeme.executer(systeme.commande_powershell(SCRIPT_SIGNATURE), timeout=120,
+                                    env={"MARTINET_FICHIER": str(chemin)})
+    d = systeme.json_de_sortie(sortie) or {}
+    return d.get("etat", "") or f"code {code}", d.get("sujet", "")
+
+
+def signature_attendue(chemin, motif: str) -> str:
+    """« » si la signature est valide et au nom attendu, sinon la raison du refus."""
+    etat, sujet = signature(chemin)
+    if etat != "Valid":
+        return f"signature {etat or 'absente'}"
+    if not re.search(motif, sujet, re.I):
+        return f"signataire inattendu : {sujet[:80]}"
+    return ""
 
 
 # ------------------------------------------------------------ NVIDIA

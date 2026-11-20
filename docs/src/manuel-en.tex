@@ -195,9 +195,11 @@ Update (mount USB-serial adapter, chipset…) are never installed on their own: 
 installed by hand in daytime, when you can check that the mount and camera still answer. The
 \textbf{scheduled run} does not start while N.I.N.A., PHD2, SharpCap or APT is open, nor during the
 night window (17:00--09:00): a run missed because the PC was off would otherwise catch up in the middle
-of an imaging session; it is simply postponed, and the History says why. ZWO drivers (camera and ASCOM),
-ASIStudio and Cartes du Ciel are tracked; 10Micron, PixInsight and Pegasus update through their own
-tools.}
+of an imaging session; it is simply postponed, and the History says why. ASIStudio installs on its
+own: official ZWO installer, signature checked, and nothing happens while one of its programs (ASICap,
+ASIImg…) is open. ZWO drivers (camera and ASCOM) stay manual: the “Install” button downloads
+the official installer, to run in daytime. Cartes du Ciel is tracked; 10Micron, PixInsight and Pegasus
+update through their own tools.}
 
 \attention{After installing, Windows often asks for a restart: Martinet offers it (in one minute, time
 to save your work).}

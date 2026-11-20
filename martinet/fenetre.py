@@ -399,7 +399,7 @@ class FenetrePrincipale(QtWidgets.QMainWindow):
             self.pages["historique"].rafraichir()
 
     def telecharger_et_installer(self, r: sources.Resultat):
-        nom_fichier = r.fichier.rsplit("/", 1)[-1].split("?")[0] or "installeur.exe"
+        nom_fichier = sources.nom_installeur(r)
         dest = systeme.sous_dossier("telechargements") / nom_fichier
         if not self.confirmer(tr("msg.confirmer_installeur", nom=r.nom, version=r.derniere,
                                  adresse=r.fichier)):

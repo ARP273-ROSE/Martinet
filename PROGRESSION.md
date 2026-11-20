@@ -27,3 +27,21 @@ pleine nuit d'acquisition.
 - Sources : ZWO ASCOM / Camera Driver / ASIStudio, Cartes du Ciel ; 10Micron, PixInsight, Pegasus = « seul ».
   Adobe.Acrobat.Pro ajouté aux payants.
 - Pas encore de réglage dans la fenêtre pour la garde (reglages.json seulement).
+
+## 0.6.1 — ASIStudio installé seul (20/11/2026)
+
+Demande après un passage réel : les trois « à faire à la main » (ASIStudio, pilote ASCOM ZWO, pilote caméra
+ZWO) sont-ils automatisables ? Décision : ASIStudio oui (simple application), les pilotes non (un pilote
+caméra changé seul peut casser la connexion de l'acquisition le soir même).
+- Champs de source `installeur` (lien direct stable, ici `dl.zwoastro.com/software?app=…`, redirection vers
+  l'exe signé), `silencieux` (« /S », installeur NSIS), `signataire` (motif du sujet Authenticode exigé,
+  `SUZHOU ZWO CO., LTD.`, certificat EV GlobalSign), `bloquants` (processus ASI* ouverts → report).
+- `orchestre.installables_seuls` / `installer_seul` : téléchargement, `Get-AuthenticodeSignature` (Valid +
+  sujet), lancement sans fenêtre ; admin requis, sinon simplement signalé. Les pilotes ZWO ont seulement le
+  lien direct (bouton « Installer », avec confirmation).
+- Nom de fichier pour un lien sans extension : `source-version.exe` (`sources.nom_installeur`).
+- Résumé des échecs : identifiant winget ajouté quand deux paquets portent le même nom (Microsoft Teams).
+- Constaté au même passage, pas dans Martinet : HWiNFO 8.54 (lien du manifeste winget en 404) ; échec de
+  Microsoft.Teams.Free = winget terminé sans ligne de résultat (Martinet ne tue winget qu'à l'annulation,
+  délai 2 h), cause non établie.
+- Pas encore vu sur une vraie installation : le premier passage avec ASIStudio 1.23 le dira.

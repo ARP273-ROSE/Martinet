@@ -7,6 +7,8 @@ s'installent avec l'utilisateur devant l'écran.
 """
 from __future__ import annotations
 
+import re
+import shlex
 from dataclasses import dataclass, field
 
 from . import materiel, menage, observatoire, raccourcis, sources, systeme, windows_applis, windows_update, winget
@@ -230,9 +232,13 @@ def tout_mettre_a_jour(reglages: Reglages, journal=None, annulation=None,
         if retenus:
             resume.append(tr("resume.payants_retenus", liste=", ".join(
                 f"{p.nom} {p.installee or '?'} → {p.disponible}" for p in retenus)))
-        inapplicables = [p.nom for p, c in echecs if c == winget.CODE_INAPPLICABLE]
-        reseau = [p.nom for p, c in echecs if c in winget.CODES_RESEAU]
-        autres = [f"{p.nom} ({c})" for p, c in echecs
+        homonymes = {p.nom for p in liste if sum(q.nom == p.nom for q in liste) > 1}
+
+        def nom(p):                               # deux « Microsoft Teams » : l'identifiant tranche
+            return f"{p.nom} [{p.id}]" if p.nom in homonymes else p.nom
+        inapplicables = [nom(p) for p, c in echecs if c == winget.CODE_INAPPLICABLE]
+        reseau = [nom(p) for p, c in echecs if c in winget.CODES_RESEAU]
+        autres = [f"{nom(p)} ({c})" for p, c in echecs
                   if c != winget.CODE_INAPPLICABLE and c not in winget.CODES_RESEAU]
         if reseau:
             resume.append(tr("resume.echecs_reseau", liste=", ".join(reseau)))
@@ -262,6 +268,26 @@ def tout_mettre_a_jour(reglages: Reglages, journal=None, annulation=None,
         resume.append(tr("resume.applis", ok=ok_kit, n=len(kit)))
         if ko_kit:
             resume.append(tr("resume.echecs", liste=", ".join(ko_kit)))
+    seuls = installables_seuls(b) if programmes else []
+    if seuls and not admin:
+        resume.append(tr("resume.seuls_admin", liste=", ".join(r.nom for r, _s in seuls)))
+    elif seuls:
+        ouverts = observatoire.processus_en_cours()
+        for r, src in seuls:
+            stop()
+            pas(f"{r.nom} {r.installee} → {r.derniere}")
+            if journal:
+                journal(tr("journal.maj_paquet", nom=r.nom, avant=r.installee, apres=r.derniere))
+            occupe = sorted(p for p in ouverts if src.bloquants and re.fullmatch(src.bloquants, p, re.I))
+            if occupe:
+                resume.append(tr("resume.seul_reporte", nom=r.nom, liste=", ".join(occupe)))
+                continue
+            ok, detail = installer_seul(r, src, journal, annulation)
+            if ok:
+                poses.add(id(r))
+                resume.append(tr("resume.seul_ok", nom=r.nom, version=r.derniere))
+            else:
+                resume.append(tr("resume.seul_ko", nom=r.nom, detail=detail))
     if windows and b.windows is not None:
         voulues = observatoire.windows_voulues(b.windows, reglages)
         retenus_wu = observatoire.pilotes_retenus(b.windows, reglages)
@@ -355,6 +381,40 @@ def installer_pilote_silencieux(r, journal=None, annulation=None) -> tuple[bool,
         systeme.attendre_reseau(180, journal, annulation)
         systeme.telecharger_fichier(r.fichier, dest, None, annulation)
         code, _ = systeme.executer_flux([str(dest), *NVIDIA_SILENCIEUX], journal, annulation, timeout=3600)
+    except systeme.Annule:
+        raise
+    except Exception as exc:                          # noqa: BLE001 — rapporté dans le résumé
+        return False, str(exc)[:200]
+    return code == 0, ("" if code == 0 else f"code {code}")
+
+
+def installables_seuls(b: Bilan) -> list:
+    """(résultat « hors winget », source) que Martinet installe lui-même sans fenêtre :
+    sources du catalogue qui donnent un lien direct, des options silencieuses et
+    le titulaire de signature exigé (ASIStudio…)."""
+    if systeme.linux():
+        return []
+    par_id = {s.id: s for s in sources.charger()}
+    return [(r, par_id[r.source]) for r in b.hors
+            if r.etat == "maj" and r.fichier and sources.automatique(par_id.get(r.source))]
+
+
+def installer_seul(r, src, journal=None, annulation=None) -> tuple[bool, str]:
+    """Télécharge l'installeur officiel, vérifie sa signature, le lance sans fenêtre."""
+    if systeme_demo():
+        return True, ""
+    dest = systeme.sous_dossier("telechargements") / sources.nom_installeur(r)
+    try:
+        systeme.attendre_reseau(180, journal, annulation)
+        systeme.telecharger_fichier(r.fichier, dest, None, annulation)
+        refus = sources.signature_attendue(dest, src.signataire)
+        if refus:
+            dest.unlink(missing_ok=True)
+            return False, refus
+        if journal:
+            journal(tr("journal.lancement", nom=dest.name))
+        code, _ = systeme.executer_flux([str(dest), *shlex.split(src.silencieux, posix=False)],
+                                        journal, annulation, timeout=1800)
     except systeme.Annule:
         raise
     except Exception as exc:                          # noqa: BLE001 — rapporté dans le résumé

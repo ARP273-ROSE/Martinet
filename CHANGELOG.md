@@ -1,5 +1,14 @@
 # Journal des versions / Changelog
 
+### 0.5.8
+
+- Mise à jour de Martinet : si un fichier est momentanément bloqué (antivirus qui l'analyse, fichier restauré
+  de quarantaine en lecture seule), Martinet patiente et réessaie au lieu d'échouer aussitôt. Si le blocage
+  dure, le message conseille d'ajouter le dossier de Martinet aux exceptions de l'antivirus.
+- Martinet update: if a file is briefly locked (antivirus scanning it, file restored from quarantine as
+  read-only), Martinet waits and retries instead of failing at once. If the lock persists, the message
+  suggests adding the Martinet folder to the antivirus exceptions.
+
 ### 0.5.7
 
 - Logiciels payants : Martinet ne les fait plus jamais passer tout seul à une nouvelle version principale

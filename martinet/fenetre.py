@@ -593,7 +593,7 @@ class FenetrePrincipale(QtWidgets.QMainWindow):
             dlg.close()
             if etat["erreur"] is not None or not etat["pose"]:
                 texte = str(etat["erreur"] or "archive invalide")
-                verrou = ("WinError 32" in texte or "used by another process" in texte
+                verrou = ("WinError 32" in texte or "WinError 5]" in texte or "used by another process" in texte
                           or isinstance(etat["erreur"], PermissionError))
                 QtWidgets.QMessageBox.warning(self, tr("maj.titre"),
                                               tr("maj.verrou") if verrou else tr("maj.echec", erreur=texte))

@@ -59,3 +59,37 @@ def test_une_seule_source_pour_le_logo():
     assert svg.lstrip().startswith('<?xml') and '<svg' in svg
     for taille in (16, 32, 64, 128, 256, 512):
         assert (RACINE / f'logo_{taille}.png').exists(), taille
+
+
+def test_ecarter_retente_si_fichier_verrouille(tmp_path, monkeypatch):
+    """Un antivirus qui tient le fichier quelques secondes ne fait pas échouer la mise à jour."""
+    import shutil
+    import updater
+    src = tmp_path / "run.py"
+    src.write_text("x")
+    vrai_move = shutil.move
+    refus = {"n": 2}
+
+    def move(a, b):
+        if refus["n"]:
+            refus["n"] -= 1
+            raise PermissionError(5, "Accès refusé", a)
+        return vrai_move(a, b)
+
+    monkeypatch.setattr(updater.shutil, "move", move)
+    updater._ecarter(src, tmp_path / "ailleurs.py", pause=0)
+    assert (tmp_path / "ailleurs.py").read_text() == "x"
+
+
+def test_ecarter_abandonne_apres_les_essais(tmp_path, monkeypatch):
+    import pytest
+    import updater
+    src = tmp_path / "run.py"
+    src.write_text("x")
+
+    def move(a, b):
+        raise PermissionError(5, "Accès refusé", a)
+
+    monkeypatch.setattr(updater.shutil, "move", move)
+    with pytest.raises(PermissionError):
+        updater._ecarter(src, tmp_path / "b", essais=3, pause=0)

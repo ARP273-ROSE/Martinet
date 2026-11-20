@@ -615,9 +615,12 @@ TEXTES: dict[str, dict[str, str]] = {
     "maj.page": {"fr": "Ouvrir la page", "en": "Open the page"},
     "maj.plus_tard": {"fr": "Plus tard", "en": "Later"},
     "maj.telechargement": {"fr": "Téléchargement de la mise à jour…", "en": "Downloading the update…"},
-    "maj.verrou": {"fr": "Un fichier de Martinet est en cours d'utilisation : fermez les autres fenêtres de "
-                         "Martinet et recommencez.",
-                   "en": "A Martinet file is in use: close the other Martinet windows and try again."},
+    "maj.verrou": {"fr": "Un fichier de Martinet est bloqué : une autre fenêtre de Martinet est ouverte, ou "
+                         "l'antivirus le retient. Fermez les autres fenêtres, ajoutez le dossier de Martinet "
+                         "aux exceptions de l'antivirus, puis recommencez.",
+                   "en": "A Martinet file is locked: another Martinet window is open, or the antivirus is "
+                         "holding it. Close the other windows, add the Martinet folder to the antivirus "
+                         "exceptions, then try again."},
     "maj.echec": {"fr": "La mise à jour a échoué : {erreur}", "en": "The update failed: {erreur}"},
     "maj.redemarre": {"fr": "Mise à jour installée : Martinet va redémarrer.",
                       "en": "Update installed: Martinet will restart."},

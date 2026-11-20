@@ -15,8 +15,10 @@ import logging
 import os
 import shutil
 import ssl
+import stat
 import sys
 import tempfile
+import time
 import urllib.request
 import zipfile
 from pathlib import Path
@@ -369,6 +371,39 @@ def verifier_archive(z, extrait) -> None:
         raise RuntimeError(f"Archive suspecte : {total} octets une fois depliee")
 
 
+def _deverrouiller(chemin: Path) -> None:
+    """Retire l'attribut lecture seule (Windows) sur un fichier ou un dossier.
+
+    Un fichier restaure depuis la quarantaine d'un antivirus revient souvent
+    en lecture seule : os.rename echoue alors avec « Acces refuse ».
+    """
+    tous = [chemin] + (list(chemin.rglob('*')) if chemin.is_dir() else [])
+    for p in tous:
+        try:
+            mode = p.stat().st_mode
+            if not mode & stat.S_IWRITE:
+                p.chmod(mode | stat.S_IWRITE)
+        except OSError:
+            pass
+
+
+def _ecarter(dest: Path, vers: Path, essais: int = 6, pause: float = 1.0) -> None:
+    """Deplace `dest` vers `vers`, en patientant si le fichier est verrouille.
+
+    Un antivirus qui analyse le fichier le tient ouvert quelques secondes ;
+    on retente plutot que d'abandonner au premier refus.
+    """
+    for n in range(essais):
+        try:
+            shutil.move(str(dest), str(vers))
+            return
+        except PermissionError:
+            if n == essais - 1:
+                raise
+            _deverrouiller(dest)
+            time.sleep(pause)
+
+
 def download_and_apply(update, progress=None):
     """Telecharge l'archive et remplace le contenu de `app/`.
 
@@ -435,7 +470,7 @@ def download_and_apply(update, progress=None):
                 continue
             dest = target / item.name
             if dest.exists():
-                shutil.move(str(dest), str(backup / item.name))
+                _ecarter(dest, backup / item.name)
                 replaced.append(item.name)
             if item.is_dir():
                 shutil.copytree(item, dest)
@@ -463,7 +498,9 @@ def download_and_apply(update, progress=None):
                 log.info("Version precedente restauree")
         except Exception:
             log.exception("Restauration impossible")
-        raise RuntimeError(str(e))
+        if isinstance(e, PermissionError):
+            raise PermissionError(str(e)) from e
+        raise RuntimeError(str(e)) from e
 
     finally:
         shutil.rmtree(tmpdir, ignore_errors=True)

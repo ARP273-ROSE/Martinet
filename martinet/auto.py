@@ -9,12 +9,20 @@ from __future__ import annotations
 import sys
 import threading
 
-from . import historique, orchestre, reglages as mod_reglages, systeme
+from . import historique, observatoire, orchestre, reglages as mod_reglages, systeme
 from .i18n import tr
 
 
 def executer(notifier: bool = True) -> int:
     r = mod_reglages.charger()
+    raison = observatoire.raison_de_reporter(r)
+    if raison:
+        # poste d'observatoire : rien pendant une acquisition ni la nuit ; la prochaine
+        # occurrence de la tâche planifiée refera l'essai
+        genre, detail = raison.split(":", 1)
+        texte = tr("auto.reporte_" + genre, detail=detail)
+        historique.ajouter("auto", [texte], texte)
+        return 0
     journal: list[str] = []
     historique.demarrer_passe("auto")
 

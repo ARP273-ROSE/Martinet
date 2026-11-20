@@ -189,6 +189,16 @@ audio…). \textbf{Optional} updates (optional drivers, Windows previews) are in
 \menu{Include optional updates} is checked; this choice also applies to “Update and clean up” and to
 scheduled runs. \menu{Update Defender} refreshes the antivirus signatures.
 
+\attention{\textbf{Observatory computer.} On a PC that drives a telescope (N.I.N.A., PHD2, SharpCap, APT
+or the ASCOM Platform installed), Martinet takes three precautions. \textbf{Drivers} offered by Windows
+Update (mount USB-serial adapter, chipset…) are never installed on their own: they stay unticked, to be
+installed by hand in daytime, when you can check that the mount and camera still answer. The
+\textbf{scheduled run} does not start while N.I.N.A., PHD2, SharpCap or APT is open, nor during the
+night window (17:00--09:00): a run missed because the PC was off would otherwise catch up in the middle
+of an imaging session; it is simply postponed, and the History says why. ZWO drivers (camera and ASCOM),
+ASIStudio and Cartes du Ciel are tracked; 10Micron, PixInsight and Pegasus update through their own
+tools.}
+
 \attention{After installing, Windows often asks for a restart: Martinet offers it (in one minute, time
 to save your work).}
 

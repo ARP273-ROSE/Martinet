@@ -27,6 +27,9 @@ class Reglages:
     auto_jour: int = 6            # 0 = lundi … 6 = dimanche
     auto_heure: str = "12:00"
     auto_frequence: str = "hebdo"  # quotidien, hebdo
+    # poste d'observatoire (observatoire.py) : auto = si N.I.N.A., PHD2, ASCOM… sont installés
+    garde_observatoire: str = "auto"   # auto, oui, non
+    plage_nuit: str = "17:00-09:00"    # pas de passage automatique dans cette plage (poste astro)
     gestionnaire_linux: str = "auto"   # auto (yay s'il est installé, sinon pamac), yay, pamac
 
 

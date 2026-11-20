@@ -57,6 +57,60 @@
   "page": "https://www.sharpcap.co.uk/sharpcap/downloads"
  },
  {
+  "id": "zwo-ascom",
+  "nom": "ZWO ASCOM Driver",
+  "motif": "^(ZWO.*ASCOM|ASCOM.*(ZWO|ASI Camera))",
+  "type": "page",
+  "url": "https://www.zwoastro.com/software/ascom-driver/",
+  "regex": "Windows\\s+X64\\s+Version:\\s*V(\\d+(?:\\.\\d+)+)",
+  "page": "https://www.zwoastro.com/software/ascom-driver/"
+ },
+ {
+  "id": "zwo-camera",
+  "nom": "ZWO ASI Camera Driver",
+  "motif": "^(ZWO.*(ASI|Camera).*Driver|ASI.*Camera.*Driver)",
+  "type": "page",
+  "url": "https://www.zwoastro.com/software/camera-driver/",
+  "regex": "Windows\\s+Version:\\s*V(\\d+(?:\\.\\d+)+)",
+  "page": "https://www.zwoastro.com/software/camera-driver/"
+ },
+ {
+  "id": "asistudio",
+  "nom": "ASIStudio",
+  "motif": "^ASI ?Studio",
+  "type": "page",
+  "url": "https://www.zwoastro.com/software/asistudio/",
+  "regex": "Windows\\s+X64\\s+Version:\\s*V(\\d+(?:\\.\\d+)+)",
+  "page": "https://www.zwoastro.com/software/asistudio/"
+ },
+ {
+  "id": "cartes-du-ciel",
+  "nom": "Cartes du Ciel",
+  "motif": "^(Cartes du Ciel|Sky ?Chart)",
+  "type": "page",
+  "url": "https://www.ap-i.net/skychart/en/download",
+  "regex": "Skychart software version (\\d+\\.\\d+(?:\\.\\d+)?)",
+  "page": "https://www.ap-i.net/skychart/en/download"
+ },
+ {
+  "id": "10micron",
+  "nom": "10Micron",
+  "motif": "^10 ?Micron",
+  "type": "seul"
+ },
+ {
+  "id": "pixinsight",
+  "nom": "PixInsight",
+  "motif": "^PixInsight",
+  "type": "seul"
+ },
+ {
+  "id": "pegasus",
+  "nom": "Pegasus Astro",
+  "motif": "^(Pegasus|Unity Platform)",
+  "type": "seul"
+ },
+ {
   "id": "chrome",
   "nom": "Google Chrome",
   "motif": "^Google Chrome$",

@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from . import materiel, menage, raccourcis, sources, systeme, windows_applis, windows_update, winget
+from . import materiel, menage, observatoire, raccourcis, sources, systeme, windows_applis, windows_update, winget
 from .i18n import tr
 from .reglages import Reglages
 
@@ -263,7 +263,10 @@ def tout_mettre_a_jour(reglages: Reglages, journal=None, annulation=None,
         if ko_kit:
             resume.append(tr("resume.echecs", liste=", ".join(ko_kit)))
     if windows and b.windows is not None:
-        voulues = [m for m in b.windows if reglages.facultatives or not m.facultatif]
+        voulues = observatoire.windows_voulues(b.windows, reglages)
+        retenus_wu = observatoire.pilotes_retenus(b.windows, reglages)
+        if retenus_wu:
+            resume.append(tr("resume.pilotes_retenus", liste=", ".join(m.titre for m in retenus_wu)))
         pas("Windows Update")
         if voulues and admin:
             stop()

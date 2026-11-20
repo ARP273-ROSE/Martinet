@@ -22,6 +22,7 @@ PAYANTS_DEFAUT = frozenset({
     "SublimeHQ.SublimeText.4",
     "SublimeHQ.SublimeMerge",
     "GPSoftware.DirectoryOpus",
+    "Adobe.Acrobat.Pro",
 })
 
 

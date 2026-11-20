@@ -1,5 +1,18 @@
 # Journal des versions / Changelog
 
+### 0.6.0
+
+- Poste d'observatoire (N.I.N.A., PHD2, SharpCap, APT ou ASCOM installés) : le passage automatique attend
+  qu'aucune acquisition ne soit en cours et ne démarre pas la nuit (17:00-09:00) ; les pilotes de Windows
+  Update ne partent plus seuls (monture, caméra). Nouvelles sources : pilotes ZWO (caméra, ASCOM),
+  ASIStudio, Cartes du Ciel ; 10Micron, PixInsight et Pegasus reconnus comme se mettant à jour seuls.
+  Adobe Acrobat Pro ajouté aux logiciels payants.
+- Observatory computer (N.I.N.A., PHD2, SharpCap, APT or ASCOM installed): the scheduled run waits until no
+  imaging session is running and does not start at night (17:00-09:00); Windows Update drivers are no
+  longer installed on their own (mount, camera). New sources: ZWO drivers (camera, ASCOM), ASIStudio,
+  Cartes du Ciel; 10Micron, PixInsight and Pegasus recognised as self-updating. Adobe Acrobat Pro added to
+  paid programs.
+
 ### 0.5.9
 
 - Mise à jour de Martinet : les fichiers qui n'ont pas changé ne sont plus réécrits. Un antivirus qui garde

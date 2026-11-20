@@ -6,7 +6,8 @@ from pathlib import Path
 
 from PyQt6 import QtCore, QtGui, QtWidgets
 
-from . import __version__, historique, orchestre, planif, reglages as mod_reglages, sources, style, systeme
+from . import (__version__, historique, observatoire, orchestre, planif, reglages as mod_reglages, sources,
+               style, systeme)
 from .i18n import langue, tr
 from .pages import pages_du_systeme
 from .widgets import bouton, etiquette
@@ -276,7 +277,7 @@ class FenetrePrincipale(QtWidgets.QMainWindow):
         if b.inventaire is None and b.windows is None and b.paquets is None and b.lx is None:
             self.message(tr("msg.verifier_dabord"))
             return
-        n_win = len([m for m in (b.windows or []) if self.reglages.facultatives or not m.facultatif])
+        n_win = len(observatoire.windows_voulues(b.windows or [], self.reglages))
         if not self.confirmer(tr("msg.confirmer_tout", liste=self.plan_tout(b, systeme.est_admin() or n_win > 0))):
             return
         if n_win and not systeme.est_admin() and not self.exiger_admin():
@@ -308,7 +309,7 @@ class FenetrePrincipale(QtWidgets.QMainWindow):
         if kit:
             lignes.append(tr("tout.applis", n=len(kit), liste=", ".join(a.nom for _r, a in kit)))
         if b.windows is not None:
-            voulues = [m for m in b.windows if r.facultatives or not m.facultatif]
+            voulues = observatoire.windows_voulues(b.windows, r)
             fac = sum(1 for m in voulues if m.facultatif)
             if voulues:
                 lignes.append(tr("tout.windows_fac", n=len(voulues), f=fac) if fac

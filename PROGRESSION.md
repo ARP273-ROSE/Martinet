@@ -15,3 +15,15 @@ Fait :
 - élévation au démarrage et bandeau sans droits ;
 - installation silencieuse du pilote NVIDIA (`-s -noreboot`) ;
 - notification de fin du passage automatique.
+
+## 0.6.0 — poste d'observatoire (20/11/2026)
+
+Constat sur un vrai PC d'observatoire : `facultatives=True` aurait laissé partir les pilotes facultatifs
+(adaptateur USB-série de la monture…), et la tâche planifiée StartWhenAvailable pouvait se rattraper en
+pleine nuit d'acquisition.
+- `martinet/observatoire.py` : poste astro détecté par le registre (N.I.N.A., PHD2, SharpCap, APT, ASCOM
+  Platform, SGP, Voyager) ou forcé (`garde_observatoire` = auto/oui/non). Passage auto reporté si un processus
+  d'acquisition tourne ou pendant `plage_nuit` (17:00-09:00) ; pilotes Windows Update jamais automatiques.
+- Sources : ZWO ASCOM / Camera Driver / ASIStudio, Cartes du Ciel ; 10Micron, PixInsight, Pegasus = « seul ».
+  Adobe.Acrobat.Pro ajouté aux payants.
+- Pas encore de réglage dans la fenêtre pour la garde (reglages.json seulement).

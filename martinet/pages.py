@@ -7,8 +7,8 @@ from pathlib import Path
 
 from PyQt6 import QtCore, QtWidgets
 
-from . import (historique, menage, orchestre, planif, raccourcis, reglages as mod_reglages,
-               sources, style, systeme, windows_update, winget)
+from . import (historique, menage, observatoire, orchestre, planif, raccourcis,
+               reglages as mod_reglages, sources, style, systeme, windows_update, winget)
 from .i18n import tr
 from .widgets import COULEUR_ETAT, Tableau, bouton, etiquette, rangee, titre
 
@@ -459,9 +459,12 @@ class PageWindows(Page):
             if m.facultatif:
                 genre += " · " + tr("win.facultatif")
             lignes.append(([m.titre, genre, menage.taille_lisible(m.taille)], m,
-                           self.reglages.facultatives or not m.facultatif, None))
+                           bool(observatoire.windows_voulues([m], self.reglages)), None))
         self.table.remplir(lignes)
-        self.info.setText(tr("win.resume", n=len(lignes)) if lignes else tr("win.rien"))
+        texte = tr("win.resume", n=len(lignes)) if lignes else tr("win.rien")
+        if lignes and observatoire.pilotes_retenus(self.bilan.windows, self.reglages):
+            texte += " " + tr("win.garde_astro")
+        self.info.setText(texte)
         self.c_facultatives.blockSignals(True)
         self.c_facultatives.setChecked(self.reglages.facultatives)
         self.c_facultatives.blockSignals(False)

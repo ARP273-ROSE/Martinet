@@ -2,7 +2,8 @@
 
 C'est celle qu'utilise Paramètres > Windows Update : mises à jour du système
 ET pilotes publiés par les fabricants (chipset, Wi-Fi, audio…). Les mises à
-jour « facultatives » (BrowseOnly) sont listées mais jamais cochées d'office.
+jour « facultatives » (BrowseOnly) ne partent que si le réglage `facultatives`
+est coché ; sur un poste d'observatoire, aucun pilote ne part seul (observatoire.py).
 L'installation demande les droits administrateur.
 """
 from __future__ import annotations

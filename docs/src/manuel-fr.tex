@@ -197,6 +197,16 @@ Windows) sont incluses tant que la case \menu{Inclure les mises à jour facultat
 choix vaut aussi pour « Mettre à jour et nettoyer » et pour le passage automatique.
 \menu{Mettre à jour Defender} rafraîchit les signatures de l'antivirus.
 
+\attention{\textbf{Poste d'observatoire.} Sur un PC qui pilote un télescope (N.I.N.A., PHD2, SharpCap, APT
+ou la plateforme ASCOM installés), Martinet prend trois précautions. Les \textbf{pilotes} proposés par
+Windows Update (USB-série de la monture, chipset…) ne partent jamais seuls : ils restent décochés, à
+installer à la main, de jour, quand on peut vérifier que la monture et la caméra répondent. Le
+\textbf{passage automatique} ne démarre pas si N.I.N.A., PHD2, SharpCap ou APT sont ouverts, ni pendant
+la plage de nuit (17:00--09:00) : une tâche ratée parce que le PC était éteint se rattraperait sinon en
+pleine acquisition ; il est simplement reporté, et l'Historique dit pourquoi. Les pilotes ZWO (caméra et
+ASCOM), ASIStudio et Cartes du Ciel sont surveillés ; 10Micron, PixInsight et Pegasus se mettent à jour
+par leurs propres outils.}
+
 \attention{Après l'installation, Windows demande souvent un redémarrage : Martinet le propose (dans une
 minute, le temps d'enregistrer votre travail).}
 

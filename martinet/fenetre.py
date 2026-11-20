@@ -298,6 +298,9 @@ class FenetrePrincipale(QtWidgets.QMainWindow):
         n_prog = len(orchestre.a_mettre_a_jour(b, r))
         if n_prog:
             lignes.append(tr("tout.programmes", n=n_prog))
+        retenus = orchestre.payants_retenus(b, r)
+        if retenus:
+            pas_fait.append(tr("tout.payants", liste=", ".join(p.nom for p in retenus)))
         try:
             kit = orchestre.applis_du_kit(b)
         except Exception:                             # noqa: BLE001 — le plan reste montrable

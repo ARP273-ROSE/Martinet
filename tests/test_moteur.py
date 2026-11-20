@@ -525,3 +525,59 @@ def test_version_kit_lue_dans_app_pas_dans_le_registre(tmp_path, monkeypatch):
     monkeypatch.setattr(winget.Inventaire, "non_suivis", property(lambda self: self.paquets), raising=False)
     resultats, _ = orchestre.hors_winget(inv, reglages.Reglages())
     assert resultats[0].installee == "1.75.2" and resultats[0].etat == "a_jour"
+
+
+# ------------------------------------------------------------ logiciels payants
+def _bilan(*paquets):
+    b = orchestre.Bilan()
+    b.inventaire = winget.Inventaire(list(paquets))
+    return b
+
+
+def test_payant_jamais_passe_seul_a_une_nouvelle_version_principale():
+    from martinet import payants
+    r = reglages.Reglages()
+    usr = winget.Paquet("CrystalRich.USBSafelyRemove", "USB Safely Remove", "6.4", "7.5.1.1339", "winget")
+    mineure = winget.Paquet("JAMSoftware.TreeSize", "TreeSize", "9.5.1", "9.9.1", "winget")
+    libre = winget.Paquet("Mozilla.Firefox", "Firefox", "144.0", "145.0", "winget")
+    b = _bilan(usr, mineure, libre)
+    ids = [p.id for p in orchestre.a_mettre_a_jour(b, r)]
+    assert "CrystalRich.USBSafelyRemove" not in ids                 # 6 → 7 : retenu
+    assert "JAMSoftware.TreeSize" in ids and "Mozilla.Firefox" in ids   # 9.5 → 9.9 : automatique
+    assert [p.id for p in orchestre.payants_retenus(b, r)] == ["CrystalRich.USBSafelyRemove"]
+    assert payants.retenu(usr, r)
+
+
+def test_version_installee_inconnue_retenue():
+    """Le cas réel : winget voyait USB Safely Remove en version « Unknown »."""
+    usr = winget.Paquet("CrystalRich.USBSafelyRemove", "USB Safely Remove", "Unknown", "7.5.1.1339", "winget")
+    assert orchestre.a_mettre_a_jour(_bilan(usr), reglages.Reglages()) == []
+
+
+def test_marquer_et_demarquer_payant():
+    from martinet import payants
+    r = reglages.Reglages()
+    p = winget.Paquet("Editeur.Logiciel", "Logiciel", "2.0", "3.0", "winget")
+    assert not payants.retenu(p, r)
+    assert payants.basculer(p.id, r) is True and payants.retenu(p, r)
+    assert payants.basculer(p.id, r) is False and not payants.retenu(p, r)
+    assert payants.basculer("CrystalRich.USBSafelyRemove", r) is False      # de la liste de départ
+    assert not payants.est_payant("CrystalRich.USBSafelyRemove", r)
+    assert payants.basculer("CrystalRich.USBSafelyRemove", r) is True
+
+
+def test_nouvelle_version_acceptee_a_la_main():
+    from martinet import payants
+    r = reglages.Reglages(majeures_acceptees=["CrystalRich.USBSafelyRemove@7.5.1.1339"])
+    usr = winget.Paquet("CrystalRich.USBSafelyRemove", "USB Safely Remove", "6.4", "7.5.1.1339", "winget")
+    assert not payants.retenu(usr, r)
+    usr8 = winget.Paquet("CrystalRich.USBSafelyRemove", "USB Safely Remove", "7.5.1.1339", "8.0", "winget")
+    assert payants.retenu(usr8, r)                  # la 8 redemande une décision
+
+
+def test_resume_du_passage_cite_les_retenus(monkeypatch):
+    usr = winget.Paquet("CrystalRich.USBSafelyRemove", "USB Safely Remove", "6.4", "7.5.1", "winget")
+    b = _bilan(usr)
+    monkeypatch.setattr(winget, "mettre_a_jour", lambda *a, **k: (True, 0))
+    resume = orchestre.tout_mettre_a_jour(reglages.Reglages(), bilan=b, admin=True, windows=False, nettoyer=False)
+    assert any("USB Safely Remove 6.4 → 7.5.1" in l for l in resume), resume

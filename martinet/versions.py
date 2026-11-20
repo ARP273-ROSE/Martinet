@@ -58,3 +58,12 @@ def nvidia_lisible(version_pilote: str | None) -> str | None:
         return None
     chiffres = (parties[2] + parties[3].zfill(4))[-5:]
     return f"{int(chiffres[:3])}.{chiffres[3:]}"
+
+
+def saut_majeur(installee: str | None, disponible: str | None) -> bool:
+    """Le premier nombre change-t-il (6.4 → 7.5) ? Version installée inconnue : on ne
+    peut pas savoir, donc oui (c'est ainsi qu'une licence 6.x s'est retrouvée en 7.5)."""
+    ni, nd = nombres(installee), nombres(disponible)
+    if not ni or not nd:
+        return True
+    return ni[0] != nd[0]

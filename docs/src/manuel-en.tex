@@ -116,7 +116,15 @@ and the summary says which ones failed.
 \item \menu{Ignore / stop ignoring} removes a program from updates, manual and scheduled alike (a
 program you deliberately keep at an older version, for instance).
 \item \menu{Show ignored} brings them back, greyed out.
+\item \menu{Paid: yes / no} marks a program as paid (or corrects Martinet when it is wrong).
 \end{itemize}
+
+\astuce{\textbf{Paid programs.} Many licences are only valid for one major version: 6.x is paid
+for, 7.x has to be bought again. winget always installs the latest. Martinet therefore \emph{never}
+moves a paid program on its own to a new major version (6.4 → 7.5), nor when the installed version is
+unknown; small updates (6.4 → 6.5) stay automatic. The row shows in orange, unticked, with “paid: new
+major version, your call”. To install it anyway: tick it, then \menu{Update selected}; Martinet
+remembers that choice and only asks again at the next major version.}
 
 \attention{If winget is missing (older Windows 10), install “App Installer” from the Microsoft Store.}
 

@@ -232,6 +232,21 @@ TEXTES: dict[str, dict[str, str]] = {
                                 "ni par la tâche planifiée.",
                           "en": "An ignored program is never updated by Martinet again, neither manually nor "
                                 "by the scheduled run."},
+    "prog.payant": {"fr": "Payant oui / non", "en": "Paid: yes / no"},
+    "prog.payant.aide": {"fr": "Un logiciel payant n'est jamais passé tout seul à une nouvelle version principale "
+                               "(6.x → 7.x), qui se rachète souvent. Les petites mises à jour (6.4 → 6.5) restent "
+                               "automatiques. Pour installer quand même la nouvelle version : cochez-la et cliquez "
+                               "« Mettre à jour la sélection ».",
+                         "en": "A paid program is never moved on its own to a new major version (6.x → 7.x), "
+                               "which often has to be bought again. Small updates (6.4 → 6.5) stay automatic. To "
+                               "install the new version anyway: tick it and click “Update selected”."},
+    "prog.retenu": {"fr": "payant : nouvelle version principale, à vous de décider",
+                    "en": "paid: new major version, your call"},
+    "prog.est_payant": {"fr": "payant", "en": "paid"},
+    "resume.payants_retenus": {"fr": "Logiciels payants retenus (nouvelle version principale, peut-être à "
+                                     "racheter — à faire à la main si vous le voulez) : {liste}",
+                               "en": "Paid programs held back (new major version, may need a new licence — "
+                                     "update by hand if you want it): {liste}"},
     "prog.voir_ignores": {"fr": "Afficher les ignorés", "en": "Show ignored"},
     "prog.ignore": {"fr": "ignoré", "en": "ignored"},
     "prog.resume": {"fr": "{n} mise(s) à jour — {suivis} logiciels suivis par winget.",
@@ -552,6 +567,10 @@ TEXTES: dict[str, dict[str, str]] = {
     "msg.verifier_dabord": {"fr": "Lancez d'abord « Tout vérifier ».", "en": "Run “Check everything” first."},
     "msg.confirmer_tout": {"fr": "Martinet va faire, dans l'ordre :\n\n{liste}\n\nOn y va ?",
                            "en": "Martinet will do, in this order:\n\n{liste}\n\nGo ahead?"},
+    "tout.payants": {"fr": "la nouvelle version principale de logiciels payants ({liste}), à faire à la main "
+                           "depuis « Programmes » si vous le voulez",
+                     "en": "the new major version of paid programs ({liste}), to do by hand from “Programs” "
+                           "if you want it"},
     "tout.programmes": {"fr": "• mettre à jour {n} programme(s) winget", "en": "• update {n} winget program(s)"},
     "tout.windows": {"fr": "• installer {n} mise(s) à jour Windows", "en": "• install {n} Windows update(s)"},
     "tout.windows_fac": {"fr": "• installer {n} mise(s) à jour Windows, dont {f} facultative(s)",

@@ -118,7 +118,16 @@ l'une n'empêche pas les autres, et le résumé dit lesquelles ont échoué.
 \item \menu{Ignorer / ne plus ignorer} retire un logiciel des mises à jour, à la main comme en
 automatique (un logiciel dont vous gardez volontairement une ancienne version, par exemple).
 \item \menu{Afficher les ignorés} les fait réapparaître, grisés.
+\item \menu{Payant oui / non} marque un logiciel comme payant (ou corrige Martinet s'il se trompe).
 \end{itemize}
+
+\astuce{\textbf{Logiciels payants.} Beaucoup de licences ne valent que pour une version principale :
+la 6.x est payée, la 7.x se rachète. winget, lui, installe toujours la plus récente. Martinet ne
+passe donc \emph{jamais} tout seul un logiciel payant à une nouvelle version principale (6.4 → 7.5), ni
+quand la version installée est inconnue ; les petites mises à jour (6.4 → 6.5) restent automatiques. La
+ligne apparaît en orange, décochée, avec « payant : nouvelle version principale, à vous de décider ».
+Pour l'installer quand même : cochez-la, puis \menu{Mettre à jour la sélection} ; Martinet retient ce
+choix et ne redemandera qu'à la version principale suivante.}
 
 \attention{Si winget est absent (Windows 10 ancien), installez « Programme d'installation
 d'application » depuis le Microsoft Store.}

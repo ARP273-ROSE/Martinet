@@ -169,6 +169,7 @@ class PageProgrammes(Page):
             bouton(tr("action.tout_cocher"), lambda: self.table.tout_cocher(True)),
             bouton(tr("action.tout_decocher"), lambda: self.table.tout_cocher(False)),
             bouton(tr("prog.ignorer"), self.ignorer, infobulle=tr("prog.ignorer.aide")),
+            bouton(tr("prog.payant"), self.basculer_payant, infobulle=tr("prog.payant.aide")),
             self.voir_ignores))
         self.info = etiquette("", style.GRIS)
         self.v.addWidget(self.info)
@@ -186,15 +187,19 @@ class PageProgrammes(Page):
             self.table.remplir([])
             self.info.setText(tr("accueil.pas_verifie"))
             return
+        from . import payants
         ignores = set(self.reglages.ignores_winget)
         lignes = []
         for p in inv.a_jour:
             ignore = p.id in ignores
             if ignore and not self.voir_ignores.isChecked():
                 continue
-            src = p.source + (f"  ({tr('prog.ignore')})" if ignore else "")
-            lignes.append(([p.nom, p.id, p.installee or "?", p.disponible, src], p, not ignore,
-                           style.GRIS if ignore else None))
+            retenu = not ignore and payants.retenu(p, self.reglages)
+            note = (tr("prog.ignore") if ignore else tr("prog.retenu") if retenu
+                    else tr("prog.est_payant") if payants.est_payant(p.id, self.reglages) else "")
+            src = p.source + (f"  ({note})" if note else "")
+            lignes.append(([p.nom, p.id, p.installee or "?", p.disponible, src], p, not (ignore or retenu),
+                           style.GRIS if ignore else style.ORANGE if retenu else None))
         self.table.remplir(lignes)
         suivis = len([p for p in inv.paquets if p.suivi])
         texte = tr("prog.resume", n=len(lignes), suivis=suivis)
@@ -224,6 +229,12 @@ class PageProgrammes(Page):
             lignes = [tr("resume.programmes", ok=len(ok), n=len(resultats))]
             if ko:
                 lignes.append(tr("resume.echecs", liste=", ".join(ko)))
+            from . import payants
+            for p in ok:                 # nouvelle version principale installée à la main : décision retenue
+                if payants.retenu(p, self.reglages):
+                    self.reglages.majeures_acceptees = sorted(
+                        {*self.reglages.majeures_acceptees, f"{p.id}@{p.disponible}"})
+                    mod_reglages.enregistrer(self.reglages)
             if self.bilan.inventaire:
                 for p in ok:
                     p.installee, p.disponible = p.disponible, ""
@@ -232,6 +243,17 @@ class PageProgrammes(Page):
             self.fen.message("\n".join(lignes))
 
         self.fen.lancer(tr("tache.maj_programmes", n=len(paquets)), travail, fini)
+
+    def basculer_payant(self):
+        from . import payants
+        choisis = self.table.selection()
+        if not choisis:
+            self.fen.message(tr("msg.rien_selectionne"))
+            return
+        for p in choisis:
+            payants.basculer(p.id, self.reglages)
+        mod_reglages.enregistrer(self.reglages)
+        self.fen.rafraichir_tout()
 
     def ignorer(self):
         choisis = self.table.selection()

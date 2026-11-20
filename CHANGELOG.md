@@ -1,5 +1,19 @@
 # Journal des versions / Changelog
 
+### 0.5.7
+
+- Logiciels payants : Martinet ne les fait plus jamais passer tout seul à une nouvelle version principale
+  (6.x → 7.x), qui se rachète souvent, ni quand la version installée est inconnue. Les petites mises à jour
+  restent automatiques. La ligne est en orange et décochée ; pour installer quand même, il suffit de la cocher.
+  Liste de départ (USB Safely Remove, TreeSize, 4K Video Downloader+, RescuePRO, MakeMKV, Beyond Compare,
+  Sublime Text/Merge, Directory Opus), à compléter avec le bouton « Payant oui / non ». Le résumé du passage
+  automatique cite les logiciels laissés de côté.
+- Paid programs: Martinet never moves them on its own to a new major version (6.x → 7.x), which often has to
+  be bought again, nor when the installed version is unknown. Small updates stay automatic. The row shows in
+  orange, unticked; tick it to install anyway. Starting list (USB Safely Remove, TreeSize, 4K Video
+  Downloader+, RescuePRO, MakeMKV, Beyond Compare, Sublime Text/Merge, Directory Opus), extended with the
+  “Paid: yes / no” button. The scheduled run's summary names the programs held back.
+
 ### 0.5.6
 
 - Windows : la version de vos applications du kit est lue dans leur dossier (app\VERSION), plus dans le

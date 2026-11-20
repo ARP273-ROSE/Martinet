@@ -11,6 +11,10 @@ from . import systeme
 class Reglages:
     ignores_winget: list[str] = field(default_factory=list)       # identifiants winget
     ignores_hors_winget: list[str] = field(default_factory=list)  # noms de logiciels
+    # logiciels payants (payants.py) : liste de départ ± choix de l'utilisateur
+    payants_ajoutes: list[str] = field(default_factory=list)
+    payants_retires: list[str] = field(default_factory=list)
+    majeures_acceptees: list[str] = field(default_factory=list)  # « id@version » installées à la main
     elever_au_demarrage: bool = True
     # tâche planifiée
     auto_programmes: bool = True

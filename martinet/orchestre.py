@@ -151,7 +151,18 @@ def verifier_tout(reglages: Reglages, journal=None, annulation=None, etapes=None
 def a_mettre_a_jour(b: Bilan, reglages: Reglages) -> list[winget.Paquet]:
     if not b.inventaire:
         return []
-    return [p for p in b.inventaire.a_jour if p.id not in reglages.ignores_winget]
+    from . import payants
+    return [p for p in b.inventaire.a_jour
+            if p.id not in reglages.ignores_winget and not payants.retenu(p, reglages)]
+
+
+def payants_retenus(b: Bilan, reglages: Reglages) -> list[winget.Paquet]:
+    """Logiciels payants dont la nouvelle version principale attend une décision."""
+    if not b.inventaire:
+        return []
+    from . import payants
+    return [p for p in b.inventaire.a_jour
+            if p.id not in reglages.ignores_winget and payants.retenu(p, reglages)]
 
 
 def tout_mettre_a_jour(reglages: Reglages, journal=None, annulation=None,
@@ -215,6 +226,10 @@ def tout_mettre_a_jour(reglages: Reglages, journal=None, annulation=None,
                 else:
                     echecs.append((p, code))
         resume.append(tr("resume.programmes", ok=ok, n=len(liste)))
+        retenus = payants_retenus(b, reglages)
+        if retenus:
+            resume.append(tr("resume.payants_retenus", liste=", ".join(
+                f"{p.nom} {p.installee or '?'} → {p.disponible}" for p in retenus)))
         inapplicables = [p.nom for p, c in echecs if c == winget.CODE_INAPPLICABLE]
         reseau = [p.nom for p, c in echecs if c in winget.CODES_RESEAU]
         autres = [f"{p.nom} ({c})" for p, c in echecs

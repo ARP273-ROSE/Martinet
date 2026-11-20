@@ -1,5 +1,13 @@
 # Journal des versions / Changelog
 
+### 0.5.9
+
+- Mise à jour de Martinet : les fichiers qui n'ont pas changé ne sont plus réécrits. Un antivirus qui garde
+  la main sur l'un d'eux (souvent le lanceur, après une fausse alerte puis une restauration) ne bloque plus
+  toute la mise à jour.
+- Martinet update: files that have not changed are no longer rewritten. An antivirus holding on to one of
+  them (often the launcher, after a false alarm and a restore) no longer blocks the whole update.
+
 ### 0.5.8
 
 - Mise à jour de Martinet : si un fichier est momentanément bloqué (antivirus qui l'analyse, fichier restauré

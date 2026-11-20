@@ -387,6 +387,16 @@ def _deverrouiller(chemin: Path) -> None:
             pass
 
 
+def _identique(a: Path, b: Path) -> bool:
+    """Vrai si `a` et `b` sont deux fichiers au contenu identique."""
+    try:
+        if not (a.is_file() and b.is_file()) or a.stat().st_size != b.stat().st_size:
+            return False
+        return a.read_bytes() == b.read_bytes()
+    except OSError:
+        return False
+
+
 def _ecarter(dest: Path, vers: Path, essais: int = 6, pause: float = 1.0) -> None:
     """Deplace `dest` vers `vers`, en patientant si le fichier est verrouille.
 
@@ -469,6 +479,11 @@ def download_and_apply(update, progress=None):
             if item.name in PROTECTED:
                 continue
             dest = target / item.name
+            if _identique(item, dest):
+                # Rien a changer : on ne touche pas au fichier. Un antivirus qui
+                # verrouille un fichier inchange (le lanceur, souvent) ne bloque
+                # plus toute la mise a jour.
+                continue
             if dest.exists():
                 _ecarter(dest, backup / item.name)
                 replaced.append(item.name)

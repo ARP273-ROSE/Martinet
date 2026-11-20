@@ -93,3 +93,14 @@ def test_ecarter_abandonne_apres_les_essais(tmp_path, monkeypatch):
     monkeypatch.setattr(updater.shutil, "move", move)
     with pytest.raises(PermissionError):
         updater._ecarter(src, tmp_path / "b", essais=3, pause=0)
+
+
+def test_fichier_identique_pas_reecrit(tmp_path):
+    """Un fichier inchangé n'est pas touché : un verrou d'antivirus dessus ne bloque plus la mise à jour."""
+    import updater
+    a, b, c = tmp_path / "a", tmp_path / "b", tmp_path / "c"
+    a.write_bytes(b"run\r\n"); b.write_bytes(b"run\r\n"); c.write_bytes(b"run\n")
+    assert updater._identique(a, b)
+    assert not updater._identique(a, c)
+    assert not updater._identique(a, tmp_path / "absent")
+    assert not updater._identique(tmp_path, b)

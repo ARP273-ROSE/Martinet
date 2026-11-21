@@ -332,3 +332,19 @@ def test_journal_sans_couleurs_ni_agent_textuel():
     from martinet import systeme
     assert systeme.nettoyer_ligne("\x1b[1m\x1b[34m::\x1b[0m\x1b[1m Synchro\x1b[0m") == ":: Synchro"
     assert systeme.nettoyer_ligne("Error creating textual authentication agent: Error opening") == ""
+
+
+def test_regle_polkit_dossier_illisible(monkeypatch):
+    """rules.d en 750 root:polkitd : la fenêtre ne doit pas planter, polkit répond à la place."""
+    class Illisible:
+        def exists(self):
+            raise PermissionError(13, "Permission non accordée")
+    monkeypatch.setattr(lp.demo, "actif", lambda: False)
+    monkeypatch.setattr(lp, "REGLE_POLKIT", Illisible())
+    monkeypatch.setattr(lp.systeme, "outil", lambda n: "/usr/bin/pkcheck" if n == "pkcheck" else None)
+    monkeypatch.setattr(lp.systeme, "executer", lambda cmd, timeout=0: (0, ""))
+    assert lp.regle_active() is True
+    monkeypatch.setattr(lp.systeme, "executer", lambda cmd, timeout=0: (2, ""))
+    assert lp.regle_active() is False
+    monkeypatch.setattr(lp.systeme, "outil", lambda n: None)
+    assert lp.regle_active() is False

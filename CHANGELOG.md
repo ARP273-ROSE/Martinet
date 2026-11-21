@@ -1,5 +1,14 @@
 # Journal des versions / Changelog
 
+### 0.6.6
+
+- Linux : la fenêtre ne démarrait pas sur Manjaro (« Permission non accordée » sur
+  /etc/polkit-1/rules.d, dossier réservé à root et polkitd). Martinet demande désormais à polkit lui-même
+  si les mises à jour passent sans mot de passe, et la case de la page Système reflète l'état réel.
+- Linux: the window did not start on Manjaro (“Permission denied” on /etc/polkit-1/rules.d, a folder
+  reserved for root and polkitd). Martinet now asks polkit itself whether updates run without a password,
+  and the System page box shows the real state.
+
 ### 0.6.5
 
 - Linux, AUR : un paquet dont la construction a échoué (source à la somme de contrôle fausse, par exemple)

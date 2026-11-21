@@ -413,9 +413,20 @@ def texte_regle(utilisateur: str) -> str:
 
 
 def regle_active() -> bool:
+    """La règle est-elle en place ? /etc/polkit-1/rules.d n'est lisible que par root et polkitd
+    sur Manjaro : on demande alors à polkit lui-même si pacman passerait sans mot de passe."""
     if demo.actif():
         return False
-    return REGLE_POLKIT.exists()
+    try:
+        return REGLE_POLKIT.exists()
+    except OSError:
+        pass
+    if systeme.outil("pkcheck"):
+        code, _s = systeme.executer(["pkcheck", "--action-id", "org.freedesktop.policykit.exec",
+                                     "--process", str(os.getpid()), "--detail", "program", "/usr/bin/pacman"],
+                                    timeout=15)
+        return code == 0
+    return False
 
 
 def poser_regle(active: bool) -> tuple[bool, str]:

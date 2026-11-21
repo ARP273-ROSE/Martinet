@@ -1,5 +1,17 @@
 # Journal des versions / Changelog
 
+### 0.6.4
+
+- Linux, AppImage : une AppImage connue posée à la main (~/Applications, ~/.local/bin, ~/AppImages) est
+  suivie comme les applications du kit : dernière Release, empreinte vérifiée par SHA256SUMS, échange
+  atomique du fichier, jamais pendant qu'elle tourne. Sa version n'étant pas lisible dans le fichier,
+  Martinet pose la dernière une première fois puis retient celle qu'il a installée. Premier cas :
+  Perce-Neige Simulator.
+- Linux, AppImage: a known AppImage placed by hand (~/Applications, ~/.local/bin, ~/AppImages) is followed
+  like the kit apps: latest Release, checksum checked against SHA256SUMS, atomic file swap, never while it
+  runs. As its version cannot be read from the file, Martinet installs the latest once, then remembers the
+  version it installed. First case: Perce-Neige Simulator.
+
 ### 0.6.3
 
 - Linux, pilote NVIDIA : après un changement de pilote et le redémarrage, Martinet repère qu'il manque

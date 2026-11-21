@@ -289,3 +289,22 @@ def test_flatpak_gl_nvidia_apres_changement_de_pilote():
     assert lp.gl_nvidia_manquant(inst, "610.57.04") is None
     assert lp.gl_nvidia_manquant("com.orcaslicer.OrcaSlicer\tstable\t2.3.2\n", "615.71.09") is None
     assert lp.gl_nvidia_manquant(inst, "") is None
+
+
+def test_appimage_trouvee_et_release(tmp_path, monkeypatch):
+    from martinet import linux_applis as la
+    (tmp_path / "Applications").mkdir()
+    img = tmp_path / "Applications" / "PerceNeigeSimulator.AppImage"
+    img.write_bytes(b"x")
+    monkeypatch.setattr(la.Path, "home", classmethod(lambda cls: tmp_path))
+    monkeypatch.setattr(la, "_versions_appimages", lambda: tmp_path / "v.json")
+    trouvees = la.trouver_appimages()
+    assert [(a.depot, a.genre, a.installee) for a in trouvees] == [("ARP273-ROSE/perce-neige-sim", "appimage", "")]
+    donnees = {"tag_name": "v1.76.4", "assets": [
+        {"name": n, "browser_download_url": "u/" + n} for n in
+        ("PerceNeigeSimulator-1.76.4-linux.AppImage", "PerceNeigeSimulator-1.76.4-linux-arm64.tar.gz", "SHA256SUMS")]}
+    assert la.lire_release_appimage(donnees, "PerceNeigeSimulator", "x86_64") == (
+        "1.76.4", "u/PerceNeigeSimulator-1.76.4-linux.AppImage", "u/SHA256SUMS")
+    assert la.lire_release_appimage(donnees, "PerceNeigeSimulator", "arm64")[1] == ""
+    la._noter_version(str(img), "1.76.4")
+    assert la.trouver_appimages()[0].installee == "1.76.4"

@@ -77,12 +77,21 @@ def lire_mises_a_jour(texte: str, origine_par_defaut: str = "depots") -> list[Pa
 
 
 def lire_flatpak(maj: str, installes: str) -> list[Paquet]:
-    """flatpak remote-ls --updates et flatpak list, colonnes séparées par des tabulations."""
+    """flatpak remote-ls --updates et flatpak list, colonnes séparées par des tabulations.
+
+    Colonnes attendues : application, name, version, branch (mises à jour) et
+    application, branch, version (installés). Un runtime existe souvent en plusieurs
+    branches (GL.default 25.08 et 26.08) : la clé est donc (application, branche).
+    Les runtimes n'annoncent en général pas de version : la mise à jour est alors
+    une nouvelle révision de la même branche, et on l'écrit ainsi plutôt qu'en vide.
+    """
     versions = {}
     for ligne in installes.splitlines():
-        champs = ligne.split("\t")
-        if len(champs) >= 2:
-            versions[champs[0].strip()] = champs[-1].strip()
+        champs = [c.strip() for c in ligne.split("\t")]
+        if len(champs) >= 3:
+            versions[(champs[0], champs[1])] = champs[2]
+        elif len(champs) == 2:
+            versions.setdefault((champs[0], ""), champs[1])
     paquets = []
     for ligne in maj.splitlines():
         champs = [c.strip() for c in ligne.split("\t")]
@@ -90,7 +99,14 @@ def lire_flatpak(maj: str, installes: str) -> list[Paquet]:
             continue
         ident, nom = champs[0], champs[1] or champs[0]
         dispo = champs[2] if len(champs) > 2 else ""
-        paquets.append(Paquet(nom, versions.get(ident, ""), dispo, "flatpak", ident))
+        branche = champs[3] if len(champs) > 3 else ""
+        installee = versions.get((ident, branche)) or versions.get((ident, ""), "")
+        # « default », « nvidia », « codecs-extra » : le nom seul ne dit rien
+        if nom == nom.lower():
+            nom = f"{ident}//{branche}" if branche else ident
+        if not dispo or dispo == installee:
+            dispo = tr("lx.flatpak.revision")
+        paquets.append(Paquet(nom, installee, dispo, "flatpak", ident))
     return paquets
 
 
@@ -177,8 +193,8 @@ def rechercher(journal=None, choix: str = "auto") -> list[Paquet]:
         if journal:
             journal("flatpak remote-ls --updates")
         _c, maj = systeme.executer(["flatpak", "remote-ls", "--updates",
-                                    "--columns=application,name,version"], timeout=300, env=systeme.ENV_C)
-        _c, inst = systeme.executer(["flatpak", "list", "--columns=application,version"],
+                                    "--columns=application,name,version,branch"], timeout=300, env=systeme.ENV_C)
+        _c, inst = systeme.executer(["flatpak", "list", "--columns=application,branch,version"],
                                     timeout=120, env=systeme.ENV_C)
         paquets += lire_flatpak(maj, inst)
     return paquets

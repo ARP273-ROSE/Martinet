@@ -1,5 +1,14 @@
 # Journal des versions / Changelog
 
+### 0.6.2
+
+- Linux, Flatpak : les runtimes qui n'annoncent pas de version (pilote graphique, codecs, plateformes)
+  affichent « nouvelle révision » au lieu d'une colonne vide. Les runtimes installés en deux branches ne
+  sont plus confondus : chaque branche a sa ligne et sa version installée.
+- Linux, Flatpak: runtimes that announce no version (graphics driver, codecs, platforms) show “new
+  revision” instead of an empty column. Runtimes installed in two branches are no longer mixed up: each
+  branch has its own row and installed version.
+
 ### 0.6.1
 
 - ASIStudio se met à jour tout seul : Martinet télécharge l'installeur officiel de ZWO, vérifie sa signature

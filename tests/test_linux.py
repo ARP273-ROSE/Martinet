@@ -265,3 +265,18 @@ def test_esu_windows10():
     from martinet import systeme
     assert systeme.windows10_esu(datetime.date(2026, 11, 15))
     assert not systeme.windows10_esu(datetime.date(2027, 10, 13))
+
+
+def test_flatpak_runtimes_sans_version():
+    """Runtimes sans version annoncée et en deux branches : pas de colonne vide, pas de mélange."""
+    maj = ("org.freedesktop.Platform.GL.default\tdefault\t\t25.08\n"
+           "org.freedesktop.Platform.GL.default\tdefault\t\t26.08\n"
+           "com.orcaslicer.OrcaSlicer\tOrcaSlicer\t\tstable\n")
+    inst = ("org.freedesktop.Platform.GL.default\t25.08\t25.2.6\n"
+            "org.freedesktop.Platform.GL.default\t26.08\t26.0.4\n"
+            "com.orcaslicer.OrcaSlicer\tstable\t2.3.2\n")
+    p = lp.lire_flatpak(maj, inst)
+    assert [x.nom for x in p] == ["org.freedesktop.Platform.GL.default//25.08",
+                                  "org.freedesktop.Platform.GL.default//26.08", "OrcaSlicer"]
+    assert [x.installee for x in p] == ["25.2.6", "26.0.4", "2.3.2"]
+    assert all(x.disponible for x in p)

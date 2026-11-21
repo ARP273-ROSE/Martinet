@@ -634,6 +634,7 @@ TEXTES: dict[str, dict[str, str]] = {
                    "en": "A Martinet file is locked: another Martinet window is open, or the antivirus is "
                          "holding it. Close the other windows, add the Martinet folder to the antivirus "
                          "exceptions, then try again."},
+    "lx.flatpak.revision": {"fr": "nouvelle révision", "en": "new revision"},
     "maj.echec": {"fr": "La mise à jour a échoué : {erreur}", "en": "The update failed: {erreur}"},
     "maj.redemarre": {"fr": "Mise à jour installée : Martinet va redémarrer.",
                       "en": "Update installed: Martinet will restart."},

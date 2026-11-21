@@ -1,5 +1,15 @@
 # Journal des versions / Changelog
 
+### 0.6.7
+
+- Linux : l'état de la règle « mises à jour sans mot de passe » est lu dans un témoin public
+  (/etc/martinet/), déposé et retiré avec elle. polkit refuse en effet de répondre à un utilisateur
+  ordinaire, si bien que la case de la page Système restait décochée en 0.6.6. Une règle posée par une
+  version antérieure se reprend en recochant la case.
+- Linux: the state of the “updates without password” rule is read from a public marker (/etc/martinet/),
+  placed and removed along with it. polkit refuses to answer an ordinary user, so the System page box
+  stayed unticked in 0.6.6. A rule set by an earlier version is picked up by ticking the box again.
+
 ### 0.6.6
 
 - Linux : la fenêtre ne démarrait pas sur Manjaro (« Permission non accordée » sur

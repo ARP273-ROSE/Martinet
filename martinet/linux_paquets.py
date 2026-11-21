@@ -392,6 +392,7 @@ def mettre_a_jour_micrologiciels(journal=None, annulation=None) -> tuple[bool, s
 
 # ------------------------------------------------------------ mises à jour sans mot de passe
 REGLE_POLKIT = Path("/etc/polkit-1/rules.d/49-martinet-pamac.rules")
+TEMOIN_REGLE = Path("/etc/martinet/regle-polkit-active")
 
 
 def texte_regle(utilisateur: str) -> str:
@@ -414,19 +415,19 @@ def texte_regle(utilisateur: str) -> str:
 
 def regle_active() -> bool:
     """La règle est-elle en place ? /etc/polkit-1/rules.d n'est lisible que par root et polkitd
-    sur Manjaro : on demande alors à polkit lui-même si pacman passerait sans mot de passe."""
+    sur Manjaro, et polkit refuse de répondre à un utilisateur ordinaire qui pose la question avec
+    le nom du programme. Martinet dépose donc, en même temps que la règle, un témoin lisible par
+    tous (/etc/martinet/), qu'il retire avec elle."""
     if demo.actif():
         return False
     try:
         return REGLE_POLKIT.exists()
     except OSError:
         pass
-    if systeme.outil("pkcheck"):
-        code, _s = systeme.executer(["pkcheck", "--action-id", "org.freedesktop.policykit.exec",
-                                     "--process", str(os.getpid()), "--detail", "program", "/usr/bin/pacman"],
-                                    timeout=15)
-        return code == 0
-    return False
+    try:
+        return TEMOIN_REGLE.exists()
+    except OSError:
+        return False
 
 
 def poser_regle(active: bool) -> tuple[bool, str]:
@@ -438,8 +439,10 @@ def poser_regle(active: bool) -> tuple[bool, str]:
     if not re.fullmatch(r"[a-z_][a-z0-9_-]*\$?", utilisateur):
         return False, tr("lx.utilisateur_inattendu")
     if active:
-        script = (f"install -m 0644 /dev/stdin {REGLE_POLKIT} <<'FIN'\n{texte_regle(utilisateur)}FIN\n")
+        script = (f"install -m 0644 /dev/stdin {REGLE_POLKIT} <<'FIN'\n{texte_regle(utilisateur)}FIN\n"
+                  f"install -d -m 0755 {TEMOIN_REGLE.parent}\n"
+                  f"install -m 0644 {REGLE_POLKIT} {TEMOIN_REGLE}\n")
     else:
-        script = f"rm -f {REGLE_POLKIT}\n"
+        script = f"rm -f {REGLE_POLKIT} {TEMOIN_REGLE}\n"
     code, sortie = systeme.executer(["pkexec", "sh", "-c", script], timeout=300)
     return code == 0, ("" if code == 0 else _motif(code, sortie))

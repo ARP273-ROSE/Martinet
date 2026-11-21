@@ -12,6 +12,7 @@ Martinet ne remplace pas le gestionnaire de paquets, il le pilote :
 """
 from __future__ import annotations
 
+import json
 import os
 import re
 from dataclasses import dataclass, field
@@ -274,8 +275,54 @@ def chercher_pacnew(racine: str = "/etc") -> list[str]:
 
 
 # ------------------------------------------------------------ actions
+# ------------------------------------------------------------ AUR en échec répété
+def _fichier_quarantaine() -> Path:
+    return systeme.dossier_donnees() / "aur_echecs.json"
+
+
+def lire_quarantaine() -> dict:
+    try:
+        return json.loads(_fichier_quarantaine().read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+
+
+def _ecrire_quarantaine(q: dict) -> None:
+    try:
+        f = _fichier_quarantaine()
+        f.parent.mkdir(parents=True, exist_ok=True)
+        f.write_text(json.dumps(q, indent=1, ensure_ascii=False), encoding="utf-8")
+    except OSError:
+        pass
+
+
+def echecs_aur(sortie: str) -> list[str]:
+    """Paquets AUR que yay n'a pas pu construire (« astap - exit status 1 »), quelle que soit la langue."""
+    return [m.group(1) for m in re.finditer(r"^\s*([\w@.+-]+) - exit status \d+\s*$", sortie, re.M)]
+
+
+def a_ecarter(paquets: list[Paquet], quarantaine: dict) -> list[str]:
+    """Paquets AUR déjà en échec pour CETTE version : inutile de tout retélécharger et reconstruire
+    (et de redemander le mot de passe) tant que l'AUR n'a pas publié de correction."""
+    return [p.nom for p in paquets if p.origine == "aur" and quarantaine.get(p.nom) == p.disponible]
+
+
+def noter_echecs(paquets: list[Paquet], sortie: str, quarantaine: dict) -> dict:
+    """Retient la version qui a échoué ; oublie les paquets qui sont passés ou qui ont changé."""
+    rates = set(echecs_aur(sortie))
+    q = {}
+    for p in paquets:
+        if p.origine != "aur":
+            continue
+        if p.nom in rates:
+            q[p.nom] = p.disponible
+        elif quarantaine.get(p.nom) == p.disponible and p.nom not in rates:
+            q[p.nom] = p.disponible       # écarté ce passage-ci : reste écarté
+    return q
+
+
 def mettre_a_jour(journal=None, annulation=None, aur: bool = True, flatpak: bool = True,
-                  choix: str = "auto") -> tuple[bool, str]:
+                  choix: str = "auto", paquets: list[Paquet] | None = None) -> tuple[bool, str]:
     """Tout le système (jamais de mise à jour partielle), puis Flatpak."""
     if demo.actif():
         for p in demo.PAQUETS_LINUX:
@@ -293,8 +340,18 @@ def mettre_a_jour(journal=None, annulation=None, aur: bool = True, flatpak: bool
         cmd = ["pkexec", "pacman", "-Syu", "--noconfirm"]
     else:
         return False, tr("lx.pas_de_pacman")
+    quarantaine = lire_quarantaine() if g == "yay" else {}
+    ecartes = a_ecarter(paquets or [], quarantaine) if aur else []
+    if ecartes:
+        cmd += ["--ignore", ",".join(ecartes)]
+        if journal:
+            journal(tr("lx.aur.ecartes", noms=", ".join(ecartes)))
     code, sortie = systeme.executer_flux(cmd, journal, annulation, timeout=14400)
     ok, detail = code == 0, ("" if code == 0 else _motif(code, sortie))
+    if g == "yay" and paquets is not None:
+        _ecrire_quarantaine(noter_echecs(paquets, sortie, quarantaine))
+    if ecartes:
+        detail = (detail + " ; " if detail else "") + tr("lx.aur.ecartes", noms=", ".join(ecartes))
     if flatpak and o["flatpak"]:
         c2, s2 = systeme.executer_flux(["flatpak", "update", "-y", "--noninteractive"], journal, annulation,
                                        timeout=7200)

@@ -101,7 +101,8 @@ def tout_mettre_a_jour(reglages: Reglages, journal=None, annulation=None, progra
     if programmes and b.paquets:
         stop()
         avancer(journal, 0.0, tr("lx.etape.programmes"))
-        ok, detail = linux_paquets.mettre_a_jour(journal, annulation, choix=reglages.gestionnaire_linux)
+        ok, detail = linux_paquets.mettre_a_jour(journal, annulation, choix=reglages.gestionnaire_linux,
+                                                 paquets=b.paquets)
         resume.append(tr("lx.resume.paquets", n=len(b.paquets)) if ok
                       else tr("lx.resume.paquets_ko", detail=detail))
     elif programmes and b.paquets is not None:

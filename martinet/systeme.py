@@ -177,12 +177,19 @@ def executer(cmd: list[str], timeout: float | None = 600, env: dict | None = Non
     return r.returncode, _decoder(r.stdout) + clixml_lisible(_decoder(r.stderr))
 
 
+#: couleurs et styles des terminaux (yay, pacman) : illisibles dans le journal
+ANSI = re.compile(r"\x1b\[[0-9;?]*[A-Za-z]")
+
+
 def nettoyer_ligne(ligne: str) -> str:
     """Retire les animations de progression (winget redessine sa ligne avec \\r).
 
     Le \\r final d'une fin de ligne CRLF (PowerShell) n'est pas une animation :
     il est retiré avant de garder le dernier morceau redessiné."""
-    morceau = ligne.rstrip("\r").split("\r")[-1].rstrip()
+    morceau = ANSI.sub("", ligne.rstrip("\r").split("\r")[-1]).rstrip()
+    # pkexec sans terminal : l'agent graphique prend le relais, le message n'apprend rien
+    if "Error creating textual authentication agent" in morceau:
+        return ""
     if morceau.strip() in {"-", "\\", "|", "/"}:
         return ""
     # barres de progression faites de blocs

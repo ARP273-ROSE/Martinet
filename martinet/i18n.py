@@ -635,6 +635,8 @@ TEXTES: dict[str, dict[str, str]] = {
                          "holding it. Close the other windows, add the Martinet folder to the antivirus "
                          "exceptions, then try again."},
     "lx.flatpak.revision": {"fr": "nouvelle révision", "en": "new revision"},
+    "lx.aur.ecartes": {"fr": "AUR écarté(s) jusqu'à leur prochaine version (échec de construction déjà constaté) : {noms}",
+                       "en": "AUR skipped until their next version (build already failed): {noms}"},
     "maj.echec": {"fr": "La mise à jour a échoué : {erreur}", "en": "The update failed: {erreur}"},
     "maj.redemarre": {"fr": "Mise à jour installée : Martinet va redémarrer.",
                       "en": "Update installed: Martinet will restart."},

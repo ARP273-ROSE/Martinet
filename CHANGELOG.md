@@ -1,5 +1,16 @@
 # Journal des versions / Changelog
 
+### 0.6.5
+
+- Linux, AUR : un paquet dont la construction a échoué (source à la somme de contrôle fausse, par exemple)
+  est écarté aux passages suivants tant que l'AUR n'en publie pas une nouvelle version. Fini les centaines
+  de Mo de dépendances retéléchargées et les mots de passe redemandés pour rien ; le résumé le signale.
+- Journal Linux lisible : couleurs de yay et pacman retirées, message sans objet de pkexec masqué.
+- Linux, AUR: a package whose build failed (wrong source checksum, for instance) is skipped on later runs
+  until the AUR publishes a new version. No more hundreds of MB of dependencies downloaded again and
+  passwords asked for nothing; the summary says so.
+- Readable Linux log: yay and pacman colours removed, pointless pkexec message hidden.
+
 ### 0.6.4
 
 - Linux, AppImage : une AppImage connue posée à la main (~/Applications, ~/.local/bin, ~/AppImages) est

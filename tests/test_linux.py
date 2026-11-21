@@ -308,3 +308,27 @@ def test_appimage_trouvee_et_release(tmp_path, monkeypatch):
     assert la.lire_release_appimage(donnees, "PerceNeigeSimulator", "arm64")[1] == ""
     la._noter_version(str(img), "1.76.4")
     assert la.trouver_appimages()[0].installee == "1.76.4"
+
+
+def test_aur_en_echec_ecarte_jusqu_a_la_version_suivante():
+    sortie = (" -> Échec de l'installation des paquets suivants. Une intervention manuelle est requise :\n"
+              "astap - exit status 1\n")
+    assert lp.echecs_aur(sortie) == ["astap"]
+    paquets = [lp.Paquet("astap", "2026.10.08-1", "2026.11.12-1", "aur", ""),
+               lp.Paquet("rustdesk-bin", "1.5.0", "1.5.3", "aur", ""),
+               lp.Paquet("glibc", "1", "2", "depots", "")]
+    q = lp.noter_echecs(paquets, sortie, {})
+    assert q == {"astap": "2026.11.12-1"}
+    assert lp.a_ecarter(paquets, q) == ["astap"]
+    # passage suivant : astap écarté, toujours en quarantaine
+    assert lp.noter_echecs(paquets, "", q) == q
+    # l'AUR publie une correction : on retente
+    paquets[0] = lp.Paquet("astap", "2026.10.08-1", "2026.11.12-2", "aur", "")
+    assert lp.a_ecarter(paquets, q) == []
+    assert lp.noter_echecs(paquets, "", q) == {}
+
+
+def test_journal_sans_couleurs_ni_agent_textuel():
+    from martinet import systeme
+    assert systeme.nettoyer_ligne("\x1b[1m\x1b[34m::\x1b[0m\x1b[1m Synchro\x1b[0m") == ":: Synchro"
+    assert systeme.nettoyer_ligne("Error creating textual authentication agent: Error opening") == ""

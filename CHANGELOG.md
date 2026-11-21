@@ -1,5 +1,13 @@
 # Journal des versions / Changelog
 
+### 0.6.3
+
+- Linux, pilote NVIDIA : après un changement de pilote et le redémarrage, Martinet repère qu'il manque
+  aux applications Flatpak l'extension graphique de la nouvelle version et la fait installer. Sans elle,
+  elles perdent l'accélération graphique.
+- Linux, NVIDIA driver: after a driver change and the reboot, Martinet notices that Flatpak apps lack the
+  graphics extension for the new version and has it installed. Without it they lose hardware acceleration.
+
 ### 0.6.2
 
 - Linux, Flatpak : les runtimes qui n'annoncent pas de version (pilote graphique, codecs, plateformes)

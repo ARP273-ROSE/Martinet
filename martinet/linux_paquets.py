@@ -197,7 +197,37 @@ def rechercher(journal=None, choix: str = "auto") -> list[Paquet]:
         _c, inst = systeme.executer(["flatpak", "list", "--columns=application,branch,version"],
                                     timeout=120, env=systeme.ENV_C)
         paquets += lire_flatpak(maj, inst)
+        manquant = gl_nvidia_manquant(inst, _version_nvidia())
+        if manquant:
+            paquets.append(manquant)
     return paquets
+
+
+def _version_nvidia() -> str:
+    """Version du module NVIDIA chargé (pas celle du paquet : elle ne change qu'au redémarrage)."""
+    try:
+        return Path("/sys/module/nvidia/version").read_text().strip()
+    except OSError:
+        return ""
+
+
+def gl_nvidia_manquant(installes: str, version: str) -> Paquet | None:
+    """Pilote NVIDIA changé : les applis Flatpak ont besoin de l'extension GL de la même version.
+
+    Flatpak l'installe à la mise à jour suivante, mais seulement une fois le nouveau module
+    chargé, donc après le redémarrage ; remote-ls --updates ne la montre pas. Sans elle, les
+    applis Flatpak perdent l'accélération graphique.
+    """
+    if not version or not re.fullmatch(r"[\d.]+", version):
+        return None
+    prefixe = "org.freedesktop.Platform.GL.nvidia-"
+    presents = {l.split("\t")[0].strip() for l in installes.splitlines()}
+    if not any(p.startswith(prefixe) for p in presents):
+        return None                           # aucune extension NVIDIA : rien à suivre
+    voulu = prefixe + version.replace(".", "-")
+    if voulu in presents:
+        return None
+    return Paquet(voulu, "", version, "flatpak", voulu)
 
 
 def etat_systeme(journal=None) -> Systeme:

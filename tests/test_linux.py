@@ -280,3 +280,12 @@ def test_flatpak_runtimes_sans_version():
                                   "org.freedesktop.Platform.GL.default//26.08", "OrcaSlicer"]
     assert [x.installee for x in p] == ["25.2.6", "26.0.4", "2.3.2"]
     assert all(x.disponible for x in p)
+
+
+def test_flatpak_gl_nvidia_apres_changement_de_pilote():
+    inst = "org.freedesktop.Platform.GL.nvidia-610-57-04\t1.4\t\ncom.orcaslicer.OrcaSlicer\tstable\t2.3.2\n"
+    p = lp.gl_nvidia_manquant(inst, "615.71.09")
+    assert p and p.ident == "org.freedesktop.Platform.GL.nvidia-615-71-09" and p.origine == "flatpak"
+    assert lp.gl_nvidia_manquant(inst, "610.57.04") is None
+    assert lp.gl_nvidia_manquant("com.orcaslicer.OrcaSlicer\tstable\t2.3.2\n", "615.71.09") is None
+    assert lp.gl_nvidia_manquant(inst, "") is None

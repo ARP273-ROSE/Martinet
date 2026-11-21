@@ -45,3 +45,26 @@ caméra changé seul peut casser la connexion de l'acquisition le soir même).
   Microsoft.Teams.Free = winget terminé sans ligne de résultat (Martinet ne tue winget qu'à l'annulation,
   délai 2 h), cause non établie.
 - Pas encore vu sur une vraie installation : le premier passage avec ASIStudio 1.23 le dira.
+
+## 21/11/2026 — Linux en vrai (Manjaro, carte NVIDIA) : 0.6.2 → 0.6.7
+
+- Premier test sur une vraie machine Manjaro : installation par installer.sh, puis --verifier et --auto.
+  Résultats : pacman OK (environ 590 paquets, nouveau noyau, pilote NVIDIA) ; AUR 4 sur 5 (astap : somme de
+  contrôle amont fausse) ; applications du kit OK ; mise à jour par le bouton intégré OK (0.6.4 → 0.6.5 →
+  0.6.6).
+- 0.6.2 : Flatpak, runtimes sans version (« nouvelle révision ») et branches distinguées.
+- 0.6.3 : extension GL.nvidia-<version chargée> installée après un changement de pilote. Vérifié : 615 posée,
+  610 retirée.
+- 0.6.4 : AppImages connues (table APPIMAGES ; version retenue dans appimages.json). Vérifié : Perce-Neige
+  1.76.4 posé.
+- 0.6.5 : AUR en échec écarté jusqu'à la version suivante (aur_echecs.json, vérifié écrit) ; journal sans
+  ANSI ni message d'agent textuel polkit.
+- 0.6.6 : la fenêtre plantait au démarrage (rules.d en 750 root:polkitd → PermissionError dans
+  regle_active). 0.6.7 : pkcheck --detail est refusé aux non-root, donc l'état de la règle se lit dans un
+  témoin public /etc/martinet/regle-polkit-active, posé et retiré avec la règle.
+- Applications lancées depuis les dépôts git du NAS : volontairement pas de git pull, elles sont toujours sur
+  le code courant.
+- RESTE à constater : un passage en 0.6.7 avec la règle cochée (attendu : 1 seul mot de passe, pour le
+  ménage ; astap affiché « écarté ») ; « 223,2 Mo » libérés deux fois de suite = probablement les dépendances
+  de compilation d'astap remises en cache à chaque échec, ce qui devrait cesser ; kde.pacsave est compté
+  avec les .pacnew (à revoir).

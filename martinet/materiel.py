@@ -74,6 +74,16 @@ def cartes_graphiques() -> list[Carte]:
                             date=str(_valeur(cle, "DriverDate")),
                             version_logiciel=str(_valeur(cle, "RadeonSoftwareVersion")),
                             processeur=processeur()))
+    if not cartes:
+        # sans droits administrateur, la classe Affichage du registre est souvent illisible
+        cartes = cartes_wmi()
+    # AMD : la version d'Adrenalin manque souvent à la clé du pilote ; « AMD Software » de la liste
+    # des programmes installés la donne (« 26.11.2 »)
+    if any(c.fabricant == "amd" and not c.version_logiciel for c in cartes):
+        adrenalin = version_amd_software(logiciels_du_registre())
+        for c in cartes:
+            if c.fabricant == "amd" and not c.version_logiciel:
+                c.version_logiciel = adrenalin
     # une même carte peut apparaître plusieurs fois (anciennes entrées)
     vues, uniques = set(), []
     for c in cartes:
@@ -81,6 +91,41 @@ def cartes_graphiques() -> list[Carte]:
             vues.add((c.id_peripherique, c.version_windows))
             uniques.append(c)
     return uniques
+
+
+def lire_cartes_wmi(donnees, proc: str = "") -> list[Carte]:
+    """Win32_VideoController (Name, DriverVersion, DriverDate, PNPDeviceID) → cartes."""
+    import re
+    if isinstance(donnees, dict):
+        donnees = [donnees]
+    cartes = []
+    for d in donnees or []:
+        m = re.search(r"ven_([0-9a-f]{4}).*?dev_([0-9a-f]{4})", str(d.get("PNPDeviceID") or "").lower())
+        if not m:
+            continue                          # adaptateurs virtuels (bureau à distance…)
+        cartes.append(Carte(nom=str(d.get("Name") or ""), fabricant=FABRICANTS.get(m.group(1), "autre"),
+                            id_peripherique=m.group(2).upper(), version_windows=str(d.get("DriverVersion") or ""),
+                            date=str(d.get("DriverDate") or "")[:10], processeur=proc))
+    return cartes
+
+
+def cartes_wmi() -> list[Carte]:
+    from . import systeme
+    _c, sortie = systeme.powershell(
+        "Write-Output '###JSON###'; Get-CimInstance Win32_VideoController | "
+        "Select-Object Name,DriverVersion,@{n='DriverDate';e={if($_.DriverDate){$_.DriverDate.ToString('yyyy-MM-dd')}}},"
+        "PNPDeviceID | ConvertTo-Json -Compress", timeout=60)
+    return lire_cartes_wmi(systeme.json_de_sortie(sortie), processeur())
+
+
+def version_amd_software(logiciels: list[tuple[str, str, str]]) -> str:
+    """Version d'Adrenalin d'après « AMD Software » (pas l'Install Manager ni le chipset)."""
+    import re
+    for nom, version, _editeur in logiciels:
+        if re.fullmatch(r"AMD Software(?:: Adrenalin Edition)?", nom.strip(), re.I) and \
+                re.match(r"\d{2}\.\d{1,2}\.\d{1,2}", version or ""):
+            return version.strip()
+    return ""
 
 
 def processeur() -> str:

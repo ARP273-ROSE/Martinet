@@ -1,5 +1,15 @@
 # Journal des versions / Changelog
 
+### 0.6.10
+
+- Pilote AMD : la carte graphique est trouvée même sans droits administrateur (le registre des pilotes
+  est alors illisible ; Martinet passe par WMI), et la version d'Adrenalin est lue dans « AMD Software »
+  de la liste des programmes quand la clé du pilote ne la donne pas. Vérifié sur une Radeon 780M
+  (Ryzen 9 7940HS) : 26.11.2 installé, 26.11.2 recommandé.
+- AMD driver: the graphics card is found even without administrator rights (the driver registry is
+  then unreadable; Martinet uses WMI), and the Adrenalin version is read from “AMD Software” in the
+  programs list when the driver key does not give it. Checked on a Radeon 780M (Ryzen 9 7940HS).
+
 ### 0.6.9
 
 - Boutons des boîtes de dialogue dans la langue de Martinet (« Oui / Non » au lieu de « Yes / No ») :

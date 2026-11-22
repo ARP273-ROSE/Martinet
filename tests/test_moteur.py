@@ -581,3 +581,20 @@ def test_resume_du_passage_cite_les_retenus(monkeypatch):
     monkeypatch.setattr(winget, "mettre_a_jour", lambda *a, **k: (True, 0))
     resume = orchestre.tout_mettre_a_jour(reglages.Reglages(), bilan=b, admin=True, windows=False, nettoyer=False)
     assert any("USB Safely Remove 6.4 → 7.5.1" in l for l in resume), resume
+
+
+def test_carte_amd_sans_droits_admin():
+    """Classe Affichage illisible sans droits : WMI, et la version d'Adrenalin lue dans « AMD Software »."""
+    from martinet import materiel
+    donnees = [{"Name": "AMD Radeon 780M Graphics", "DriverVersion": "32.0.32029.2010", "DriverDate": "2026-11-18",
+                "PNPDeviceID": "PCI\\VEN_1002&DEV_15BF&SUBSYS_B0021F4C&REV_C1\\4&18A4BA32&0&0041"},
+               {"Name": "LuminonCore IDDCX Adapter", "DriverVersion": "1.0.2018.1204",
+                "PNPDeviceID": "LCI\\IDDCX\\1&79F5D87&1&WHO_CARE"}]
+    cartes = materiel.lire_cartes_wmi(donnees, "AMD Ryzen 9 7940HS w/ Radeon 780M Graphics")
+    assert [(c.fabricant, c.id_peripherique) for c in cartes] == [("amd", "15BF")]
+    logiciels = [("AMD Install Manager", "26.20.26320.1318", "AMD"), ("AMD Software", "26.11.2", "AMD"),
+                 ("AMD Chipset Software", "8.09.28.1124", "AMD")]
+    assert materiel.version_amd_software(logiciels) == "26.11.2"
+    from martinet import sources
+    assert sources.url_amd(cartes[0].nom, cartes[0].processeur).endswith(
+        "processors/ryzen/ryzen-7000-series/amd-ryzen-9-7940hs.html")

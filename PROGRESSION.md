@@ -1,5 +1,49 @@
 # Progression
 
+## ▶ NOTE DE REPRISE (22/11/2026)
+
+**Où on en est** : 0.6.9 publiée (branche main, étiquette v0.6.9, CI « essais » et « Publier une version »
+vertes). Windows et Linux utilisés en vrai ; la mise à jour intégrée fonctionne sur les deux.
+
+**Vérifié en vrai**
+- Windows : passage complet avec les applications du kit (0.5.5/0.5.6), garde de fin de session (0.5.2),
+  reprise réseau (0.5.3). Un antivirus qui verrouille le lanceur ne bloque plus la mise à jour (0.5.9 :
+  fichiers inchangés laissés en place).
+- Linux (Manjaro, carte NVIDIA) : installation par installer.sh, --verifier, --auto, pacman, yay et AUR,
+  Flatpak, applications du kit, AppImage, mise à jour par le bouton (0.6.4 → 0.6.8), extension GL.nvidia
+  après un changement de pilote, mise à l'écart d'un AUR en échec, purge des fichiers d'état (0.6.8),
+  règle polkit posée avec son témoin /etc/martinet/regle-polkit-active.
+
+**PAS encore vérifié**
+- Linux : un passage AVEC des paquets à installer une fois la règle polkit posée (attendu : au plus une
+  demande de mot de passe, celle du ménage).
+- 0.6.9 : les boutons Oui / Non à l'écran (test unitaire seulement) ; Windows non revu après ce changement.
+- Linux : le message « doublon » kit + AppImage, en vrai (test unitaire seulement).
+- AMD : lecture de RadeonSoftwareVersion sur un vrai PC AMD ; Windows 10 réel ; garde d'observatoire
+  (0.6.0) en conditions réelles.
+
+**Choix arrêtés**
+- Les applications lancées directement depuis des dépôts git de travail ne sont PAS mises à jour par
+  Martinet (pas de git pull) : elles tournent déjà sur le code courant, et un pull à travers un partage
+  réseau abîmerait les dépôts.
+- Les messages d'erreur d'updater.py restent tels quels : fichier commun à toutes les applications du kit.
+
+**Pièges rencontrés**
+- /etc/polkit-1/rules.d est en 750 root:polkitd sur Manjaro : Path.exists() y lève PermissionError ;
+  pkcheck --detail est refusé aux non-root. D'où le témoin public.
+- yay est lancé avec --sudo pkexec : la règle « pkexec /usr/bin/pacman » couvre donc tous ses appels.
+- Un antivirus comportemental peut mettre run.py en quarantaine (chaîne pythonw relancée) puis le garder
+  verrouillé en silence après restauration.
+- Qt ne traduit ses boutons standard qu'avec qtbase_<langue>.qm chargé (i18n.traduire_qt).
+
+**Prochaines étapes**
+1. Au prochain passage Linux avec des paquets à installer : compter les demandes de mot de passe.
+2. Vérifier à l'écran Oui / Non (FR) et Yes / No (EN), sous Windows et sous Linux.
+3. Reporter dans updater.py des autres applications du kit `_identique` + `_ecarter` (0.5.8/0.5.9) si un
+   antivirus les bloque aussi.
+4. Essais : `timeout 200 <venv>/bin/python -m pytest -q tests` (120 réussis, 13 sautés au 22/11).
+   Publication : VERSION, CHANGELOG (FR + EN), commit, `git tag vX`, `git push origin main vX`.
+
 ## 0.1.0 — première version
 
 Fait :

@@ -15,20 +15,20 @@
 
 - Linux : l'état de la règle « mises à jour sans mot de passe » est lu dans un témoin public
   (/etc/martinet/), déposé et retiré avec elle. polkit refuse en effet de répondre à un utilisateur
-  ordinaire, si bien que la case de la page Système restait décochée en 0.6.6. Une règle posée par une
+  ordinaire, si bien que la case de la page Planification restait décochée en 0.6.6. Une règle posée par une
   version antérieure se reprend en recochant la case.
 - Linux: the state of the “updates without password” rule is read from a public marker (/etc/martinet/),
-  placed and removed along with it. polkit refuses to answer an ordinary user, so the System page box
+  placed and removed along with it. polkit refuses to answer an ordinary user, so the Schedule page box
   stayed unticked in 0.6.6. A rule set by an earlier version is picked up by ticking the box again.
 
 ### 0.6.6
 
 - Linux : la fenêtre ne démarrait pas sur Manjaro (« Permission non accordée » sur
   /etc/polkit-1/rules.d, dossier réservé à root et polkitd). Martinet demande désormais à polkit lui-même
-  si les mises à jour passent sans mot de passe, et la case de la page Système reflète l'état réel.
+  si les mises à jour passent sans mot de passe, et la case de la page Planification reflète l'état réel.
 - Linux: the window did not start on Manjaro (“Permission denied” on /etc/polkit-1/rules.d, a folder
   reserved for root and polkitd). Martinet now asks polkit itself whether updates run without a password,
-  and the System page box shows the real state.
+  and the Schedule page box shows the real state.
 
 ### 0.6.5
 

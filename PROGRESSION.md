@@ -2,7 +2,7 @@
 
 ## ▶ NOTE DE REPRISE (22/11/2026)
 
-**Où on en est** : 0.6.9 publiée (branche main, étiquette v0.6.9, CI « essais » et « Publier une version »
+**Où on en est** : 0.6.11 publiée (branche main, étiquette v0.6.11, CI « essais » et « Publier une version »
 vertes). Windows et Linux utilisés en vrai ; la mise à jour intégrée fonctionne sur les deux.
 
 **Vérifié en vrai**
@@ -14,12 +14,16 @@ vertes). Windows et Linux utilisés en vrai ; la mise à jour intégrée fonctio
   après un changement de pilote, mise à l'écart d'un AUR en échec, purge des fichiers d'état (0.6.8),
   règle polkit posée avec son témoin /etc/martinet/regle-polkit-active.
 
+- 0.6.9 : Oui / Non vus à l'écran sous Linux. 0.6.10 : pilote AMD vérifié sur une Radeon 780M
+  (Ryzen 9 7940HS) sans élévation : carte lue par WMI, Adrenalin 26.11.2 lu dans « AMD Software », état
+  à jour. 0.6.11 : l'étape Windows Update, cassée en 0.6.9 et 0.6.10 par un import oublié, repasse.
+
 **PAS encore vérifié**
 - Linux : un passage AVEC des paquets à installer une fois la règle polkit posée (attendu : au plus une
   demande de mot de passe, celle du ménage).
-- 0.6.9 : les boutons Oui / Non à l'écran (test unitaire seulement) ; Windows non revu après ce changement.
+- Oui / Non à l'écran sous Windows.
 - Linux : le message « doublon » kit + AppImage, en vrai (test unitaire seulement).
-- AMD : lecture de RadeonSoftwareVersion sur un vrai PC AMD ; Windows 10 réel ; garde d'observatoire
+- AMD : carte graphique séparée (Radeon RX) et passage élevé ; Windows 10 réel ; garde d'observatoire
   (0.6.0) en conditions réelles.
 
 **Choix arrêtés**
@@ -41,7 +45,7 @@ vertes). Windows et Linux utilisés en vrai ; la mise à jour intégrée fonctio
 2. Vérifier à l'écran Oui / Non (FR) et Yes / No (EN), sous Windows et sous Linux.
 3. Reporter dans updater.py des autres applications du kit `_identique` + `_ecarter` (0.5.8/0.5.9) si un
    antivirus les bloque aussi.
-4. Essais : `timeout 200 <venv>/bin/python -m pytest -q tests` (120 réussis, 13 sautés au 22/11).
+4. Essais : `timeout 200 <venv>/bin/python -m pytest -q tests` (122 réussis, 13 sautés au 22/11 ; pyflakes requis pour l'essai des noms indéfinis).
    Publication : VERSION, CHANGELOG (FR + EN), commit, `git tag vX`, `git push origin main vX`.
 
 ## 0.1.0 — première version

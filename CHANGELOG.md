@@ -1,5 +1,16 @@
 # Journal des versions / Changelog
 
+### 0.6.8
+
+- Linux : une application installée deux fois (paquet du kit et AppImage) n'est plus mise à jour en double.
+  Seul le paquet est suivi, et Martinet signale que l'AppImage peut être supprimée.
+- Linux : une AppImage supprimée est oubliée ; un paquet AUR mis à l'écart puis installé autrement (à la
+  main, ou corrigé) sort de la liste des écartés.
+- Linux: an application installed twice (kit package and AppImage) is no longer updated twice. Only the
+  package is followed, and Martinet says the AppImage can be deleted.
+- Linux: a deleted AppImage is forgotten; a skipped AUR package that gets installed another way (by hand,
+  or fixed) leaves the skipped list.
+
 ### 0.6.7
 
 - Linux : l'état de la règle « mises à jour sans mot de passe » est lu dans un témoin public

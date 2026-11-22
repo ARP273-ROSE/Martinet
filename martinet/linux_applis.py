@@ -79,6 +79,12 @@ def trouver_appimages() -> list[Appli]:
     Martinet retient celle qu'il a installée ; inconnue la première fois, donc remplacée
     une fois par la dernière Release, puis suivie."""
     connues = _lire_versions()
+    presentes = {k: v for k, v in connues.items() if Path(k).is_file()}
+    if presentes != connues:                  # AppImage supprimée : on l'oublie
+        try:
+            _versions_appimages().write_text(json.dumps(presentes, indent=1, ensure_ascii=False), encoding="utf-8")
+        except OSError:
+            pass
     applis, vus = [], set()
     for d in _dossiers_appimages():
         try:
@@ -141,7 +147,13 @@ def trouver() -> list[Appli]:
             version = ""
         applis.append(Appli(kit.get("nom_affiche") or kit.get("nom_fichier") or d.name, tech,
                             kit.get("nom_fichier") or d.name, depot, str(d), version))
-    return applis + trouver_appimages()
+    depots_kit = {a.depot for a in applis}
+    images = trouver_appimages()
+    for a in images:
+        if a.depot in depots_kit:
+            # même application installée deux fois (kit + AppImage) : on ne met à jour que le kit
+            a.etat, a.erreur = "doublon", tr("lx.applis.doublon", chemin=a.dossier)
+    return applis + images
 
 
 def lire_release(donnees: dict, fichier: str, arch: str) -> tuple[str, str, str]:
@@ -160,6 +172,10 @@ def verifier(applis: list[Appli] | None = None, journal=None) -> list[Appli]:
             a.etat = "maj" if a.derniere and plus_recente(a.derniere, a.installee) else "a_jour"
         return applis
     for a in applis:
+        if a.etat == "doublon":
+            if journal:
+                journal(a.erreur)
+            continue
         if journal:
             journal(tr("journal.source", nom=a.nom))
         try:

@@ -346,3 +346,28 @@ def test_regle_polkit_dossier_illisible(monkeypatch, tmp_path):
     assert lp.regle_active() is False
     temoin.write_text("x")
     assert lp.regle_active() is True
+
+
+def test_appimage_en_double_avec_le_kit_et_oubliee_si_supprimee(tmp_path, monkeypatch):
+    import json
+    from martinet import linux_applis as la
+    monkeypatch.setattr(la.demo, "actif", lambda: False)
+    (tmp_path / "Applications").mkdir()
+    img = tmp_path / "Applications" / "PerceNeigeSimulator.AppImage"
+    img.write_bytes(b"x")
+    kit = tmp_path / "share" / "perce-neige-sim" / "app"
+    kit.mkdir(parents=True)
+    (kit / "kit.json").write_text(json.dumps({"depot_distribution": "ARP273-ROSE/perce-neige-sim",
+                                              "nom_technique": "perce-neige-sim"}))
+    (kit / "VERSION").write_text("1.76.5")
+    monkeypatch.setattr(la.Path, "home", classmethod(lambda cls: tmp_path))
+    monkeypatch.setattr(la, "_racine", lambda: tmp_path / "share")
+    v = tmp_path / "v.json"
+    monkeypatch.setattr(la, "_versions_appimages", lambda: v)
+    applis = la.trouver()
+    assert [a.etat for a in applis] == ["inconnu", "doublon"]
+    assert la.verifier(applis)[1].etat == "doublon"          # pas de requête réseau pour le doublon
+    la._noter_version(str(img), "1.76.5")
+    img.unlink()
+    la.trouver_appimages()
+    assert json.loads(v.read_text()) == {}

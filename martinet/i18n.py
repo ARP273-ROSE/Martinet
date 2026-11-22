@@ -905,6 +905,8 @@ TEXTES: dict[str, dict[str, str]] = {
                    "en": "{n} update(s) among {total} tracked application(s). An open application is left for later."},
     "lx.applis_a_jour": {"fr": "{total} application(s) suivie(s), toutes à jour.",
                         "en": "{total} tracked application(s), all up to date."},
+    "lx.applis.doublon": {"fr": "{chemin} : la même application est déjà installée par son paquet ; seul le paquet est mis à jour, cette AppImage peut être supprimée",
+                          "en": "{chemin}: the same application is already installed from its package; only the package is updated, this AppImage can be deleted"},
     "lx.applis.pas_archive": {"fr": "pas d'archive Linux dans la dernière version",
                              "en": "no Linux archive in the latest release"},
     "lx.applis.ouverte": {"fr": "{nom} est ouvert : fermez-le, ce sera fait au prochain passage",

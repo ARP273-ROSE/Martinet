@@ -190,6 +190,13 @@ def rechercher(journal=None, choix: str = "auto") -> list[Paquet]:
                 journal("yay -Qua")
             _code, sortie = systeme.executer(["yay", "-Qua"], timeout=300, env=systeme.ENV_C)
             paquets += lire_mises_a_jour(sortie, "aur")
+    if o["yay"] and gestionnaire(choix) == "yay":
+        # paquet AUR installé entre-temps (à la main, ou version corrigée) : on l'oublie
+        q = lire_quarantaine()
+        garde = {n: v for n, v in q.items()
+                 if any(p.origine == "aur" and p.nom == n and p.disponible == v for p in paquets)}
+        if garde != q:
+            _ecrire_quarantaine(garde)
     if o["flatpak"]:
         if journal:
             journal("flatpak remote-ls --updates")

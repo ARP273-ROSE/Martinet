@@ -68,3 +68,6 @@ caméra changé seul peut casser la connexion de l'acquisition le soir même).
   ménage ; astap affiché « écarté ») ; « 223,2 Mo » libérés deux fois de suite = probablement les dépendances
   de compilation d'astap remises en cache à chaque échec, ce qui devrait cesser ; kde.pacsave est compté
   avec les .pacnew (à revoir).
+- 22/11 : 0.6.8 = doublon kit + AppImage d'un même dépôt signalé et non mis à jour ; appimages.json et
+  aur_echecs.json purgés. Sur la machine : règle polkit posée (témoin présent), plus de .pacnew ni d'orphelin.
+  Reste à éprouver la règle sur un passage avec de vrais paquets.

@@ -12,6 +12,7 @@ import json
 from dataclasses import dataclass
 
 from . import demo, systeme
+from .i18n import tr
 
 
 @dataclass
@@ -94,7 +95,6 @@ def installer(ids: list[str], journal=None, annulation=None) -> dict:
         return {"code": 2, "redemarrer": True, "n": len(ids), "details": []}
     import os
     os.environ["MARTINET_MAJ"] = ",".join(ids)
-    from .i18n import tr
     marqueurs = {"TELECHARGEMENT": tr("wu.telechargement"), "INSTALLATION": tr("wu.installation")}
     cache = [False]
 
@@ -121,7 +121,6 @@ def mettre_a_jour_defender(journal=None) -> bool:
     if code != 0 and "0x800106ba" in sortie.lower():
         # service Defender arrêté : un autre antivirus est actif, ou Defender est désactivé
         if journal:
-            from .i18n import tr
             journal(tr("journal.defender_inactif"))
         return True
     if journal and code != 0:

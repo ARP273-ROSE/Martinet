@@ -1,5 +1,12 @@
 # Journal des versions / Changelog
 
+### 0.6.11
+
+- Correctif de la 0.6.10 : l'étape Windows Update échouait (« name 'tr' is not defined ») à cause d'un
+  import oublié. Les essais vérifient désormais qu'aucun nom n'est indéfini dans le code.
+- Fix for 0.6.10: the Windows Update step failed (“name 'tr' is not defined”) because of a missing
+  import. The tests now check that no name is undefined in the code.
+
 ### 0.6.10
 
 - Pilote AMD : la carte graphique est trouvée même sans droits administrateur (le registre des pilotes

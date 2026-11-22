@@ -15,6 +15,7 @@ import re
 from dataclasses import dataclass, field
 
 from . import demo, systeme
+from .i18n import tr
 from .versions import plus_recente
 
 SOURCES_SUIVIES = {"winget", "msstore"}
@@ -172,7 +173,7 @@ def inventaire(journal=None) -> Inventaire:
         return Inventaire([Paquet(i, n, v, d if d != v else "", s) for i, n, v, d, s in demo.PAQUETS],
                           "demo")
     if journal:
-        journal("winget : lecture des logiciels installés…")
+        journal(tr("journal.winget_lecture"))
     try:
         return _par_module()
     except Exception as exc:                     # module absent, PowerShell bridé…

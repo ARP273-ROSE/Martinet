@@ -54,6 +54,8 @@ def _notifier(resume: list[str]) -> None:
     try:
         from PyQt6 import QtCore, QtGui, QtWidgets
         app = QtWidgets.QApplication.instance() or QtWidgets.QApplication(sys.argv[:1])
+        from .i18n import traduire_qt
+        traduire_qt(app)
         if not QtWidgets.QSystemTrayIcon.isSystemTrayAvailable():
             return
         from pathlib import Path

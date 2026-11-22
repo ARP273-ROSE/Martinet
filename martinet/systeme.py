@@ -63,6 +63,19 @@ def outil(nom: str) -> str | None:
     return shutil.which(nom)
 
 
+def _tr(cle: str, **champs) -> str:
+    from .i18n import tr                      # import tardif : i18n n'importe rien de Martinet
+    return tr(cle, **champs)
+
+
+def _introuvable(programme: str) -> str:
+    return MARQUE_INTROUVABLE + _tr("sys.introuvable", programme=programme)
+
+
+#: début des messages « programme absent » (code 127 sans que le programme ait tourné)
+MARQUE_INTROUVABLE = "\u2205 "
+
+
 #: sorties de pacman, paccache, journalctl… lisibles quelle que soit la langue du système
 ENV_C = {"LC_ALL": "C", "LANG": "C"}
 SANS_FENETRE = 0x08000000 if WINDOWS else 0          # CREATE_NO_WINDOW
@@ -171,9 +184,9 @@ def executer(cmd: list[str], timeout: float | None = 600, env: dict | None = Non
                            creationflags=SANS_FENETRE, stdin=subprocess.DEVNULL,
                            env={**os.environ, **env} if env else None)
     except FileNotFoundError:
-        return 127, f"introuvable : {cmd[0]}"
+        return 127, _introuvable(cmd[0])
     except subprocess.TimeoutExpired:
-        return 124, "délai dépassé"
+        return 124, _tr("sys.delai")
     return r.returncode, _decoder(r.stdout) + clixml_lisible(_decoder(r.stderr))
 
 
@@ -207,7 +220,7 @@ def executer_flux(cmd: list[str], ligne_cb=None, annulation: threading.Event | N
                                 stdin=subprocess.DEVNULL, creationflags=SANS_FENETRE,
                                 env={**os.environ, **env} if env else None, cwd=cwd)
     except FileNotFoundError:
-        return 127, f"introuvable : {cmd[0]}"
+        return 127, _introuvable(cmd[0])
     lignes: list[str] = []
     tampon = b""
     assert proc.stdout is not None

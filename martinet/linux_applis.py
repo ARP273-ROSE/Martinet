@@ -242,11 +242,11 @@ def _extraire(archive: Path, dest: Path) -> None:
         for m in t.getmembers():
             cible = (dest / m.name).resolve()
             if racine not in cible.parents and cible != racine:
-                raise ValueError(f"chemin refusé dans l'archive : {m.name}")
+                raise ValueError(tr("lx.archive.refusee", nom=m.name))
             if (m.issym() or m.islnk()) and (os.path.isabs(m.linkname) or ".." in Path(m.linkname).parts):
-                raise ValueError(f"lien refusé dans l'archive : {m.name}")
+                raise ValueError(tr("lx.archive.refusee", nom=m.name))
             if m.isdev():
-                raise ValueError(f"fichier spécial refusé : {m.name}")
+                raise ValueError(tr("lx.archive.refusee", nom=m.name))
         t.extractall(dest)
 
 

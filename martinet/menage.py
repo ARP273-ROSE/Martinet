@@ -18,6 +18,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from . import demo, systeme
+from .i18n import tr
 
 AGE_MINI_JOURS = 7
 
@@ -224,7 +225,7 @@ def nettoyer(cle: str, journal=None) -> int:
         return max(0, avant - (mesurer(cle)[0] or 0))
     if cle == "caches_navigateurs" and (ouverts := navigateurs_ouverts()):
         if journal:
-            journal(f"{', '.join(ouverts)} : ouvert(s), cache laissé en place")
+            journal(tr("journal.cache_ouvert", noms=", ".join(ouverts)))
         return 0
     libere = 0
     for f, t in list(_fichiers(cle)):

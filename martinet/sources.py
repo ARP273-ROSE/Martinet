@@ -20,6 +20,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from . import demo, systeme
+from .i18n import tr
 from .materiel import Carte
 from .versions import la_plus_haute, plus_recente
 
@@ -157,7 +158,7 @@ def derniere_github(depot: str, exclure_tag: str = "", fichier: str = "") -> tup
                     lien = a.get("browser_download_url", "")
                     break
         return tag.lstrip("vV"), r.get("html_url", ""), lien
-    raise LookupError("aucune version publiée")
+    raise LookupError(tr("src.err.aucune_version"))
 
 
 def derniere(source: Source) -> tuple[str, str, str]:
@@ -168,9 +169,9 @@ def derniere(source: Source) -> tuple[str, str, str]:
         texte = texte_de_page(systeme.telecharger_texte(source.url))
         v = version_dans_page(texte, source.regex, source.exclure_apres)
         if not v:
-            raise LookupError("version introuvable sur la page")
+            raise LookupError(tr("src.err.version_page"))
         return v, source.page or source.url, source.installeur
-    raise ValueError(f"type de source inconnu : {source.type}")
+    raise ValueError(tr("src.err.type", type=source.type))
 
 
 def version_installee(nom: str, installee: str) -> str:
@@ -258,10 +259,10 @@ def url_nvidia(id_peripherique: str) -> str:
 def lire_reponse_nvidia(donnees: dict) -> dict:
     attr = donnees.get("DriverAttributes") or {}
     if not attr.get("Version"):
-        raise LookupError("carte inconnue du service NVIDIA")
+        raise LookupError(tr("src.err.nvidia_carte"))
     if str(attr.get("IsCRD", 0)) == "1" or str(attr.get("IsBeta", 0)) == "1":
         # on veut le pilote « Game Ready » (mode jeu), jamais Studio ni bêta
-        raise LookupError("le service NVIDIA n'a pas renvoyé de pilote Game Ready")
+        raise LookupError(tr("src.err.nvidia_pilote"))
     return {"version": attr["Version"], "date": (attr.get("ReleaseDateTime") or "")[:10],
             "nom": attr.get("Name") or "", "fichier": attr.get("DownloadURLAdmin") or attr.get("DownloadURL") or "",
             "page": attr.get("DetailsURL") or "https://www.nvidia.com/drivers/"}
@@ -298,7 +299,7 @@ def lire_page_amd(texte: str) -> dict:
         if m:
             choix.append((m.group(1), f))
     if not choix:
-        raise LookupError("pas de pilote recommandé sur la page AMD")
+        raise LookupError(tr("src.err.amd"))
     version = la_plus_haute([v for v, _ in choix])
     fichier = next(f for v, f in choix if v == version)
     return {"version": version, "fichier": "https://drivers.amd.com/drivers/" + fichier,

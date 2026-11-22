@@ -75,7 +75,7 @@ def rechercher(journal=None) -> list[MiseAJour]:
         demo.pause(0.8)
         return [MiseAJour(**d) for d in demo.MISES_A_JOUR_WINDOWS]
     if journal:
-        journal("Windows Update : recherche (une à deux minutes)…")
+        journal(tr("journal.wu_recherche"))
     code, sortie = systeme.powershell(SCRIPT_RECHERCHE, timeout=1800)
     donnees = systeme.json_de_sortie(sortie)
     if code != 0 or donnees is None:

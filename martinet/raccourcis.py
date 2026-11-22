@@ -22,6 +22,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from . import demo, systeme
+from .i18n import tr
 
 # LinkFlags
 A_IDLIST, A_LINKINFO, A_NOM, A_RELATIF, A_DOSSIER, A_ARGS, A_ICONE, UNICODE = (
@@ -236,7 +237,7 @@ def _chercher_desktop(journal=None) -> list[Raccourci]:
             if etat == "mort":
                 morts.append(Raccourci(str(f), lieu, prog))
     if journal:
-        journal(f"{lus} lanceurs lus, {len(morts)} morts")
+        journal(tr("journal.lanceurs_lus", lus=lus, morts=len(morts)))
     return morts
 
 
@@ -270,7 +271,7 @@ def chercher_morts(journal=None) -> list[Raccourci]:
             if verdict(chemin) == "mort":
                 morts.append(Raccourci(str(f), lieu, chemin))
     if journal:
-        journal(f"{len(vus)} raccourcis lus, {len(morts)} morts")
+        journal(tr("journal.raccourcis_lus", lus=len(vus), morts=len(morts)))
     return morts
 
 

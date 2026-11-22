@@ -156,3 +156,15 @@ def test_fin_de_session_refusee_pendant_un_passage(app, fen):
     win.file.attendre(5000)
     win.fin_de_session(g2)
     assert not g2.annule
+
+
+def test_boutons_qt_traduits(app):
+    from PyQt6 import QtCore
+    from martinet import i18n
+    i18n.definir_langue("fr")
+    assert i18n.traduire_qt(app)
+    assert QtCore.QCoreApplication.translate("QPlatformTheme", "&Yes") == "&Oui"
+    i18n.definir_langue("en")
+    i18n.traduire_qt(app)
+    assert QtCore.QCoreApplication.translate("QPlatformTheme", "&Yes") == "&Yes"
+    i18n.definir_langue("fr")

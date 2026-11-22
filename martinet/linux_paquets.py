@@ -368,7 +368,7 @@ def mettre_a_jour(journal=None, annulation=None, aur: bool = True, flatpak: bool
 
 
 def _motif(code: int, sortie: str) -> str:
-    if code in (126, 127) and not sortie.startswith("introuvable"):
+    if code in (126, 127) and not sortie.startswith(systeme.MARQUE_INTROUVABLE):
         return tr("lx.refuse")                 # pkexec / polkit : demande refusée ou fermée
     derniere = [l for l in sortie.splitlines() if l.strip()][-1:] or [f"code {code}"]
     return derniere[0][:200]

@@ -189,6 +189,8 @@ def main() -> int:
     from PyQt6 import QtGui, QtWidgets
     app = QtWidgets.QApplication(sys.argv)
     app.setApplicationName(NOM)
+    from martinet.i18n import traduire_qt
+    traduire_qt(app)
     from martinet import style
     style.appliquer(app)
     try:

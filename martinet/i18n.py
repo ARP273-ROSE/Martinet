@@ -58,6 +58,32 @@ def definir_langue(code: str | None) -> str:
     return _langue
 
 
+_traducteur_qt = None
+
+
+def traduire_qt(app) -> bool:
+    """Boutons standard de Qt (Oui / Non, Annuler…) dans la langue choisie.
+
+    Qt ne traduit ses propres textes qu'avec un QTranslator chargé de qtbase_<langue>.qm,
+    livré avec PyQt6. Appelé au démarrage et à chaque changement de langue."""
+    global _traducteur_qt
+    try:
+        from PyQt6.QtCore import QLibraryInfo, QTranslator
+    except Exception:                         # noqa: BLE001 — sans Qt, rien à traduire
+        return False
+    if _traducteur_qt is not None:
+        app.removeTranslator(_traducteur_qt)
+        _traducteur_qt = None
+    if langue() == "en":
+        return True
+    t = QTranslator(app)
+    if t.load(f"qtbase_{langue()}", QLibraryInfo.path(QLibraryInfo.LibraryPath.TranslationsPath)):
+        app.installTranslator(t)
+        _traducteur_qt = t
+        return True
+    return False
+
+
 def langue() -> str:
     return _langue or definir_langue(None)
 
@@ -637,6 +663,25 @@ TEXTES: dict[str, dict[str, str]] = {
     "lx.flatpak.revision": {"fr": "nouvelle révision", "en": "new revision"},
     "lx.aur.ecartes": {"fr": "AUR écarté(s) jusqu'à leur prochaine version (échec de construction déjà constaté) : {noms}",
                        "en": "AUR skipped until their next version (build already failed): {noms}"},
+    "sys.introuvable": {"fr": "programme introuvable : {programme}", "en": "program not found: {programme}"},
+    "sys.delai": {"fr": "délai dépassé", "en": "timed out"},
+    "journal.wu_recherche": {"fr": "Windows Update : recherche (une à deux minutes)…",
+                             "en": "Windows Update: searching (one to two minutes)…"},
+    "journal.winget_lecture": {"fr": "winget : lecture des logiciels installés…",
+                               "en": "winget: reading installed programs…"},
+    "journal.lanceurs_lus": {"fr": "{lus} lanceurs lus, {morts} morts", "en": "{lus} launchers read, {morts} dead"},
+    "journal.raccourcis_lus": {"fr": "{lus} raccourcis lus, {morts} morts", "en": "{lus} shortcuts read, {morts} dead"},
+    "journal.cache_ouvert": {"fr": "{noms} : ouvert(s), cache laissé en place",
+                             "en": "{noms}: open, cache left in place"},
+    "src.err.aucune_version": {"fr": "aucune version publiée", "en": "no published version"},
+    "src.err.version_page": {"fr": "version introuvable sur la page", "en": "version not found on the page"},
+    "src.err.type": {"fr": "type de source inconnu : {type}", "en": "unknown source type: {type}"},
+    "src.err.nvidia_carte": {"fr": "carte inconnue du service NVIDIA", "en": "card unknown to the NVIDIA service"},
+    "src.err.nvidia_pilote": {"fr": "le service NVIDIA n'a pas renvoyé de pilote Game Ready",
+                              "en": "the NVIDIA service returned no Game Ready driver"},
+    "src.err.amd": {"fr": "pas de pilote recommandé sur la page AMD", "en": "no recommended driver on the AMD page"},
+    "lx.archive.refusee": {"fr": "élément refusé dans l'archive : {nom}", "en": "item refused in the archive: {nom}"},
+    "maj.archive_invalide": {"fr": "archive invalide", "en": "invalid archive"},
     "maj.echec": {"fr": "La mise à jour a échoué : {erreur}", "en": "The update failed: {erreur}"},
     "maj.redemarre": {"fr": "Mise à jour installée : Martinet va redémarrer.",
                       "en": "Update installed: Martinet will restart."},

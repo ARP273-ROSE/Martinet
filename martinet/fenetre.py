@@ -159,6 +159,8 @@ class FenetrePrincipale(QtWidgets.QMainWindow):
         from .i18n import definir_langue
         self.qsettings.setValue("langue", code)
         definir_langue(code if code in ("fr", "en") else None)
+        from .i18n import traduire_qt
+        traduire_qt(QtWidgets.QApplication.instance())
         page = self.nav.currentRow()
         self._construire()
         self._menus()
@@ -593,7 +595,7 @@ class FenetrePrincipale(QtWidgets.QMainWindow):
             poll.stop()
             dlg.close()
             if etat["erreur"] is not None or not etat["pose"]:
-                texte = str(etat["erreur"] or "archive invalide")
+                texte = str(etat["erreur"] or tr("maj.archive_invalide"))
                 verrou = ("WinError 32" in texte or "WinError 5]" in texte or "used by another process" in texte
                           or isinstance(etat["erreur"], PermissionError))
                 QtWidgets.QMessageBox.warning(self, tr("maj.titre"),

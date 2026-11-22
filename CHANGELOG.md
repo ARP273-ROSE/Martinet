@@ -1,5 +1,18 @@
 # Journal des versions / Changelog
 
+### 0.6.9
+
+- Boutons des boîtes de dialogue dans la langue de Martinet (« Oui / Non » au lieu de « Yes / No ») :
+  la traduction de Qt est chargée au démarrage et suit le changement de langue.
+- Textes restés en français dans l'interface anglaise : messages de la console (recherche Windows Update,
+  lecture winget, lanceurs et raccourcis lus, cache laissé en place), erreurs des sources (NVIDIA, AMD,
+  pages des éditeurs), « programme introuvable », « délai dépassé », archive invalide.
+- Dialog buttons in Martinet's language (“Oui / Non” instead of “Yes / No” in French): Qt's translation is
+  loaded at start-up and follows the language switch.
+- Texts left in French in the English interface: console messages (Windows Update search, winget reading,
+  launchers and shortcuts read, cache left in place), source errors (NVIDIA, AMD, vendor pages), “program
+  not found”, “timed out”, invalid archive.
+
 ### 0.6.8
 
 - Linux : une application installée deux fois (paquet du kit et AppImage) n'est plus mise à jour en double.

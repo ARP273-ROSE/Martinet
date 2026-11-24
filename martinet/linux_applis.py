@@ -20,11 +20,10 @@ import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 
-from . import demo, systeme
+from . import demo, github, systeme
 from .i18n import tr
 from .versions import plus_recente
 
-API = "https://api.github.com/repos/{depot}/releases/latest"
 
 
 @dataclass
@@ -179,7 +178,9 @@ def verifier(applis: list[Appli] | None = None, journal=None) -> list[Appli]:
         if journal:
             journal(tr("journal.source", nom=a.nom))
         try:
-            donnees = systeme.telecharger_json(API.format(depot=a.depot), timeout=20)
+            donnees = github.derniere_release(a.depot)
+            if donnees is None:
+                raise LookupError(tr("src.err.aucune_version"))
             lire = lire_release_appimage if a.genre == "appimage" else lire_release
             a.derniere, a.archive, a.sommes = lire(donnees, a.fichier, architecture())
             if not a.archive:

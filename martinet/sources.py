@@ -144,13 +144,10 @@ def version_dans_page(texte: str, regex: str, exclure_apres: str = "") -> str | 
 
 def derniere_github(depot: str, exclure_tag: str = "", fichier: str = "") -> tuple[str, str, str]:
     """(version, page de la Release, lien de l'installeur ou « »)."""
-    rels = systeme.telecharger_json(f"https://api.github.com/repos/{depot}/releases?per_page=30")
-    for r in rels:
+    from . import github
+    r = github.derniere_release(depot, exclure_tag)
+    if r is not None:
         tag = r.get("tag_name") or ""
-        if r.get("draft") or r.get("prerelease"):
-            continue
-        if exclure_tag and re.search(exclure_tag, tag, re.I):
-            continue
         lien = ""
         if fichier:
             for a in r.get("assets") or []:

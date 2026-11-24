@@ -1,5 +1,10 @@
 # Journal des versions / Changelog
 
+### 0.6.13
+
+- Page « Hors winget » : fini les « HTTP Error 403: rate limit exceeded ». Sans compte, l'API de GitHub n'accepte que 60 demandes par heure et par adresse, et derrière un VPN cette adresse est partagée. Quand l'API refuse, Martinet lit les pages publiques de github.com (dernière version, flux des versions, fichiers joints), qui ne sont pas comptées. Un résultat est gardé 10 minutes, donc « Vérifier » deux fois de suite ne refait pas les demandes. Même chose pour les applications du kit sous Linux. Une variable GITHUB_TOKEN est utilisée si elle existe.
+- “Outside winget” page: no more “HTTP Error 403: rate limit exceeded”. Without an account, the GitHub API accepts only 60 requests per hour per address, and behind a VPN that address is shared. When the API refuses, Martinet reads the public github.com pages (latest release, releases feed, attached files), which are not counted. A result is kept for 10 minutes, so pressing “Check” twice does not repeat the requests. Same for kit applications on Linux. A GITHUB_TOKEN variable is used if present.
+
 ### 0.6.12
 
 - Sécurité : Python embarqué 3.14.10 (la 3.12.10 ne recevait plus de correctifs de sécurité sous Windows) ; l'interpréteur téléchargé à la construction est vérifié par son empreinte SHA-256. Rapports d'incident : plus de faux avertissement « vigie sans battement » au démarrage.

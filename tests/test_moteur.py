@@ -1,5 +1,6 @@
 """Le moteur, sans Windows : lecture des sorties winget, des raccourcis,
 des pages d'éditeurs et du service NVIDIA ; ménage dans un dossier jetable."""
+import io
 import json
 import os
 import struct
@@ -166,14 +167,69 @@ def test_catalogue_par_defaut_valide():
         assert any(s.correspond(nom) for s in sources.charger()), nom
 
 
+class _Reponse(io.BytesIO):
+    def __init__(self, contenu, url=""):
+        super().__init__(contenu.encode())
+        self._url = url
+
+    def geturl(self):
+        return self._url
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *a):
+        return False
+
+
 def test_github_ecarte_les_preversions(monkeypatch):
+    from martinet import github
+    github.vider_cache()
     rels = [{"tag_name": "v2.6.14dev1", "prerelease": False, "assets": []},
             {"tag_name": "v2.6.14rc", "prerelease": True, "assets": []},
             {"tag_name": "v2.6.14", "prerelease": False, "html_url": "https://github.com/x/y/releases/v2.6.14",
              "assets": [{"name": "outil-2.6.14-setup.exe", "browser_download_url": "https://github.com/x/y/a.exe"}]}]
-    monkeypatch.setattr(sources.systeme, "telecharger_json", lambda url, timeout=20: rels)
+    monkeypatch.setattr(github, "_ouvrir", lambda url, timeout, api=False: _Reponse(json.dumps(rels)))
     assert sources.derniere_github("x/y", "dev|rc", r"setup\.exe$") == \
         ("2.6.14", "https://github.com/x/y/releases/v2.6.14", "https://github.com/x/y/a.exe")
+
+
+def test_github_limite_de_l_api_lit_le_site(monkeypatch):
+    """403 « rate limit exceeded » : les pages publiques de github.com prennent le relais."""
+    import urllib.error
+    from martinet import github
+    github.vider_cache()
+    atom = ('<link href="https://github.com/x/y/releases/tag/v2.7.0dev2"/>'
+            '<link href="https://github.com/x/y/releases/tag/v2.6.14"/>')
+    joints = ('<a href="/x/y/releases/download/v2.6.14/outil-2.6.14-setup.exe">e</a>'
+              '<a href="/x/y/releases/download/v2.6.14/SHA256SUMS">s</a>'
+              '<a href="/autre/z/releases/download/v1/piege.exe">p</a>')
+    vues = []
+
+    def ouvrir(url, timeout, api=False):
+        vues.append(url)
+        if api:
+            raise urllib.error.HTTPError(url, 403, "rate limit exceeded", None, None)
+        if url.endswith("/releases/latest"):
+            return _Reponse("", "https://github.com/x/y/releases/tag/v2.7.0dev2")
+        if url.endswith(".atom"):
+            return _Reponse(atom)
+        if "/expanded_assets/v2.6.14" in url:
+            return _Reponse(joints)
+        raise AssertionError(url)
+
+    monkeypatch.setattr(github, "_ouvrir", ouvrir)
+    assert sources.derniere_github("x/y", "dev", r"setup\.exe$") == \
+        ("2.6.14", "https://github.com/x/y/releases/tag/v2.6.14",
+         "https://github.com/x/y/releases/download/v2.6.14/outil-2.6.14-setup.exe")
+    rel = github.derniere_release("x/y", "dev")
+    assert [a["name"] for a in rel["assets"]] == ["outil-2.6.14-setup.exe", "SHA256SUMS"]
+    github._cache.clear()
+    # après un refus, l'API n'est plus redemandée pendant un moment
+    monkeypatch.setattr(github, "_ouvrir", lambda url, timeout, api=False:
+                        (_ for _ in ()).throw(AssertionError("API redemandée")) if api else ouvrir(url, timeout))
+    assert github.derniere_release("x/y", "dev")["tag_name"] == "v2.6.14"
+    github.vider_cache()
 
 
 def test_reponse_nvidia():

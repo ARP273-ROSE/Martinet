@@ -18,11 +18,18 @@ vertes). Windows et Linux utilisés en vrai ; la mise à jour intégrée fonctio
   (Ryzen 9 7940HS) sans élévation : carte lue par WMI, Adrenalin 26.11.2 lu dans « AMD Software », état
   à jour. 0.6.11 : l'étape Windows Update, cassée en 0.6.9 et 0.6.10 par un import oublié, repasse.
 
+- 0.6.13 (24/11) : page « Hors winget » pleine de « HTTP Error 403: rate limit exceeded » (API GitHub
+  limitée à 60 demandes/heure par adresse, adresse VPN partagée). Nouveau `martinet/github.py` : API d'abord,
+  puis pages publiques (releases/latest, releases.atom, expanded_assets) ; cache 10 min. Secours essayé en
+  vrai sur PHD2, ASCOM, GraXpert, Martinet, Coupole.
+
 **PAS encore vérifié**
 - Linux : un passage AVEC des paquets à installer une fois la règle polkit posée (attendu : au plus une
   demande de mot de passe, celle du ménage).
 - Oui / Non à l'écran sous Windows.
 - Linux : le message « doublon » kit + AppImage, en vrai (test unitaire seulement).
+- Page « Hors winget » en 0.6.13 sur le PC (plus de 403 attendus). ASTAP : version installée « ? »
+  (registre sans DisplayVersion), à voir avec la version du fichier astap.exe.
 - AMD : carte graphique séparée (Radeon RX) et passage élevé ; Windows 10 réel ; garde d'observatoire
   (0.6.0) en conditions réelles.
 
